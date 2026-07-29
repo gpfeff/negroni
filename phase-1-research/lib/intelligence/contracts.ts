@@ -45,6 +45,12 @@ type GoogleSheetOutput = {
   status: "published";
   url: string;
   verified: true;
+} | {
+  title: string;
+  status: "not_configured";
+  url: null;
+  verified: false;
+  message: "Google publishing not configured.";
 };
 
 export type CompetitorMonitoringReceipt = {
@@ -90,7 +96,7 @@ export type RunResult = {
   validation: {
     exactly_three_outputs: true;
     google_doc_readback: true;
-    google_sheet_readback: true;
+    google_sheet_projection_checked: true;
     markdown_doc_parity: true;
     competitor_rows_evidence_backed: true;
     citation_integrity: true;

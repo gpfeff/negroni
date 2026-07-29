@@ -15,6 +15,51 @@ import {
 } from "@/lib/intelligence/contracts";
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
 
+type AppView = "home" | "research" | "settings";
+
+const PHASES = [
+  {
+    number: "01",
+    name: "Research",
+    verb: "Find the signal",
+    artifact: "research-brief.md",
+    state: "Ready",
+    color: "#70283c",
+  },
+  {
+    number: "02",
+    name: "Create",
+    verb: "Make the argument",
+    artifact: "creative-manifest.json",
+    state: "Planned",
+    color: "#a83e25",
+  },
+  {
+    number: "03",
+    name: "Launch",
+    verb: "Prepare the delivery",
+    artifact: "launch-diff.md",
+    state: "Planned",
+    color: "#315f7b",
+  },
+  {
+    number: "04",
+    name: "Iterate",
+    verb: "Isolate the lesson",
+    artifact: "experiment-result.json",
+    state: "Planned",
+    color: "#4e5d36",
+  },
+  {
+    number: "05",
+    name: "Loop",
+    verb: "Compound the learning",
+    artifact: "learning-ledger.jsonl",
+    state: "Planned",
+    color: "#5f5b55",
+  },
+] as const;
+
 const PROMPT_LABELS: Record<(typeof RESEARCH_PROMPTS)[number], string> = {
   market_awareness: "Market awareness",
   competitor_research: "Competitor research",
@@ -34,7 +79,7 @@ function downloadMarkdown(result: RunResult) {
 }
 
 export function IntelligenceClient() {
-  const [activeTab, setActiveTab] = useState<"research" | "settings">("research");
+  const [activeView, setActiveView] = useState<AppView>("home");
   const [intake, setIntake] = useState<IntelligenceIntake>(() => createEmptyIntake(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"));
   const [capability, setCapability] = useState<RunCapability>({ available: false, status: "blocked", blocker: RUNNER_BLOCKER });
   const [checking, setChecking] = useState(true);
@@ -94,7 +139,8 @@ export function IntelligenceClient() {
         }),
       ]);
       if (!active) return;
-      if (new URLSearchParams(window.location.search).get("view") === "settings") setActiveTab("settings");
+      const requestedView = new URLSearchParams(window.location.search).get("view");
+      if (requestedView === "research" || requestedView === "settings") setActiveView(requestedView);
       setCapability(runResponse.status === "fulfilled"
         ? runResponse.value
         : { available: false, status: "blocked", blocker: RUNNER_BLOCKER });
@@ -252,23 +298,102 @@ export function IntelligenceClient() {
   const geminiStatus = providerStatus("gemini");
   const googleStatus = providerStatus("google_drive");
 
-  return (
-    <main className="page-shell">
-      <header className="masthead">
-        <a className="brand" href="#top" aria-label="PHASE 1: RESEARCH home">
-          <span className="brand-mark">L</span>
-          <span>PHASE 1: RESEARCH</span>
-        </a>
-        <nav className="tab-list" aria-label="Research navigation">
-          <button className={activeTab === "research" ? "tab-active" : ""} type="button" onClick={() => setActiveTab("research")}>Research</button>
-          <button className={activeTab === "settings" ? "tab-active" : ""} type="button" onClick={() => setActiveTab("settings")}>Settings</button>
-        </nav>
-      </header>
+  function navigate(view: AppView) {
+    setActiveView(view);
+    const nextUrl = view === "home"
+      ? window.location.pathname
+      : `${window.location.pathname}?view=${view}`;
+    window.history.replaceState(null, "", nextUrl);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
-      {activeTab === "research" ? (
+  return (
+    <div className="app-shell">
+      <aside className="app-sidebar">
+        <button className="brand" type="button" onClick={() => navigate("home")} aria-label="Negroni home">
+          <span className="brand-mark" aria-hidden="true">N</span>
+          <span className="brand-copy"><strong>Negroni</strong><small>Paid lead generation</small></span>
+        </button>
+        <nav className="side-nav" aria-label="Application navigation">
+          <span className="nav-label">Workspace</span>
+          <button className={activeView === "home" ? "nav-active" : ""} type="button" onClick={() => navigate("home")}><span>⌂</span>Home</button>
+          <span className="nav-label">Campaign phases</span>
+          {PHASES.map((phase) => (
+            <button
+              className={phase.number === "01" && activeView === "research" ? "nav-active" : ""}
+              key={phase.number}
+              type="button"
+              disabled={phase.number !== "01"}
+              onClick={() => phase.number === "01" && navigate("research")}
+            >
+              <span>{phase.number}</span>{phase.name}{phase.number !== "01" ? <small>Planned</small> : null}
+            </button>
+          ))}
+        </nav>
+        <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
+      </aside>
+
+      <main className="app-main">
+        <header className="app-topbar">
+          <button className="campaign-switcher" type="button" onClick={() => navigate("research")}>
+            <span>Campaign</span><strong>New lead-generation campaign</strong><b>⌄</b>
+          </button>
+          <div className="topbar-state"><span><i /> No live spend</span><b aria-label="User account">GP</b></div>
+        </header>
+
+      {activeView === "home" ? (
+        <div className="dashboard" id="top">
+          <section className="dashboard-heading" aria-labelledby="home-title">
+            <div><p className="utility-label">Workspace overview</p><h1 id="home-title">Paid lead generation, end to end.</h1><p>One governed agent across paid social and display—from research through continuous improvement.</p></div>
+            <button type="button" onClick={() => navigate("research")}>Start Research <span aria-hidden="true">→</span></button>
+          </section>
+
+          <section className="overview-grid" aria-label="Campaign overview">
+            <article className="current-work-card">
+              <div className="card-topline"><span>Current work</span><small>Phase 01 of 05</small></div>
+              <div className="work-phase"><span>01</span><div><h2>Research</h2><p>Define the offer, audience, and market. The agent will run five evidence-backed research passes and prepare the handoff to Create.</p></div></div>
+              <div className="work-contract"><div><span>Input</span><strong>Campaign goal + market</strong></div><b>→</b><div><span>Output</span><code>research-brief.md</code></div></div>
+              <button type="button" onClick={() => navigate("research")}>Configure Research</button>
+            </article>
+
+            <article className="health-card">
+              <div className="card-topline"><span>Agent readiness</span><small className={capability.available ? "state-ready" : "state-blocked"}>{checking ? "Checking" : capability.available ? "Ready" : "Setup required"}</small></div>
+              <dl>
+                <div><dt>Research runner</dt><dd>{checking ? "Checking" : capability.available ? "Connected" : "Not connected"}</dd></div>
+                <div><dt>Provider connections</dt><dd>{providerStatuses.filter((provider) => provider.status === "connected").length} of 3</dd></div>
+                <div><dt>Spend protection</dt><dd className="protected-state">On</dd></div>
+              </dl>
+              <button type="button" onClick={() => navigate("settings")}>Review settings</button>
+            </article>
+          </section>
+
+          <section className="pipeline-card" aria-labelledby="pipeline-title">
+            <div className="section-title-row"><div><p className="utility-label">Campaign pipeline</p><h2 id="pipeline-title">Five phases, one evidence trail</h2></div><small>1 ready · 4 planned</small></div>
+            <ol className="dashboard-phases" aria-label="Campaign phases" tabIndex={0}>
+              {PHASES.map((phase) => (
+                <li className={phase.number === "01" ? "dashboard-phase-ready" : ""} key={phase.number}>
+                  <div><span>{phase.number}</span><small>{phase.state}</small></div>
+                  <strong>{phase.name}</strong><p>{phase.verb}</p><code>{phase.artifact}</code>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="dashboard-lower">
+            <article className="activity-card">
+              <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Local workspace</small></div>
+              <div className="empty-state"><span>●</span><div><strong>No runs yet</strong><p>Start Research to create the first prompt receipts and campaign artifact.</p></div></div>
+            </article>
+            <article className="artifacts-card">
+              <div className="section-title-row"><div><p className="utility-label">Artifacts</p><h2>Campaign handoffs</h2></div><small>0 created</small></div>
+              <ul>{PHASES.slice(0, 3).map((phase) => <li key={phase.number}><code>{phase.artifact}</code><span>Waiting</span></li>)}</ul>
+            </article>
+          </section>
+        </div>
+      ) : activeView === "research" ? (
         <div className="content-column" id="top">
           <section className="intro" aria-labelledby="page-title">
-            <p className="kicker">AI deep research</p>
+            <p className="kicker">Phase 01 · Find the signal</p>
             <h1 id="page-title">Four inputs. Five research passes.</h1>
             <p>Define the offer and audience once. Negroni runs awareness, competitor, customer, master-research, and tone-of-voice analysis—then creates the three files.</p>
           </section>
@@ -379,7 +504,14 @@ export function IntelligenceClient() {
             <div className="section-heading"><span>3</span><div><h2 id="outputs-title">Outputs</h2><p>The master Google Doc, matching Markdown, and competitor-ad Google Sheet.</p></div></div>
             <div className="output-grid">
               <a className={result ? "output-card" : "output-card output-disabled"} href={result?.outputs.google_doc.url ?? undefined} target="_blank" rel="noreferrer" aria-disabled={!result} onClick={(event) => { if (!result) event.preventDefault(); }}><span className="output-icon">D</span><div><strong>Open Google Doc</strong><small>{result?.outputs.google_doc.title ?? "Master research report"}</small></div><span aria-hidden="true">↗</span></a>
-              <a className={result ? "output-card" : "output-card output-disabled"} href={result?.outputs.google_sheet.url ?? undefined} target="_blank" rel="noreferrer" aria-disabled={!result} onClick={(event) => { if (!result) event.preventDefault(); }}><span className="output-icon sheet-icon">S</span><div><strong>Open Google Sheet</strong><small>{result?.outputs.google_sheet.title ?? "Competitor-ad archive · refreshed nightly"}</small></div><span aria-hidden="true">↗</span></a>
+              <a
+                className={result && (result.outputs.google_sheet.status === "published" || result.competitor_ads.links.report_markdown) ? "output-card" : "output-card output-disabled"}
+                href={result?.outputs.google_sheet.status === "published" ? result.outputs.google_sheet.url : result?.competitor_ads.links.report_markdown ?? undefined}
+                target="_blank"
+                rel="noreferrer"
+                aria-disabled={!result || (result.outputs.google_sheet.status !== "published" && !result.competitor_ads.links.report_markdown)}
+                onClick={(event) => { if (!result || (result.outputs.google_sheet.status !== "published" && !result.competitor_ads.links.report_markdown)) event.preventDefault(); }}
+              ><span className="output-icon sheet-icon">S</span><div><strong>{result?.outputs.google_sheet.status === "not_configured" ? "Open local competitor report" : "Open Google Sheet"}</strong><small>{result?.outputs.google_sheet.status === "not_configured" ? result.outputs.google_sheet.message : result?.outputs.google_sheet.title ?? "Competitor-ad archive · refreshed nightly"}</small></div><span aria-hidden="true">↗</span></a>
               <button className={result ? "output-card" : "output-card output-disabled"} type="button" disabled={!result} onClick={() => result && downloadMarkdown(result)}><span className="output-icon markdown-icon">M</span><div><strong>Download Markdown</strong><small>{result?.outputs.markdown.filename ?? "Portable master research report"}</small></div><span aria-hidden="true">↓</span></button>
             </div>
           </section>
@@ -400,7 +532,7 @@ export function IntelligenceClient() {
                   <strong>Google Drive</strong>
                   <span className="provider-badge">Auto-file</span>
                 </div>
-                <p>Negroni creates a private <b>Negroni Research</b> folder, then stores every run as one Google Doc, one Google Sheet, and one Markdown copy.</p>
+                <p>Negroni creates a private <b>Negroni Research</b> folder, then stores the Google Doc, Markdown copy, and optional competitor Sheet projection there.</p>
                 <div className="storage-route" aria-label="Google Doc, Google Sheet, and Markdown are stored in the Negroni Research folder">
                   <span className="storage-file storage-doc">Doc</span>
                   <span className="storage-file storage-sheet">Sheet</span>
@@ -443,7 +575,7 @@ export function IntelligenceClient() {
         </div>
       )}
 
-      <footer><span>PHASE 1: RESEARCH</span><p>Four inputs. Five prompt receipts. Three verified deliverables.</p></footer>
-    </main>
+      </main>
+    </div>
   );
 }

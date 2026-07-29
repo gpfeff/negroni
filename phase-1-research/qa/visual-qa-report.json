@@ -1,13 +1,75 @@
 {
-  "generated_at": "2026-07-29T08:41:30.542Z",
+  "generated_at": "2026-07-29T09:00:30.840Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
+    "home: 1440x1000",
+    "home: 390x844",
     "research: 1440x1000",
     "research: 390x844",
     "settings: 1440x1000",
     "settings: 390x844"
   ],
   "checks": [
+    {
+      "name": "home visible: Paid lead generation, end to end.",
+      "passed": true
+    },
+    {
+      "name": "home visible: Workspace overview",
+      "passed": true
+    },
+    {
+      "name": "home visible: Current work",
+      "passed": true
+    },
+    {
+      "name": "home visible: Agent readiness",
+      "passed": true
+    },
+    {
+      "name": "home visible: Campaign pipeline",
+      "passed": true
+    },
+    {
+      "name": "home visible: Research",
+      "passed": true
+    },
+    {
+      "name": "home visible: Create",
+      "passed": true
+    },
+    {
+      "name": "home visible: Launch",
+      "passed": true
+    },
+    {
+      "name": "home visible: Iterate",
+      "passed": true
+    },
+    {
+      "name": "home visible: Loop",
+      "passed": true
+    },
+    {
+      "name": "home-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "home-desktop: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "home-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "home-mobile: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "home enters Research",
+      "passed": true
+    },
     {
       "name": "visible: Research setup",
       "passed": true
@@ -154,6 +216,14 @@
     }
   ],
   "axe": [
+    {
+      "name": "home-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "home-mobile",
+      "material_violations": []
+    },
     {
       "name": "thin-client-desktop",
       "material_violations": []

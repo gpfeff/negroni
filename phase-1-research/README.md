@@ -1,11 +1,25 @@
-# PHASE 1: RESEARCH
+# Negroni application · Phase 1 Research
+
+The deployed application opens on a B2B SaaS workspace home with persistent
+navigation for Research, Create, Launch, Iterate, and Loop. Home shows campaign
+state, agent readiness, the five-phase artifact pipeline, and the next honest
+action. Research is the first executable section; later phases remain visibly
+planned.
 
 A focused Negroni interface for saving a reusable research set, running the
-five approved research prompts in order, and producing:
+five approved research prompts in order, and producing five durable Research
+artifacts:
 
-1. Google Doc — complete master research report
-2. Markdown — portable report matching the Google Doc
-3. Google Sheet — authoritative competitor-ad archive
+1. `research-brief.md`
+2. `evidence-index.json`
+3. `opportunity-map.json`
+4. `creative-brief.json`
+5. `research-receipt.json`
+
+The browser keeps three outward actions: the master Google Doc, matching
+Markdown, and competitor archive. The archive opens a restricted Google Sheet
+when configured, otherwise an access-controlled local report. SQLite remains
+authoritative.
 
 The Research tab asks only:
 
@@ -24,9 +38,11 @@ Market Awareness, Competitor Research, Avatar/Psychographic Research, Master
 Research, and Tone of Voice. The secure runner must return a receipt for every
 prompt.
 
-After competitor research verifies a watchlist, the runner configures Meta Ads
-Intelligence to refresh the same Google Sheet nightly at 02:17 in the intake
-timezone. The UI shows the real schedule receipt or exact blocker.
+After competitor research verifies a Page-ID watchlist, the runner creates one
+isolated Meta Ads Intelligence project profile. Its scheduler-neutral daily
+operation supports normalized imports and an authorized official Meta API
+adapter. Missing inputs are persisted as skipped; missing official API
+authorization is persisted as blocked. The adapter never creates a scheduler.
 
 ## Settings and secrets
 
@@ -54,7 +70,12 @@ Configure these server-side values in the hosting environment:
 - `CREDENTIAL_BROKER_URL`
 - `CREDENTIAL_BROKER_TOKEN`
 
-Without the runner and verified Google connection, research is visibly blocked.
+The runner additionally configures `META_ADS_INTELLIGENCE_CLI`,
+`META_ADS_INTELLIGENCE_PYTHON`, and
+`META_ADS_INTELLIGENCE_RUNTIME_HOME`; runtime state must stay outside
+Documents.
+
+Without the runner, research is visibly blocked.
 Without the credential broker, Settings is visibly blocked. The app never
 falls back to fixtures or invents Google IDs, output URLs, research findings,
 or monitoring state.

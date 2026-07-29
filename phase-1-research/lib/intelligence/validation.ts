@@ -35,7 +35,7 @@ const RESULT_VALIDATIONS = [
   "example_leak_scan_passed",
   "five_prompt_sequence_verified",
   "google_doc_readback",
-  "google_sheet_readback",
+  "google_sheet_projection_checked",
   "markdown_doc_parity",
   "research_artifacts_verified",
   "secret_scan_passed",
@@ -178,11 +178,21 @@ export function parseRunResult(value: unknown, researchName: string): RunResult 
   if (!isRecord(markdown)) throw new Error("The Markdown report is missing, abbreviated, or misnamed.");
   if (googleDoc.title !== `${researchName} — Master Research`) throw new Error("The master research Doc title does not match the output contract.");
   if (googleSheet.title !== `${researchName} — Competitor Ads`) throw new Error("The competitor Sheet title does not match the output contract.");
-  if (!hasExactKeys(googleSheet, ["status", "title", "url", "verified"])
-    || googleSheet.status !== "published"
-    || !isGoogleUrl(googleSheet.url, "/spreadsheets/d/")
-    || googleSheet.verified !== true) {
-    throw new Error("The Google Sheet was not created and read back successfully.");
+  if (googleSheet.status === "published") {
+    if (!hasExactKeys(googleSheet, ["status", "title", "url", "verified"])
+      || !isGoogleUrl(googleSheet.url, "/spreadsheets/d/")
+      || googleSheet.verified !== true) {
+      throw new Error("The Google Sheet was not created and read back successfully.");
+    }
+  } else if (googleSheet.status === "not_configured") {
+    if (!hasExactKeys(googleSheet, ["message", "status", "title", "url", "verified"])
+      || googleSheet.url !== null
+      || googleSheet.verified !== false
+      || googleSheet.message !== "Google publishing not configured.") {
+      throw new Error("The optional Google Sheet projection receipt is invalid.");
+    }
+  } else {
+    throw new Error("The optional Google Sheet projection receipt has an unsupported status.");
   }
   const expectedFilename = `${slugifyProjectName(researchName)}-master-research.md`;
   if (markdown.filename !== expectedFilename

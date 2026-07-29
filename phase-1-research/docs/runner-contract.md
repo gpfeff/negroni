@@ -37,22 +37,29 @@ sequence, tools, destinations, or safety rules.
 1. Validate the intake, approved actions, prompt source/order, and secret scan.
 2. Invoke the canonical `lead-generation-ads-discovery-intelligence` skill.
 3. Run every prompt and record `complete` or `limited`; each limitation requires a reason.
-4. Create exactly:
+4. Create and verify:
+   - `research-brief.md`;
+   - `evidence-index.json`;
+   - `opportunity-map.json`;
+   - `creative-brief.json`;
+   - `research-receipt.json`.
+5. Create exactly three outward actions:
    - `<offer> (<country or region>) — Master Research` as a native Google Doc;
-   - `<offer> (<country or region>) — Competitor Ads` as a native Google Sheet;
+   - `<offer> (<country or region>) — Competitor Ads` as a restricted native
+     Google Sheet when configured, otherwise an access-controlled local report;
    - `<offer-country-or-region>-master-research.md`.
-   Create or reuse the broker-verified app-owned `Negroni Research` folder and
-   file all three artifacts there.
-5. Read back both Google files; verify Markdown/Doc parity, citations,
+6. Read back every created Google file; verify Markdown/Doc parity, citations,
    competitor-row provenance, secrets, and structural-example leakage.
-6. Resolve researched competitors to stable verified advertiser identities and
+7. Resolve researched competitors to stable verified advertiser identities and
    pass the watchlist to the monitoring adapter.
-7. Return the three deliverables, five-prompt receipt, sources, limitations,
-   validations, and active-or-blocked monitoring receipt.
+8. Map Meta evidence into all five artifacts and return their SHA-256 receipts,
+   the sanitized competitor-ad summary, sources, limitations, validations, and
+   active-or-blocked monitoring receipt.
 
 Research is `complete` only when all prompts are complete and the monitor is
 active. It is `partial` when a prompt is limited or monitoring is blocked.
-Missing Google deliverables are failed or blocked, not partial.
+The Google Sheet projection is optional. Missing required Research artifacts,
+the Google Doc, or the matching Markdown is failed or blocked, not partial.
 
 ## Credential broker
 
@@ -76,30 +83,34 @@ back to a service account, another owner's Drive, or an unverified root upload.
 ## Competitor-monitoring adapter
 
 ```ts
-type EnsureNightlyMonitor = (request: {
+type RefreshCompetitorAds = (request: {
   research_set_id: string;
-  archive_profile: string;
-  google_sheet_id: string;
+  collector: "normalized_import" | "official_meta_api";
+  input_directory?: string;
   watchlist: Array<{
-    advertiser_id: string;
+    watch_id: string;
+    page_id: string;
     advertiser_name: string;
-    source: string;
     verified: true;
   }>;
-  cadence: "nightly";
-  local_time: "02:17";
-  timezone: string;
-}) => Promise<CompetitorMonitoringReceipt>;
+  publish_google: boolean;
+}) => Promise<DailyRefreshReceipt>;
 ```
 
-The operation is idempotent. Repeating it for a research set updates that
-watchlist and reuses one scheduler owner. It must not create a second schedule.
+The adapter derives one profile ID from the research-set ID and rejects every
+cross-profile read. Repeating the operation reuses that profile and its
+verified Page-ID watches. It does not create, replace, or remove a scheduler.
 
-Each nightly run updates the same isolated archive and Google Sheet while
-preserving stable ad identity, first/last seen times, lifecycle state, creative
+Each daily run updates the same isolated archive. The optional Google Sheet is
+a projection only. The run preserves stable ad identity, first/last seen times,
+lifecycle state, creative
 identity, observed copy/CTA/destination/format, sources, coverage, and
 limitations. Visibility and longevity are survivor evidence only—not proof of
 targeting, spend, conversions, lead quality, profitability, or performance.
+
+The snapshot returns new ads, changed ads, newly observed creative families,
+possible inactivity, reactivation, landing-page changes, and collection gaps
+for one immutable daily run. Re-reading that run must produce the same delta.
 
 Collection must use an authorized public or official route. It must never
 automate a restricted UI, bypass access controls, click ads, submit forms, or

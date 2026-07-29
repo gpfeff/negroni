@@ -114,7 +114,7 @@ function validResult(researchName = RESEARCH_NAME): RunResult {
     validation: {
       exactly_three_outputs: true,
       google_doc_readback: true,
-      google_sheet_readback: true,
+      google_sheet_projection_checked: true,
       markdown_doc_parity: true,
       competitor_rows_evidence_backed: true,
       citation_integrity: true,
@@ -155,7 +155,7 @@ test("research names derive deterministically from offer and region", () => {
   assert.equal(buildResearchName("  Regional   repair leads ", " United States "), RESEARCH_NAME);
 });
 
-test("successful output contract is exactly one verified Doc, Sheet, and Markdown file", () => {
+test("successful output contract has exactly three outward actions", () => {
   const result = parseRunResult(validResult(), RESEARCH_NAME);
   assert.deepEqual(Object.keys(result.outputs).sort(), ["google_doc", "google_sheet", "markdown"]);
   assert.equal(result.outputs.google_sheet.title, `${RESEARCH_NAME} — Competitor Ads`);
@@ -163,6 +163,21 @@ test("successful output contract is exactly one verified Doc, Sheet, and Markdow
   const extra = validResult() as RunResult & { outputs: RunResult["outputs"] & { evidence: object } };
   extra.outputs.evidence = {};
   assert.throws(() => parseRunResult(extra, RESEARCH_NAME), /exactly three/);
+});
+
+test("Google Sheet projection is optional while local competitor reports remain available", () => {
+  const localOnly = validResult();
+  localOnly.outputs.google_sheet = {
+    title: `${RESEARCH_NAME} — Competitor Ads`,
+    status: "not_configured",
+    url: null,
+    verified: false,
+    message: "Google publishing not configured.",
+  };
+  localOnly.competitor_ads.links.google_sheet = null;
+  const parsed = parseRunResult(localOnly, RESEARCH_NAME);
+  assert.equal(parsed.outputs.google_sheet.status, "not_configured");
+  assert.ok(parsed.competitor_ads.links.report_markdown);
 });
 
 test("the exact source document and five-prompt order are enforced", () => {

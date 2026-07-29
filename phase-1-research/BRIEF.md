@@ -2,9 +2,9 @@
 
 ## Decision
 
-Build the narrowest useful Phase 1 product: save one reusable research set,
-run five approved prompts, create three verified deliverables, and maintain one
-receipt-backed nightly competitor-ad refresh.
+Build the narrowest useful Phase 1 product: save one reusable research set, run
+five approved prompts, create five durable Research artifacts behind three
+outward actions, and maintain one receipt-backed competitor-ad refresh.
 
 ## Required flow
 
@@ -12,8 +12,11 @@ receipt-backed nightly competitor-ad refresh.
 2. Let the authenticated user save, reopen, update, and delete research sets.
 3. Run the five prompts from the approved Google Doc in fixed order.
 4. Mark every prompt complete or limited with an explicit receipt.
-5. Create and verify one Google Doc, one matching Markdown report, and one competitor-ad Google Sheet.
-6. Configure an idempotent competitor monitor at 02:17 in the intake timezone, or return its exact blocker.
+5. Create and verify the five Research artifacts, one Google Doc, one matching
+   Markdown report, and a competitor archive action. Use a restricted Sheet
+   when configured; otherwise use the access-controlled local report.
+6. Run the scheduler-neutral competitor refresh and return its receipt. Report
+   the one scheduler owner or the exact ownership blocker; do not install one.
 7. Connect Codex, Gemini, and Google Workspace only through the server-side credential broker.
 8. Show only run status, monitoring receipt, completion time, blockers, limitations, and the three output actions.
 

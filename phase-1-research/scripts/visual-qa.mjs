@@ -48,6 +48,17 @@ try {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(500);
+  for (const text of ["Paid lead generation, end to end.", "Workspace overview", "Current work", "Agent readiness", "Campaign pipeline", "Research", "Create", "Launch", "Iterate", "Loop"]) {
+    checks.push({ name: `home visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  }
+  await inspect(page, "home-desktop");
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await inspect(page, "home-mobile");
+  await page.getByRole("button", { name: "Start Research" }).click();
+  checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Four inputs. Five research passes." }).isVisible() });
+
+  await page.setViewportSize({ width: 1440, height: 1000 });
   for (const text of ["Research setup", "Lead offer or service", "Industry", "Country or region", "Target age range", "Market awareness", "Competitor research", "Customer psychology", "Master research", "Tone of voice", "Run status", "Nightly competitor ads", "Outputs", "No secure five-prompt research runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
@@ -74,7 +85,7 @@ try {
   await browser.close();
 }
 
-const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["research: 1440x1000", "research: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
+const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["home: 1440x1000", "home: 390x844", "research: 1440x1000", "research: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (!report.passed) process.exitCode = 1;
