@@ -1,8 +1,8 @@
-# PHASE 1: RESEARCH — Status
+# Negroni application — Status
 
 Updated: 2026-07-29
 
-Repository path: `phase-1-research/`
+Repository path: `app/`
 
 ## State
 

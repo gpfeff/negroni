@@ -33,5 +33,17 @@ Red is deliberately limited to active navigation rules, progress, primary
 actions, and the Negroni glass glow. It does not replace status semantics:
 green still means connected or safe, and blocked states remain explicit.
 
+## Illustration
+
+The Negroni glass is reserved for product identity in the sidebar and
+persistent assistant pill. Each Research tool instead gets a distinct scene:
+campaign-table toast, client presentation, customer interview, competitor
+wall, ad analysis, or approval desk.
+
+The original illustration direction is a playful 1960s advertising studio:
+cinematic navy shadows, warm paper grain, walnut interiors, and restrained
+Negroni-red accents. It should feel editorial and witty, never like a repeated
+logo tile or a copy of recognizable television characters.
+
 Light mode keeps the same information hierarchy with a pale neutral canvas.
 Dark mode is the default and matches the supplied reference.

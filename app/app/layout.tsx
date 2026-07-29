@@ -14,13 +14,13 @@ export const metadata: Metadata = {
     title: "Negroni — Paid lead generation, end to end",
     description: "Research, Create, Launch, Iterate, and Loop—one reviewable campaign operating system.",
     type: "website",
-    images: [{ url: "/og-phase1.png", width: 1731, height: 909, alt: "Negroni — Find the signal." }],
+    images: [{ url: "/og.png", width: 1734, height: 907, alt: "Negroni campaign studio — What are we making?" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Negroni — Paid lead generation, end to end",
     description: "Five phases. Explicit artifacts. Approval-gated action.",
-    images: ["/og-phase1.png"],
+    images: ["/og.png"],
   },
 };
 

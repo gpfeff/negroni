@@ -63,7 +63,11 @@ Phase 1 currently includes:
 - strict server-response and output validation;
 - secret and example-leak detection;
 - desktop and mobile visual QA;
-- a separate local-first Meta Ads Intelligence engine under active integration.
+- a server-only Meta Ads Intelligence adapter with project-isolated profiles,
+  deterministic daily deltas, five durable Research artifact receipts, and a
+  compact competitor-ad results module;
+- a separate local-first Meta Ads Intelligence engine linked at
+  [`meta-ads-intelligence/`](meta-ads-intelligence/).
 
 The Research interface is validated, but live research remains intentionally
 blocked until a secure runner and verified Google Workspace output path are
@@ -71,7 +75,7 @@ configured. Creative, Launch, Iteration, and Loop currently have defined
 contracts and implementation roadmaps.
 
 <p align="center">
-  <img src="phase-1-research/qa/screenshots/thin-client-desktop.png" alt="Negroni Phase 1 Research interface" width="880">
+  <img src="app/qa/screenshots/thin-client-desktop.png" alt="Negroni Phase 1 Research interface" width="880">
 </p>
 
 ## Quick start
@@ -87,10 +91,10 @@ npm run dev
 
 Open the local URL printed by the development server.
 
-To run the existing Phase 1 Research interface instead:
+To run the older five-phase interface prototype instead:
 
 ```bash
-npm run dev:research
+npm run dev:web
 ```
 
 Run the top-level UI build and full Phase 1 validation suite:
@@ -101,7 +105,7 @@ npm run validate
 
 This starts and validates the local interface. A real Research run additionally
 requires the server-side runner documented in
-[`phase-1-research/README.md`](phase-1-research/README.md).
+[`app/README.md`](app/README.md).
 
 ## The operating loop
 
@@ -144,10 +148,11 @@ impersonating another advertiser, or inventing performance claims.
 
 Current Phase 1 implementations:
 
-- [`phase-1-research/`](phase-1-research/) — research intake and deliverables
-  interface.
-- **Meta Ads Intelligence** — local-first intelligence from public Meta Ad
-  Library observations; its reusable package is under public-release review.
+- [`app/`](app/) — canonical Negroni application, with Research currently
+  executable and the later phases visibly planned.
+- [`meta-ads-intelligence/`](meta-ads-intelligence/) — local-first intelligence
+  from public Meta Ad Library observations. SQLite, media, lifecycle, human
+  overrides, local reports, and optional cloud projection remain engine-owned.
 
 The phase contract and build plan live in [`01-research/`](01-research/).
 
@@ -200,18 +205,19 @@ See [`05-loop/`](05-loop/).
 
 ```text
 negroni/
-├── web/                      # Interactive five-phase product interface
+├── app/                      # Canonical Negroni application
+├── web/                      # Earlier five-phase interface prototype
 ├── 01-research/              # Three-C research contract and roadmap
 ├── 02-creative/              # Image and video creative contract and roadmap
 ├── 03-launch/                # Media-plan, account-change, and QA contract
 ├── 04-iteration/             # Experiment design and decision contract
-├── 05-loop/                  # Continuous research and optimization contract
-└── phase-1-research/         # Existing Phase 1 research interface
+└── 05-loop/                  # Continuous learning-loop contract and roadmap
 ```
 
-Meta Ads Intelligence belongs to Research conceptually. Its current local
-source has path-sensitive callers and runtime ownership, so it will enter the
-public repository only after an isolated packaging and privacy review.
+Meta Ads Intelligence belongs to Research conceptually and is consumed through
+a server-side CLI contract. The browser receives only a validated summary and
+access-controlled report links; it never receives SQLite access, credentials,
+local paths, or media paths.
 
 ## UI system
 

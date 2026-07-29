@@ -28,7 +28,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: phase-1-research/package-lock.json
+          cache-dependency-path: |
+            app/package-lock.json
+            web/package-lock.json
 
       - name: Install dependencies
         run: npm run setup

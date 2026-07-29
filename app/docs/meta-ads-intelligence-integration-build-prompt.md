@@ -19,10 +19,10 @@ application logic.
 Read first
 
 - /Users/greg-mac-mini/Documents/tools/negroni/AGENTS.md
-- /Users/greg-mac-mini/Documents/tools/negroni/phase-1-research/AGENTS.md
-- /Users/greg-mac-mini/Documents/tools/negroni/phase-1-research/README.md
-- /Users/greg-mac-mini/Documents/tools/negroni/phase-1-research/STATUS.md
-- /Users/greg-mac-mini/Documents/tools/negroni/phase-1-research/docs/runner-contract.md
+- /Users/greg-mac-mini/Documents/tools/negroni/app/AGENTS.md
+- /Users/greg-mac-mini/Documents/tools/negroni/app/README.md
+- /Users/greg-mac-mini/Documents/tools/negroni/app/STATUS.md
+- /Users/greg-mac-mini/Documents/tools/negroni/app/docs/runner-contract.md
 - /Users/greg-mac-mini/Documents/tools/negroni/01-research/README.md
 - /Users/greg-mac-mini/Documents/tools/negroni/meta-ads-intelligence/README.md
 - /Users/greg-mac-mini/Documents/tools/negroni/meta-ads-intelligence/STATUS.md

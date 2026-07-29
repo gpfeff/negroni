@@ -8,15 +8,15 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "setup": "npm --prefix web ci && npm --prefix phase-1-research ci",
-    "dev": "npm --prefix web run dev",
+    "setup": "npm --prefix app ci && npm --prefix web ci",
+    "dev": "npm --prefix app run dev",
+    "dev:app": "npm --prefix app run dev",
     "dev:web": "npm --prefix web run dev",
-    "dev:research": "npm --prefix phase-1-research run dev",
-    "build": "npm run build:web && npm run build:research",
+    "build": "npm run build:app && npm run build:web",
+    "build:app": "npm --prefix app run build",
     "build:web": "npm --prefix web run build",
-    "build:research": "npm --prefix phase-1-research run build",
-    "test": "npm --prefix phase-1-research test",
-    "check": "npm --prefix web run typecheck && npm --prefix phase-1-research run check",
-    "validate": "npm run build:web && npm --prefix phase-1-research run validate"
+    "test": "npm --prefix app test",
+    "check": "npm --prefix app run check && npm --prefix web run typecheck",
+    "validate": "npm --prefix app run validate && npm run build:web"
   }
 }

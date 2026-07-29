@@ -12,7 +12,7 @@ Pay Per Lead Nation Pro `$250K/mo Playbook`.
 3. Existing canonical Negroni research skill:
    `/home/greg/Documents/skills/lead-generation-ads-discovery-intelligence/SKILL.md`
 4. Existing Negroni Research implementation:
-   `/home/greg/Documents/tools/negroni/phase-1-research/`
+   `/home/greg/Documents/tools/negroni/app/`
 
 ## Product decision
 

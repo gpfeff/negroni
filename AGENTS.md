@@ -37,7 +37,7 @@ receipts, and focused tests over hidden agent state.
 - Keep source and sanitized examples in the repository. Store secrets and
   private runtime state outside the synced source tree.
 - Preserve existing module instructions and tests when working inside
-  `phase-1-research/` or `meta-ads-intelligence/`.
+  `app/` or `meta-ads-intelligence/`.
 - Update the relevant phase README when its inputs, outputs, decisions, or
   safety boundaries change.
 - Run the narrowest relevant tests and report exact checks, blockers, and

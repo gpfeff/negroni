@@ -1,6 +1,7 @@
-# Negroni application · Phase 1 Research
+# Negroni application
 
-The deployed application opens on a branded campaign workspace with persistent
+This directory is the canonical Negroni application. The deployed application
+opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
 Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
 and Review & Approve. A factual guidance rail shows research readiness, the

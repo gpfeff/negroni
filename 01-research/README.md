@@ -64,21 +64,20 @@ The initial Research contract will produce:
 4. `creative-brief.json` — approved inputs for Phase 2;
 5. `research-receipt.json` — scope, tools, limitations, and completion state.
 
-These names define the intended contract; the machine-readable schemas still
-need to be implemented.
+These names define the implemented runner-side artifact contract. Phase 1
+validates one SHA-256 receipt for each file before accepting a result.
 
-The initial interface saves reusable combinations of lead offer or service,
-industry, country or region, and target age range. It executes the approved
-five-prompt sequence and condenses the logical artifacts into one complete
-Google Doc, a matching Markdown report, and one competitor Google Sheet. The
-Sheet is the durable competitor-ad archive; Meta Ads Intelligence refreshes it
-nightly after the initial run creates a verified watchlist.
+The interface saves reusable combinations of lead offer or service, industry,
+country or region, and target age range. It keeps three outward actions: the
+master Google Doc, matching Markdown, and competitor archive. The archive opens
+a restricted Google Sheet when configured, otherwise an access-controlled
+local report. SQLite remains authoritative.
 
 ## Current modules
 
 ### Research intake and deliverables
 
-[`../phase-1-research/`](../phase-1-research/) owns the four-field intake,
+[`../app/`](../app/) owns the four-field intake,
 owner-scoped saved research sets, provider settings, run status, strict
 response validation, and output links for general lead-generation research.
 
@@ -86,9 +85,9 @@ response validation, and output links for general lead-generation research.
 
 Meta Ads Intelligence is the local Meta-specific competitor-intelligence
 engine. It archives public observations and supports evidence-based analysis
-without claiming access to spend or conversion data. Its reusable package is
-under public-release review and is intentionally excluded from the initial
-repository.
+without claiming access to spend or conversion data. Negroni calls its stable
+CLI through a server-only adapter and maps the resulting evidence into all five
+Research artifacts without duplicating the engine's schema or lifecycle logic.
 
 It is one source inside the competitor branch of Research, not the whole
 Negroni product and not an ad-account operator.
@@ -97,10 +96,9 @@ Negroni product and not an ad-account operator.
 
 - Define shared research-set, client, customer, competitor, evidence, and
   source identifiers.
-- Reconcile the research interface output with the five proposed Research
-  artifacts.
-- Add a Meta Ads Intelligence adapter without weakening its profile isolation
-  or evidence rules.
+- Preserve the five implemented Research artifact receipts.
+- Keep the implemented Meta Ads Intelligence adapter storage-neutral without
+  weakening profile isolation or evidence rules.
 - Require one idempotent scheduler owner and an active-or-blocked monitoring
   receipt; never infer that a requested schedule is running.
 - Add additional public-research adapters behind the same evidence contract.

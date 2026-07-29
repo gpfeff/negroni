@@ -783,53 +783,26 @@ html[data-theme="system"] .research-tool-card.research-tool-primary {
   height: 184px;
   overflow: hidden;
   border-bottom: 1px solid var(--studio-line);
-  background:
-    radial-gradient(circle at 50% 92%, rgb(224 78 65 / 33%), transparent 34%),
-    linear-gradient(155deg, #101d36, #080f1e 70%);
+  background-image: url("/negroni-tool-scenes.png");
+  background-repeat: no-repeat;
+  background-size: 300% 200%;
+  transition: filter .2s ease, transform .25s ease;
 }
 .tool-visual::after {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgb(113 139 182 / 24%) 1px, transparent 1px);
-  background-size: 12px 12px;
+  background:
+    linear-gradient(to top, rgb(7 14 27 / 25%), transparent 45%),
+    inset 0 0 0 1px rgb(255 255 255 / 3%);
   content: "";
-  mask-image: linear-gradient(to bottom, black, transparent 82%);
 }
-.tool-glass {
-  position: absolute;
-  z-index: 2;
-  right: 12%;
-  bottom: 8px;
-  width: 100px;
-  height: 100px;
-  border-radius: 18px;
-  background: url("/negroni-glass-icon-v2.webp") center / cover no-repeat;
-  filter: drop-shadow(0 18px 22px rgb(0 0 0 / 55%));
-  transform: rotate(4deg);
-}
-.tool-sheet {
-  position: absolute;
-  z-index: 3;
-  display: grid;
-  width: 78px;
-  height: 104px;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 34%);
-  border-radius: 8px;
-  background: #e9edf5;
-  color: #1b273e;
-  font-family: var(--font-mono), monospace;
-  font-size: 10px;
-  font-weight: 800;
-  box-shadow: 0 14px 30px rgb(0 0 0 / 40%);
-}
-.tool-sheet-one { left: 17%; bottom: 17px; transform: rotate(-7deg); }
-.tool-sheet-two { left: 37%; bottom: 30px; width: 88px; transform: rotate(4deg); font-size: 7px; letter-spacing: .08em; }
-.tool-visual-client { background: radial-gradient(circle at 48% 90%, rgb(183 50 48 / 38%), transparent 33%), linear-gradient(155deg, #1c1727, #09101e 70%); }
-.tool-visual-customer { background: radial-gradient(circle at 48% 90%, rgb(208 89 67 / 30%), transparent 33%), linear-gradient(155deg, #181a2e, #09101e 70%); }
-.tool-visual-competitors,
-.tool-visual-competitor-ads { background: radial-gradient(circle at 48% 90%, rgb(157 43 55 / 36%), transparent 33%), linear-gradient(155deg, #201526, #09101e 70%); }
-.tool-visual-review { background: radial-gradient(circle at 48% 90%, rgb(91 115 158 / 30%), transparent 33%), linear-gradient(155deg, #151d30, #09101e 70%); }
+.research-tool-card:hover .tool-visual { filter: saturate(1.08) brightness(1.04); transform: scale(1.015); }
+.tool-visual-run { background-position: 0 0; }
+.tool-visual-client { background-position: 50% 0; }
+.tool-visual-customer { background-position: 100% 0; }
+.tool-visual-competitors { background-position: 0 100%; }
+.tool-visual-competitor-ads { background-position: 50% 100%; }
+.tool-visual-review { background-position: 100% 100%; }
 .research-tool-card .tool-marker { display: none; }
 .research-tool-card .tool-copy { align-self: stretch; padding: 20px 10px 18px 24px; }
 .tool-copy small { color: #8d99aa; font-size: 9px; letter-spacing: .13em; }

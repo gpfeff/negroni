@@ -504,11 +504,7 @@ export function IntelligenceClient() {
                     type="button"
                     onClick={() => openResearchSection(tool.id)}
                   >
-                    <span className={`tool-visual tool-visual-${tool.id}`} aria-hidden="true">
-                      <span className="tool-glass" />
-                      <span className="tool-sheet tool-sheet-one">{tool.marker}</span>
-                      <span className="tool-sheet tool-sheet-two">NEGRONI</span>
-                    </span>
+                    <span className={`tool-visual tool-visual-${tool.id}`} aria-hidden="true" />
                     <span className="tool-marker" aria-hidden="true">{tool.marker}</span>
                     <span className="tool-copy">
                       <small>{tool.eyebrow}</small>

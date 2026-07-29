@@ -16,9 +16,9 @@ receipts/private/
 
 # Local integrations and hosting identity
 /meta-ads-intelligence
-/phase-1-research/.agents/
-/phase-1-research/archive/
-/phase-1-research/qa/retired-workbench-screenshots/
+/app/.agents/
+/app/archive/
+/app/qa/retired-workbench-screenshots/
 
 # JavaScript
 node_modules/
