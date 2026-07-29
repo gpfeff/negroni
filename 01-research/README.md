@@ -67,6 +67,13 @@ The initial Research contract will produce:
 These names define the intended contract; the machine-readable schemas still
 need to be implemented.
 
+The initial thin-client delivery condenses those logical artifacts into one
+complete Google Doc, a matching Markdown report, and one competitor Google
+Sheet. The report carries the client, market-awareness, buyer, customer,
+opportunity, creation-ready, and receipt sections; the Sheet is the durable
+competitor-ad archive. Meta Ads Intelligence refreshes the same archive nightly
+after the initial run creates a verified watchlist.
+
 ## Current modules
 
 ### Research intake and deliverables
@@ -94,6 +101,8 @@ Negroni product and not an ad-account operator.
   artifacts.
 - Add a Meta Ads Intelligence adapter without weakening its profile isolation
   or evidence rules.
+- Require one idempotent scheduler owner and an active-or-blocked monitoring
+  receipt; never infer that a requested schedule is running.
 - Add additional public-research adapters behind the same evidence contract.
 - Create one sanitized end-to-end fixture that produces a Creative-ready brief.
 - Add contract tests for citations, unknown states, provenance, and private-data

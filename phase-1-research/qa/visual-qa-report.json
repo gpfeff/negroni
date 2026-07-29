@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T06:53:23.383Z",
+  "generated_at": "2026-07-29T08:15:48.393Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "1440x1000",
@@ -12,6 +12,10 @@
     },
     {
       "name": "visible: Run status",
+      "passed": true
+    },
+    {
+      "name": "visible: Nightly competitor ads",
       "passed": true
     },
     {
