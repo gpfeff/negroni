@@ -103,6 +103,17 @@ function LoopMark() {
   );
 }
 
+function CocktailMark() {
+  return (
+    <span className="cocktail-mark" aria-hidden="true">
+      <i className="cocktail-bowl" />
+      <i className="cocktail-stem" />
+      <i className="cocktail-base" />
+      <i className="cocktail-olive" />
+    </span>
+  );
+}
+
 function ArrowIcon() {
   return (
     <svg viewBox="0 0 20 20" aria-hidden="true">
@@ -271,12 +282,15 @@ export function App() {
       <div className="site-shell">
         <header className="masthead">
           <a className="wordmark" href="#top" aria-label="Negroni home">
-            <span className="mark"><LoopMark /></span>
-            <span>Negroni</span>
+            <span className="mark"><CocktailMark /></span>
+            <span className="wordmark-copy">
+              <strong>Negroni</strong>
+              <small>The AI ad agency</small>
+            </span>
           </a>
           <div className="header-actions">
             <span className="local-state"><i /> Local draft</span>
-            <a href="#workspace">Explore the system</a>
+            <a href="#workspace">Tour the agency</a>
             <button className="header-button" type="button" onClick={openDialog}>
               New project
               <span aria-hidden="true">＋</span>
@@ -287,14 +301,14 @@ export function App() {
         <main id="top">
           <section className="hero" aria-labelledby="hero-title">
             <div className="hero-copy">
-              <p className="utility-label">Open-source advertising system</p>
+              <p className="utility-label">Madison Avenue, meet the machine</p>
               <h1 id="hero-title">
-                Advertising,
-                <span>in one learning loop.</span>
+                The whole agency.
+                <span>Before the third martini.</span>
               </h1>
               <p className="hero-intro">
-                Research the market. Make the ads. Launch with control. Test what matters.
-                Feed every result back into the next creative.
+                Research the room. Make the pitch. Launch with control. Let every result
+                order the next smarter round.
               </p>
               <div className="hero-actions">
                 <button className="primary-button" type="button" onClick={openDialog}>
@@ -302,34 +316,34 @@ export function App() {
                   <ArrowIcon />
                 </button>
                 <a className="text-link" href="#workspace">
-                  See all five phases
+                  See the pitchbook
                 </a>
               </div>
               <p className="safety-line">
-                <span aria-hidden="true">◎</span>
-                Plans autonomously. Acts only with approval.
+                <span aria-hidden="true">✦</span>
+                Works the room autonomously. Touches spend only with approval.
               </p>
             </div>
 
-            <div className="hero-art" aria-label="Five glass segments form the Negroni campaign loop">
-              <img src="/negroni-five-phase-loop.png" alt="" />
+            <div className="hero-art" aria-label="A mid-century advertising lunch table with a Negroni and campaign pitchbook">
+              <img src="/negroni-madison-hero.png" alt="" />
               <div className="art-readout">
-                <span>System state</span>
-                <strong>Foundation build</strong>
+                <span>Agency status</span>
+                <strong>Taking briefs</strong>
               </div>
-              <span className="art-caption">Five phases / one evidence trail</span>
+              <span className="art-caption">Five departments / one sharp loop</span>
             </div>
           </section>
 
           <section className="workspace" id="workspace" aria-labelledby="workspace-title">
             <div className="workspace-heading">
               <div>
-                <p className="utility-label">Campaign workspace</p>
+                <p className="utility-label">The campaign room</p>
                 <h2 id="workspace-title">{projectName}</h2>
               </div>
               <p>
-                Select a phase to inspect its responsibility, handoff artifact, and current
-                implementation state.
+                Pick a department. See its brief, its handoff, and exactly what is ready
+                for business.
               </p>
             </div>
 
@@ -421,11 +435,11 @@ export function App() {
 
           <section className="handoff" aria-labelledby="handoff-title">
             <div className="handoff-intro">
-              <p className="utility-label">The durable handoff</p>
-              <h2 id="handoff-title">Every phase leaves evidence.</h2>
+              <p className="utility-label">From napkin to numbers</p>
+              <h2 id="handoff-title">Every big idea leaves a paper trail.</h2>
               <p>
-                Negroni moves files and receipts between agents—not hidden context and hopeful
-                claims.
+                Negroni passes briefs, creative, diffs, results, and receipts between agents—
+                never hidden context or a charming story without proof.
               </p>
             </div>
             <ol className="handoff-list">
@@ -441,8 +455,8 @@ export function App() {
 
           <section className="principles" aria-labelledby="principles-title">
             <div className="principles-title">
-              <p className="utility-label">Designed for the AI age</p>
-              <h2 id="principles-title">Fast enough to learn. Strict enough to trust.</h2>
+              <p className="utility-label">Old-school taste. New-school controls.</p>
+              <h2 id="principles-title">Charming in the room. Ruthless with the receipts.</h2>
             </div>
             <div className="principles-grid">
               <article>
@@ -466,13 +480,13 @@ export function App() {
 
         <footer>
           <div className="footer-brand">
-            <span className="mark"><LoopMark /></span>
+            <span className="mark"><CocktailMark /></span>
             <div>
               <strong>Negroni</strong>
-              <small>Lead generation, end to end.</small>
+              <small>The open-source AI ad agency.</small>
             </div>
           </div>
-          <p>Open-source foundation · No campaign actions enabled</p>
+          <p>Taking briefs · No campaign actions enabled</p>
         </footer>
       </div>
 

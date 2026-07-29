@@ -27,7 +27,8 @@ npm run typecheck
 npm run build
 ```
 
-The reviewed browser checks and screenshots are under [`qa/`](qa/).
+The foundation-direction browser checks and screenshots are under [`qa/`](qa/).
+They predate the 1959 brand layer and remain as an interaction baseline.
 The canonical cross-phase UI reference is [`../docs/UI.md`](../docs/UI.md).
 
 ## Current boundary
@@ -42,6 +43,10 @@ The canonical cross-phase UI reference is [`../docs/UI.md`](../docs/UI.md).
 
 ## Visual asset
 
-`public/negroni-five-phase-loop.png` was generated specifically for this
-interface. It represents the five phases as one tactile feedback loop and
-contains no text, logos, people, or client material.
+`public/negroni-madison-hero.png` was generated specifically for this interface.
+It frames Negroni as a bright late-1950s Madison Avenue agency lunch: campaign
+craft, confidence, and a little swagger without losing the product's approval
+boundaries. It contains no people, readable text, logos, or client material.
+
+`public/negroni-five-phase-loop.png` remains the abstract five-phase system
+artwork and may be reused in diagrams or product documentation.

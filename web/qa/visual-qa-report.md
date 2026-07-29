@@ -1,10 +1,12 @@
-# Negroni web UI QA
+# Negroni web UI QA — foundation baseline
 
 Updated: 2026-07-29
 
 ## Result
 
-Pass for the current interface scope.
+Pass for the pre-1959 foundation interface scope. The screenshots below remain
+useful as interaction and responsive-layout evidence, but they do not represent
+the current brand layer in `src/brand-1959.css`.
 
 ## Viewports
 
