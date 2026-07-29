@@ -14,7 +14,7 @@ if (command === "doctor") {
   child.on("exit", (code) => process.exit(code ?? 1));
 } else if (command === "start") {
   const brokerPort = process.env.NEGRONI_BROKER_PORT || "47831";
-  const appPort = process.env.PORT || "3000";
+  const appPort = process.env.NEGRONI_APP_PORT || "3000";
   const token = randomBytes(32).toString("hex");
   const childEnvironment = {
     ...process.env,

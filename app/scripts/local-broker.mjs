@@ -14,7 +14,7 @@ const brokerPort = Number(process.env.NEGRONI_BROKER_PORT || "47831");
 
 if (!brokerToken) throw new Error("CREDENTIAL_BROKER_TOKEN is required.");
 
-async function commandStatus(command, args, isConnected) {
+async function commandStatus(command, args, isConnected, connectedDetail) {
   try {
     const { stdout, stderr } = await execFileAsync(command, args, {
       timeout: 8_000,
@@ -23,14 +23,13 @@ async function commandStatus(command, args, isConnected) {
     });
     const output = `${stdout}\n${stderr}`.trim();
     return isConnected(output)
-      ? { status: "connected", blocker: null, detail: output.slice(0, 300) || "Authenticated" }
-      : { status: "not_connected", blocker: null, detail: output.slice(0, 300) || "Login required" };
+      ? { status: "connected", blocker: null, detail: connectedDetail }
+      : { status: "not_connected", blocker: null, detail: "Login required" };
   } catch (error) {
     if (error?.code === "ENOENT") {
       return { status: "blocked", blocker: `${command} is not installed.`, detail: null };
     }
-    const output = `${error?.stdout || ""}\n${error?.stderr || ""}`.trim();
-    return { status: "not_connected", blocker: null, detail: output.slice(0, 300) || "Login required" };
+    return { status: "not_connected", blocker: null, detail: "Login required" };
   }
 }
 
@@ -57,9 +56,9 @@ async function storeCredential(provider, apiKey) {
 async function providerStatuses() {
   const credentials = await readCredentials();
   const [codex, claude, geminiOAuth] = await Promise.all([
-    commandStatus("codex", ["login", "status"], (output) => /logged in/i.test(output)),
-    commandStatus("claude", ["auth", "status"], (output) => /"loggedIn"\s*:\s*true/.test(output)),
-    commandStatus("gcloud", ["auth", "application-default", "print-access-token"], (output) => output.length > 20),
+    commandStatus("codex", ["login", "status"], (output) => /logged in/i.test(output), "Native Codex login is available."),
+    commandStatus("claude", ["auth", "status"], (output) => /"loggedIn"\s*:\s*true/.test(output), "Native Claude Code login is available."),
+    commandStatus("gcloud", ["auth", "application-default", "print-access-token"], (output) => output.length > 20, "Google Application Default Credentials are available."),
   ]);
   if (claude.status !== "connected" && claude.status !== "blocked") {
     claude.detail = "Claude Code is installed. Login required.";

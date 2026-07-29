@@ -108,6 +108,28 @@ This starts and validates the local interface. A real Research run additionally
 requires the server-side runner documented in
 [`app/README.md`](app/README.md).
 
+## Workspace ownership
+
+`/Users/greg-mac-mini/Developer/negroni` is the only authoritative Negroni
+software repository. It contains source, tests, fixtures, package manifests and
+lockfiles, build and CI configuration, schemas, migrations, repository docs,
+sanitized examples, product-required static assets, canonical QA baselines, and
+the scripts required to build, validate, package, or operate the project.
+
+`/Users/greg-mac-mini/Documents/tools-negroni` is a synced, non-Git artifact
+workspace. Put durable non-secret research outputs, reports, receipts, handoff
+and review packets, exported non-baseline screenshots, generated deliverables,
+migration archives, and machine-to-machine handoff material there.
+
+`/Users/greg-mac-mini/.local/share/negroni` is private machine-local runtime
+state. It owns databases, provider state, collected media, logs, caches,
+credentials, cookies, tokens, private audiences, and local dependency
+environments. Never put that data in the repository or synced Documents.
+
+Before routing a file, make a recoverable private backup and compare SHA-256
+hashes. Do not overwrite a different destination; preserve both versions in a
+review packet instead.
+
 ## The operating loop
 
 ```text

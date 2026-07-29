@@ -3,21 +3,16 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 const checks = [
-  ["Codex", "codex", ["login", "status"]],
-  ["Claude Code", "claude", ["auth", "status"]],
-  ["Gemini OAuth (gcloud ADC)", "gcloud", ["auth", "application-default", "print-access-token"]],
+  ["Codex", "codex", ["login", "status"], "native login is available"],
+  ["Claude Code", "claude", ["auth", "status"], "native login is available"],
+  ["Gemini OAuth (gcloud ADC)", "gcloud", ["auth", "application-default", "print-access-token"], "Application Default Credentials are available"],
 ];
 
 let blocked = false;
-for (const [label, command, args] of checks) {
+for (const [label, command, args, success] of checks) {
   try {
-    const { stdout, stderr } = await execFileAsync(command, args, { timeout: 8_000 });
-    // `gcloud auth application-default print-access-token` writes a bearer token to stdout.
-    // Report only availability so diagnostics never leak credentials.
-    const summary = label === "Gemini OAuth (gcloud ADC)"
-      ? "ready"
-      : `${stdout}\n${stderr}`.trim().split("\n")[0] || "ready";
-    console.log(`✓ ${label}: ${summary}`);
+    await execFileAsync(command, args, { timeout: 8_000 });
+    console.log(`✓ ${label}: ${success}`);
   } catch (error) {
     blocked = true;
     const missing = error?.code === "ENOENT" ? "not installed" : "login required";

@@ -13,6 +13,24 @@ Every phase must consume explicit inputs and produce a durable, reviewable
 artifact for the next phase. Prefer small contracts, deterministic commands,
 receipts, and focused tests over hidden agent state.
 
+## Directory ownership
+
+Negroni has three separate roots. Keep repository behavior in
+`/Users/greg-mac-mini/Developer/negroni`: source, tests, fixtures, package
+manifests and lockfiles, build/CI configuration, schemas and migrations,
+repository documentation, sanitized examples, required static assets, canonical
+QA baselines, and operational scripts. Keep durable non-secret reports,
+handoffs, review packets, generated deliverables, exports, and migration
+archives in `/Users/greg-mac-mini/Documents/tools-negroni`; that synced
+workspace is not a software repository. Keep databases, collected media,
+provider state, logs, caches, credentials, tokens, cookies, private data, and
+machine-local environments in `/Users/greg-mac-mini/.local/share/negroni`.
+
+Before moving material between roots, create a recoverable private backup,
+record its source and SHA-256, and never overwrite a destination. Preserve
+different-content collisions for review rather than silently choosing a
+version. Never place private runtime data in Git or synced Documents.
+
 ## Safety
 
 - Never expose credentials, cookies, private audience data, customer PII, or

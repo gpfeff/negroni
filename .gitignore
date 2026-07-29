@@ -48,3 +48,15 @@ Thumbs.db
 *.log
 tmp/
 temp/
+
+# Boundary-routing artifacts and reproducible local build state
+.playwright-cli/
+qa/
+conflicts/
+app/.node_modules-incomplete-*/
+app/.vinext-pre-move-*/
+app/.wrangler-pre-move-*/
+app/dist-pre-move-*/
+app/app/_sites-preview/
+app/release/
+web/output/
