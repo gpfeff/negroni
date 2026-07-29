@@ -1,10 +1,11 @@
 # Negroni application · Phase 1 Research
 
-The deployed application opens on a B2B SaaS workspace home with persistent
-navigation for Research, Create, Launch, Iterate, and Loop. Home shows campaign
-state, agent readiness, the five-phase artifact pipeline, and the next honest
-action. Research is the first executable section; later phases remain visibly
-planned.
+The deployed application opens on a branded campaign workspace with persistent
+navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
+Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
+and Review & Approve. A factual guidance rail shows research readiness, the
+next honest action, runner availability, and spend protection. Research is the
+first executable section; later phases remain visibly planned.
 
 A focused Negroni interface for saving a reusable research set, running the
 five approved research prompts in order, and producing five durable Research
@@ -27,6 +28,10 @@ The Research tab asks only:
 - Industry
 - Country or region
 - Target age range
+
+Those four inputs feed three visible research streams: Client, Customer, and
+Competitors. Competitor Ads remains one public-evidence source inside the
+Competitors stream rather than a substitute for the full research method.
 
 Each authenticated user can save, reopen, update, and delete combinations of
 those inputs. Records are owner-scoped in the site database. The app never puts

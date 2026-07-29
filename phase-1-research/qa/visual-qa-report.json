@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T09:00:30.840Z",
+  "generated_at": "2026-07-29T21:53:44.495Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
@@ -11,27 +11,43 @@
   ],
   "checks": [
     {
-      "name": "home visible: Paid lead generation, end to end.",
+      "name": "home visible: What are we researching?",
       "passed": true
     },
     {
-      "name": "home visible: Workspace overview",
+      "name": "home visible: Research tools",
       "passed": true
     },
     {
-      "name": "home visible: Current work",
+      "name": "home visible: Run Research",
       "passed": true
     },
     {
-      "name": "home visible: Agent readiness",
+      "name": "home visible: Client",
+      "passed": true
+    },
+    {
+      "name": "home visible: Customer",
+      "passed": true
+    },
+    {
+      "name": "home visible: Competitors",
+      "passed": true
+    },
+    {
+      "name": "home visible: Competitor Ads",
+      "passed": true
+    },
+    {
+      "name": "home visible: Review & Approve",
+      "passed": true
+    },
+    {
+      "name": "home visible: Research readiness",
       "passed": true
     },
     {
       "name": "home visible: Campaign pipeline",
-      "passed": true
-    },
-    {
-      "name": "home visible: Research",
       "passed": true
     },
     {
@@ -71,7 +87,7 @@
       "passed": true
     },
     {
-      "name": "visible: Research setup",
+      "name": "visible: Run Research",
       "passed": true
     },
     {
@@ -88,6 +104,18 @@
     },
     {
       "name": "visible: Target age range",
+      "passed": true
+    },
+    {
+      "name": "visible: Client",
+      "passed": true
+    },
+    {
+      "name": "visible: Customer",
+      "passed": true
+    },
+    {
+      "name": "visible: Competitors",
       "passed": true
     },
     {
@@ -116,6 +144,10 @@
     },
     {
       "name": "visible: Nightly competitor ads",
+      "passed": true
+    },
+    {
+      "name": "visible: Competitor Ads",
       "passed": true
     },
     {

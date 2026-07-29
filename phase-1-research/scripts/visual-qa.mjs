@@ -48,22 +48,22 @@ try {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(500);
-  for (const text of ["Paid lead generation, end to end.", "Workspace overview", "Current work", "Agent readiness", "Campaign pipeline", "Research", "Create", "Launch", "Iterate", "Loop"]) {
+  for (const text of ["What are we researching?", "Research tools", "Run Research", "Client", "Customer", "Competitors", "Competitor Ads", "Review & Approve", "Research readiness", "Campaign pipeline", "Create", "Launch", "Iterate", "Loop"]) {
     checks.push({ name: `home visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   await inspect(page, "home-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });
   await inspect(page, "home-mobile");
-  await page.getByRole("button", { name: "Start Research" }).click();
-  checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Four inputs. Five research passes." }).isVisible() });
+  await page.getByRole("button", { name: "Run Research" }).first().click();
+  checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Tell us the business. We’ll find the signal." }).isVisible() });
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  for (const text of ["Research setup", "Lead offer or service", "Industry", "Country or region", "Target age range", "Market awareness", "Competitor research", "Customer psychology", "Master research", "Tone of voice", "Run status", "Nightly competitor ads", "Outputs", "No secure five-prompt research runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
+  for (const text of ["Run Research", "Lead offer or service", "Industry", "Country or region", "Target age range", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "Master research", "Tone of voice", "Run status", "Nightly competitor ads", "Competitor Ads", "Outputs", "No secure five-prompt research runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "exactly three output cards", passed: (await page.locator(".output-card").count()) === 3 });
-  checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run research" }).isDisabled() });
+  checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run research", exact: true }).isDisabled() });
   await inspect(page, "thin-client-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });

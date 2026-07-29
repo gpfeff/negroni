@@ -6,12 +6,14 @@ Repository path: `phase-1-research/`
 
 ## State
 
-Version 0.6 implements the Negroni application shell and Phase 1 interface on
+Version 0.7 implements the Negroni application shell and Phase 1 interface on
 one route:
 
-- a B2B SaaS Home workspace with campaign state, agent readiness, phase
-  progression, recent activity, and artifact handoffs;
+- a branded Home workspace with a focused Phase 1 tool board, factual research
+  readiness, runner state, phase progression, and artifact handoffs;
 - persistent navigation using Research, Create, Launch, Iterate, and Loop;
+- nested Phase 1 navigation for Run Research, Client, Customer, Competitors,
+  Competitor Ads, and Review & Approve;
 - Research tab with owner-scoped saved research sets;
 - interactive, versioned Markdown seeds with direct editing, permanent notes,
   recoverable revision history, optional AI proposals, and explicit Phase 2

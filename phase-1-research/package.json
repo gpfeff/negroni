@@ -1,6 +1,6 @@
 {
   "name": "phase-1-research",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "packageManager": "npm@11.6.2",
   "engines": { "node": ">=22.13.0" },
