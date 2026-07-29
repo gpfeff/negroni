@@ -48,7 +48,7 @@ try {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(500);
-  for (const text of ["Intake", "Run status", "Outputs", "No secure canonical-skill runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
+  for (const text of ["Intake", "Run status", "Nightly competitor ads", "Outputs", "No secure canonical-skill runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "exactly three output cards", passed: (await page.locator(".output-card").count()) === 3 });

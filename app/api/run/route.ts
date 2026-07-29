@@ -1,6 +1,6 @@
 import { assertNoSecretMaterial } from "@/lib/contracts/secrets-core.mjs";
 import type { IntelligenceIntake, RunCapability, RunError } from "@/lib/intelligence/contracts";
-import { parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
+import { MAX_ATTACHMENT_BYTES, MAX_TOTAL_ATTACHMENT_BYTES, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
 
 function configuration() {
   return {
@@ -32,11 +32,22 @@ export async function POST(request: Request): Promise<Response> {
     if (errors.length) return Response.json({ status: "failed", error: errors.join(" ") } satisfies RunError, { status: 400 });
     assertNoSecretMaterial(intake, "Research intake");
 
+    const incomingAttachments = incoming.getAll("attachments");
+    if (incomingAttachments.some((attachment) => !(attachment instanceof File))) throw new Error("The attachment upload is invalid.");
+    const files = incomingAttachments as File[];
+    const totalBytes = files.reduce((sum, file) => sum + file.size, 0);
+    const metadataMatches = files.length === intake.attachments.length
+      && files.every((file, index) => {
+        const metadata = intake.attachments[index];
+        return metadata.name === file.name && metadata.size === file.size && metadata.type === file.type;
+      });
+    if (!metadataMatches || files.some((file) => file.size > MAX_ATTACHMENT_BYTES) || totalBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+      return Response.json({ status: "failed", error: "The uploaded files do not match the validated attachment manifest." } satisfies RunError, { status: 400 });
+    }
+
     const outgoing = new FormData();
     outgoing.set("intake", JSON.stringify(intake));
-    for (const attachment of incoming.getAll("attachments")) {
-      if (attachment instanceof File) outgoing.append("attachments", attachment, attachment.name);
-    }
+    for (const attachment of files) outgoing.append("attachments", attachment, attachment.name);
     const runnerResponse = await fetch(config.url, {
       method: "POST",
       headers: { authorization: `Bearer ${config.token}` },

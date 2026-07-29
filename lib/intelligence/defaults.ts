@@ -21,11 +21,13 @@ export const FIELD_DEFINITIONS: Array<{ id: OptionalFieldId; label: string; hint
   { id: "additional_instructions", label: "Additional instructions", hint: "Priorities, exclusions, format, or unresolved questions" },
 ];
 
-export function createEmptyIntake(): IntelligenceIntake {
+export function createEmptyIntake(timezone = "UTC"): IntelligenceIntake {
   const fields = Object.fromEntries(OPTIONAL_FIELD_IDS.map((id) => [id, { state: "unknown", value: "" }])) as IntelligenceIntake["fields"];
   return {
-    contract: "lead-generation-intelligence-intake", contract_version: "2.0", project_name: "", market_context: "", fields, attachments: [],
-    allowed_actions: ["public_research", "create_google_doc", "create_google_sheet"], research_engine: "lead-generation-ads-discovery-intelligence",
+    contract: "lead-generation-intelligence-intake", contract_version: "3.0", project_name: "", market_context: "", fields, attachments: [],
+    allowed_actions: ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"],
+    research_engine: "lead-generation-ads-discovery-intelligence",
+    competitor_monitoring: { enabled: true, engine: "meta-ads-intelligence", cadence: "nightly", local_time: "02:17", timezone },
   };
 }
 
