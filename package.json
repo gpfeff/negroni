@@ -1,0 +1,17 @@
+{
+  "name": "negroni",
+  "version": "0.1.0",
+  "private": true,
+  "description": "An open-source, agent-native advertising system for lead generation.",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "setup": "npm --prefix phase-1-research ci",
+    "dev": "npm --prefix phase-1-research run dev",
+    "build": "npm --prefix phase-1-research run build",
+    "test": "npm --prefix phase-1-research test",
+    "check": "npm --prefix phase-1-research run check",
+    "validate": "npm --prefix phase-1-research run validate"
+  }
+}
