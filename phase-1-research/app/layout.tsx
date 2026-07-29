@@ -7,18 +7,18 @@ const serif = Lora({ variable: "--font-serif", subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "PHASE 1: RESEARCH",
-  description: "A focused intake for complete lead-generation research, three deliverables, and nightly competitor-ad monitoring.",
+  description: "Four inputs, five research passes, three durable deliverables, and nightly competitor-ad monitoring.",
   robots: { index: false, follow: false, nocache: true },
   openGraph: {
     title: "PHASE 1: RESEARCH",
-    description: "From partial context to a complete report, a matching Markdown file, and a competitor-ad sheet refreshed nightly.",
+    description: "Save a research set, run five evidence-backed prompts, and receive a Google Doc, Markdown report, and competitor-ad Google Sheet.",
     type: "website",
-    images: [{ url: "/og.png", width: 1731, height: 909, alt: "PHASE 1: RESEARCH intake and three deliverables" }],
+    images: [{ url: "/og.png", width: 1731, height: 908, alt: "PHASE 1: RESEARCH — four inputs, five passes, three deliverables" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "PHASE 1: RESEARCH",
-    description: "One research intake. Three deliverables. Nightly competitor-ad monitoring.",
+    description: "Four inputs. Five research passes. Three deliverables.",
     images: ["/og.png"],
   },
 };

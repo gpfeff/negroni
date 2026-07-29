@@ -2,24 +2,23 @@
 
 ## Decision
 
-Build the narrowest useful product: one responsive intake → research →
-deliverables page over the canonical
-`lead-generation-ads-discovery-intelligence` skill, with a receipt-backed
-nightly Meta Ads Intelligence refresh for the verified competitor watchlist.
+Build the narrowest useful Phase 1 product: save one reusable research set,
+run five approved prompts, create three verified deliverables, and maintain one
+receipt-backed nightly competitor-ad refresh.
 
 ## Required flow
 
-1. Require a project/report name and at least one substantive piece of market context.
-2. Accept optional structured details, URLs, and attachments without forcing unknowns.
-3. Run only through a secure, environment-neutral canonical-skill runner.
-4. Research the client, market awareness, B2B lead buyer, B2C customer, competitors, and master synthesis; mark every lane complete or limited.
-5. Create and verify exactly one complete Google Doc, one authoritative competitor-ad Google Sheet, and one matching Markdown report.
-6. Configure one idempotent nightly competitor monitor at 02:17 in the intake timezone, or return its exact blocker without hiding valid research.
-7. Show only run status, monitoring receipt, completion time, blockers, limitations, and the three output actions.
+1. Ask for lead offer or service, industry, country or region, and target age range.
+2. Let the authenticated user save, reopen, update, and delete research sets.
+3. Run the five prompts from the approved Google Doc in fixed order.
+4. Mark every prompt complete or limited with an explicit receipt.
+5. Create and verify one Google Doc, one matching Markdown report, and one competitor-ad Google Sheet.
+6. Configure an idempotent competitor monitor at 02:17 in the intake timezone, or return its exact blocker.
+7. Connect Codex, Gemini, and Google Workspace only through the server-side credential broker.
+8. Show only run status, monitoring receipt, completion time, blockers, limitations, and the three output actions.
 
 ## Excluded
 
-Dashboards, saved project cards, multi-step wizards, routes, evidence-ledger UI,
-lane grids, section-document matrices, synthetic fixtures, browser-side
-collectors, local companions, outreach, campaigns, traffic, purchases, form
-submissions, calls, and advertising-account changes.
+Dashboards, multi-step wizards, evidence-ledger UI, synthetic fixtures,
+browser-side collectors, client-side secret storage, local companions, outreach,
+campaigns, traffic, purchases, form submissions, calls, and ad-account changes.

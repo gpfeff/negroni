@@ -67,20 +67,20 @@ The initial Research contract will produce:
 These names define the intended contract; the machine-readable schemas still
 need to be implemented.
 
-The initial thin-client delivery condenses those logical artifacts into one
-complete Google Doc, a matching Markdown report, and one competitor Google
-Sheet. The report carries the client, market-awareness, buyer, customer,
-opportunity, creation-ready, and receipt sections; the Sheet is the durable
-competitor-ad archive. Meta Ads Intelligence refreshes the same archive nightly
-after the initial run creates a verified watchlist.
+The initial interface saves reusable combinations of lead offer or service,
+industry, country or region, and target age range. It executes the approved
+five-prompt sequence and condenses the logical artifacts into one complete
+Google Doc, a matching Markdown report, and one competitor Google Sheet. The
+Sheet is the durable competitor-ad archive; Meta Ads Intelligence refreshes it
+nightly after the initial run creates a verified watchlist.
 
 ## Current modules
 
 ### Research intake and deliverables
 
-[`../phase-1-research/`](../phase-1-research/) owns the thin intake, run status,
-strict response validation, and output links for general lead-generation
-research.
+[`../phase-1-research/`](../phase-1-research/) owns the four-field intake,
+owner-scoped saved research sets, provider settings, run status, strict
+response validation, and output links for general lead-generation research.
 
 ### Meta Ads Intelligence
 
@@ -95,8 +95,8 @@ Negroni product and not an ad-account operator.
 
 ## Initial build plan
 
-- Define shared project, client, customer, competitor, evidence, and source
-  identifiers.
+- Define shared research-set, client, customer, competitor, evidence, and
+  source identifiers.
 - Reconcile the research interface output with the five proposed Research
   artifacts.
 - Add a Meta Ads Intelligence adapter without weakening its profile isolation
