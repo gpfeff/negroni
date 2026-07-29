@@ -22,7 +22,7 @@ const consoleErrors = [];
 
 async function inspect(page, name) {
   process.stdout.write(`Inspecting ${name}…\n`);
-  await page.screenshot({ path: join(screenshotRoot, `${name}.png`), fullPage: true });
+  await page.screenshot({ path: join(screenshotRoot, `${name}.jpg`), type: "jpeg", quality: 80, fullPage: true });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   checks.push({ name: `${name}: no horizontal overflow`, passed: !overflow });
   await page.addScriptTag({ path: axePath });

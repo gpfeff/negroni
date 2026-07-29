@@ -75,7 +75,7 @@ configured. Creative, Launch, Iteration, and Loop currently have defined
 contracts and implementation roadmaps.
 
 <p align="center">
-  <img src="app/qa/screenshots/thin-client-desktop.png" alt="Negroni Phase 1 Research interface" width="880">
+  <img src="app/qa/screenshots/thin-client-desktop.jpg" alt="Negroni Phase 1 Research interface" width="880">
 </p>
 
 ## Quick start

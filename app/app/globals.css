@@ -783,7 +783,7 @@ html[data-theme="system"] .research-tool-card.research-tool-primary {
   height: 184px;
   overflow: hidden;
   border-bottom: 1px solid var(--studio-line);
-  background-image: url("/negroni-tool-scenes.png");
+  background-image: url("/negroni-tool-scenes.webp");
   background-repeat: no-repeat;
   background-size: 300% 200%;
   transition: filter .2s ease, transform .25s ease;
