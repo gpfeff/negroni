@@ -389,7 +389,7 @@ export function IntelligenceClient() {
     <div className="app-shell">
       <aside className="app-sidebar">
         <button className="brand" type="button" onClick={() => navigate("home")} aria-label="Negroni home">
-          <span className="brand-mark" aria-hidden="true">N</span>
+          <span className="brand-mark" aria-hidden="true" />
           <span className="brand-copy"><strong>Negroni</strong><small>Paid lead generation</small></span>
         </button>
         <nav className="side-nav" aria-label="Application navigation">
