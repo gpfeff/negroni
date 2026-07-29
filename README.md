@@ -14,6 +14,7 @@
 
 <p align="center">
   <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-c94b32">
+  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-315e87">
   <img alt="Harness: agnostic" src="https://img.shields.io/badge/harness-agnostic-242424">
   <img alt="Live actions: approval gated" src="https://img.shields.io/badge/live_actions-approval_gated-e8dfcf">
 </p>
@@ -250,9 +251,8 @@ authorized by this repository alone.
 
 ## Open-source release
 
-The repository is being prepared for public release, but no license has been
-selected yet. Until a license file is added, the source is visible work in
-progress rather than a completed open-source distribution.
+Negroni is open-source software released under the
+[`MIT License`](LICENSE).
 
 ## Contributing and security
 

@@ -2,6 +2,7 @@
   "name": "negroni",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "An open-source, agent-native advertising system for lead generation.",
   "engines": {
     "node": ">=22.13.0"
