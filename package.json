@@ -1,0 +1,44 @@
+{
+  "name": "phase-1-research",
+  "version": "0.2.0",
+  "private": true,
+  "packageManager": "npm@11.6.2",
+  "engines": { "node": ">=22.13.0" },
+  "scripts": {
+    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
+    "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint app components lib tests scripts worker vite.config.ts next.config.ts eslint.config.mjs",
+    "qa:visual": "node scripts/visual-qa.mjs",
+    "check": "npm run typecheck && npm run lint && npm test",
+    "validate": "npm run check && npm run build"
+  },
+  "dependencies": {
+    "next": "16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "1.48.0",
+    "@tailwindcss/postcss": "4.2.1",
+    "@types/node": "22.19.19",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.2",
+    "@vitejs/plugin-rsc": "0.5.26",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.12",
+    "playwright-core": "1.62.0",
+    "react-server-dom-webpack": "19.2.8",
+    "tailwindcss": "4.2.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vinext": "0.0.50",
+    "vite": "8.1.5",
+    "wrangler": "4.115.0"
+  },
+  "overrides": { "brace-expansion": "5.0.8", "minimatch": "10.2.6", "postcss": "8.5.24", "sharp": "0.35.3" },
+  "type": "module"
+}
