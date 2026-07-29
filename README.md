@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/assets/negroni-hero.png" alt="Five connected forms representing Negroni's advertising workflow" width="100%">
+  <img src="docs/assets/negroni-hero-1959.png" alt="A mid-century Madison Avenue lunch table with a Negroni and campaign pitchbook" width="100%">
 </p>
 
 <h1 align="center">Negroni</h1>
 
 <p align="center">
-  <strong>The open-source operating system for agent-native advertising.</strong>
+  <strong>The open-source AI ad agency—with old-school taste and new-school controls.</strong>
 </p>
 
 <p align="center">
@@ -69,10 +69,6 @@ The Research interface is validated, but live research remains intentionally
 blocked until a secure runner and verified Google Workspace output path are
 configured. Creative, Launch, Iteration, and Loop currently have defined
 contracts and implementation roadmaps.
-
-<p align="center">
-  <img src="web/qa/screenshots/desktop-hero.png" alt="Negroni five-phase product interface" width="880">
-</p>
 
 <p align="center">
   <img src="phase-1-research/qa/screenshots/thin-client-desktop.png" alt="Negroni Phase 1 Research interface" width="880">

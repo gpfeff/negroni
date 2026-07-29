@@ -1,4 +1,4 @@
-# Negroni UI direction
+# Negroni UI direction — 1959 agency edition
 
 ## Subject and job
 
@@ -6,35 +6,39 @@ Negroni is an agent-native advertising workspace for lead generation. The
 primary audience is an operator building a campaign and a portfolio reviewer
 judging whether the product has a coherent system behind it.
 
-The first screen has one job: make the five-phase operating loop understandable
-and give the operator one honest starting action.
+The first screen has one job: make Negroni feel like a memorable advertising
+agency, explain the five-phase operating loop, and give the operator one honest
+starting action.
 
 ## Visual system
 
 ### Color
 
-- Carbon: `#17171b`
-- Fog: `#f1f2ef`
-- Bitter orange: `#dd572f`
-- Vermouth plum: `#5d3045`
-- Mineral blue: `#315e87`
-- Botanical green: `#74866b`
+- Ink: `#1d1b18`
+- Cream paper: `#f3e5c7`
+- Paper light: `#fff9e9`
+- Aperitivo orange: `#e5532d`
+- Vermouth burgundy: `#6b2436`
+- Olive green: `#66743b`
+- Brass: `#d5a23a`
+- Mineral teal: `#27626b`
 
 ### Type
 
-- Display: Archivo Variable, compressed and heavy for campaign-level language.
-- Body: Manrope Variable for clear operational copy.
+- Display: Bodoni Moda, often italic, for campaign-level language and the
+  Negroni wordmark.
+- Body: Archivo Variable and Manrope Variable for clear operational copy.
 - Utility: IBM Plex Mono for phase IDs, statuses, and artifact names.
 
 ### Layout
 
 ```text
 ┌─ masthead ───────────────────────────────────────────────────┐
-│ NEGRONI                         local draft       new project │
+│ Negroni / The AI ad agency      local draft       new project │
 ├──────────────────────────────────────────────────────────────┤
-│ thesis / action        │ five-piece campaign loop artwork    │
+│ period thesis / action │ illustrated agency lunch + pitchbook│
 ├────────────────────────┴─────────────────────────────────────┤
-│ five phase controls      │ selected phase contract           │
+│ department controls      │ selected phase contract           │
 ├──────────────────────────────────────────────────────────────┤
 │ durable artifact handoff: brief → batch → diff → result → log│
 └──────────────────────────────────────────────────────────────┘
@@ -42,14 +46,15 @@ and give the operator one honest starting action.
 
 ### Signature
 
-The memorable element is one tactile glass loop made of exactly five pieces.
-Each piece is visually distinct but part of one system, matching Negroni's five
-phases and continuous feedback model.
+The memorable element is one original late-1950s commercial illustration: a
+sunlit Manhattan lunch table with a Negroni, an open campaign pitchbook, and the
+tools of the trade. The cocktail-glass mark, print grain, offset shadows, and
+Bodoni typography carry that identity through the operational interface.
 
 ## Self-critique
 
-The first direction risked becoming another dark interface with neon accents.
-It was revised to a cool paper field, physical optical materials, hard studio
-light, and dense black type. The cocktail name informs the bitter orange and
-plum palette, but the product is presented as an advertising instrument rather
-than a bar brand.
+The foundation direction was precise but could have belonged to any polished
+AI product. This revision commits to the user's requested three-martini-lunch
+world while avoiding a dark bar, nostalgia theme park, or generic retro diner.
+The visual risk is a full vintage-ad illustration in the hero; the rest stays
+disciplined so phase contracts, state, and approval boundaries remain clear.

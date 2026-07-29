@@ -8,13 +8,14 @@ implementation rationale lives in [`../web/DESIGN.md`](../web/DESIGN.md).
 
 ## Product character
 
-Negroni should feel like an advertising instrument: editorial, tactile,
-precise, and operational. It should not look like a generic AI dashboard, a
-cocktail brand, or a collection of unrelated SaaS cards.
+Negroni should feel like a sharp late-1950s Madison Avenue agency that happens
+to run on agents: witty, optimistic, tactile, and operational. It should not
+look like a generic AI dashboard, a dark cocktail bar, or a costume-party
+version of the past.
 
-The name informs the bitter-orange and vermouth-plum palette. The product itself
-is represented through campaign artifacts, optical materials, hard studio
-light, and an explicit five-phase feedback loop.
+The name informs the cocktail-glass mark, vermouth-and-aperitivo palette, and
+three-martini-lunch wit. The product remains grounded in campaign artifacts,
+pitchbooks, paper trails, approvals, and an explicit five-phase learning loop.
 
 ## The screen's job
 
@@ -33,15 +34,14 @@ Every screen should make these answers visible:
 
 | Token | Value | Use |
 |---|---|---|
-| Carbon | `#17171b` | Primary text, strong surfaces, primary actions |
-| Fog | `#f1f2ef` | Main application field |
-| White | `#fbfcf9` | Working surfaces and phase contracts |
-| Line | `#cfd2cd` | Structural borders and separators |
-| Muted | `#656863` | Supporting copy and metadata |
-| Bitter orange | `#dd572f` | Primary brand accent and creation energy |
-| Vermouth plum | `#5d3045` | Research and evidence |
-| Mineral blue | `#315e87` | Launch and delivery systems |
-| Botanical green | `#74866b` | Safe local state and measured progress |
+| Ink | `#1d1b18` | Primary text, outlines, and hard shadows |
+| Cream paper | `#f3e5c7` | Main application field |
+| Paper light | `#fff9e9` | Working surfaces and phase contracts |
+| Aperitivo orange | `#e5532d` | Primary actions and creation energy |
+| Vermouth burgundy | `#6b2436` | Research, evidence, and major brand fields |
+| Olive green | `#66743b` | Safe local state and measured progress |
+| Brass | `#d5a23a` | Highlights, marks, and optimistic emphasis |
+| Mineral teal | `#27626b` | Launch and delivery systems |
 
 Use accents to encode a real phase or state. Do not scatter them as decoration.
 Live-action warnings and destructive states need their own explicit treatment
@@ -49,9 +49,10 @@ when those capabilities are introduced.
 
 ### Typography
 
-- **Display:** Archivo Variable, heavy and compressed for thesis statements,
-  active phases, and campaign-level language.
-- **Body:** Manrope Variable for forms, explanations, and operational copy.
+- **Display:** Bodoni Moda, often italic, for thesis statements, active phases,
+  and the Negroni wordmark.
+- **Body:** Archivo Variable or Manrope Variable for forms, explanations, and
+  operational copy.
 - **Utility:** IBM Plex Mono for phase numbers, statuses, file names, receipts,
   and system metadata.
 
@@ -60,23 +61,23 @@ specific. Avoid clever labels when a familiar action verb is clearer.
 
 ### Shape and depth
 
-- Use square or nearly square working surfaces.
-- Use borders and spacing before shadows.
-- Reserve circles for the feedback-loop mark, state dots, or genuinely cyclic
-  relationships.
+- Use square or nearly square working surfaces with hard offset shadows.
+- Reserve pill shapes for actions and circular forms for the cocktail mark,
+  state dots, or genuinely cyclic relationships.
 - Avoid large collections of floating rounded cards.
 - Use blur only when it clarifies layers such as a sticky header or modal.
 
 ## Signature element
 
-Negroni's signature artwork is a loop of exactly five optical-glass pieces:
+Negroni's signature artwork is a bright 1950s agency lunch table containing a
+Negroni, an open campaign pitchbook, and the tools of the trade:
 
-[`../web/public/negroni-five-phase-loop.png`](../web/public/negroni-five-phase-loop.png)
+[`../web/public/negroni-madison-hero.png`](../web/public/negroni-madison-hero.png)
 
-The pieces represent Research, Creative, Launch, Iteration, and Loop. Use the
-asset as a product-level identity element, not as a background on every screen.
-Phase-specific screens should inherit its palette and material logic without
-repeating the full hero.
+Use it once, at product level. The cocktail-glass mark, print texture, strong
+outlines, and period typography carry the identity elsewhere. The original
+five-piece system artwork remains available for process diagrams:
+[`../web/public/negroni-five-phase-loop.png`](../web/public/negroni-five-phase-loop.png).
 
 ## Application structure
 
@@ -186,12 +187,17 @@ When building Phase 1 Research:
 
 - Main application: [`../web/src/App.tsx`](../web/src/App.tsx)
 - CSS and tokens: [`../web/src/styles.css`](../web/src/styles.css)
-- Generated loop asset:
+- 1959 brand layer: [`../web/src/brand-1959.css`](../web/src/brand-1959.css)
+- Generated Madison Avenue hero:
+  [`../web/public/negroni-madison-hero.png`](../web/public/negroni-madison-hero.png)
+- Generated loop diagram:
   [`../web/public/negroni-five-phase-loop.png`](../web/public/negroni-five-phase-loop.png)
 - Favicon and loop mark:
   [`../web/public/favicon.svg`](../web/public/favicon.svg)
-- QA report: [`../web/qa/visual-qa-report.md`](../web/qa/visual-qa-report.md)
-- Reviewed screenshots: [`../web/qa/screenshots/`](../web/qa/screenshots/)
+- Foundation QA report:
+  [`../web/qa/visual-qa-report.md`](../web/qa/visual-qa-report.md)
+- Pre-refresh interaction screenshots:
+  [`../web/qa/screenshots/`](../web/qa/screenshots/)
 
 ## Required UI checks
 
