@@ -12,7 +12,11 @@ let blocked = false;
 for (const [label, command, args] of checks) {
   try {
     const { stdout, stderr } = await execFileAsync(command, args, { timeout: 8_000 });
-    const summary = `${stdout}\n${stderr}`.trim().split("\n")[0] || "ready";
+    // `gcloud auth application-default print-access-token` writes a bearer token to stdout.
+    // Report only availability so diagnostics never leak credentials.
+    const summary = label === "Gemini OAuth (gcloud ADC)"
+      ? "ready"
+      : `${stdout}\n${stderr}`.trim().split("\n")[0] || "ready";
     console.log(`✓ ${label}: ${summary}`);
   } catch (error) {
     blocked = true;
