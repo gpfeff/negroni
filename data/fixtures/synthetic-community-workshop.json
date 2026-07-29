@@ -1,0 +1,208 @@
+{
+  "fixture_label": "SYNTHETIC DEMONSTRATION — NOT RESEARCH",
+  "project": {
+    "id": "synthetic-community-workshop",
+    "created_at": "2026-01-15T12:00:00.000Z",
+    "updated_at": "2026-01-15T12:00:00.000Z",
+    "state": "ready",
+    "is_synthetic_demo": true,
+    "current_blocker": null
+  },
+  "field_states": {
+    "market.known_seasonality": "research_this",
+    "b2b_lead_buyers.capacity_and_hours": "unknown",
+    "b2b_lead_buyers.lead_quality_definition": "research_this",
+    "b2b_lead_buyers.proof_required": "research_this",
+    "b2c_lead_consumers.trigger_events": "research_this",
+    "b2c_lead_consumers.known_objections": "research_this",
+    "lead_product.quality_feedback_loop": "unknown",
+    "lead_product.tracking_and_attribution": "unknown"
+  },
+  "raw_answers": {
+    "project.research_decision": "Decide what must be researched before promoting an invented community workshop.",
+    "b2c_lead_consumers.segment_definition": "Adults in an invented town who may want a beginner-friendly weekend workshop."
+  },
+  "intake": {
+    "schema_version": "1.0",
+    "project": {
+      "name": "Synthetic — Community Workshop Inquiries",
+      "research_decision": "Decide what must be researched before promoting an invented community workshop.",
+      "intended_users": [
+        "Research reviewer",
+        "Workshop coordinator"
+      ],
+      "research_profile": "scan",
+      "requested_completion_date": null,
+      "notes": "Synthetic demonstration only. It contains no real market findings."
+    },
+    "market": {
+      "offer_type": "Registration inquiry",
+      "industry": "Community education",
+      "subcategory": "Beginner workshops",
+      "problem_category": "Local learning discovery",
+      "countries": [
+        "Exampleland (invented)"
+      ],
+      "regions": [
+        "Maple Junction (invented)"
+      ],
+      "geography_notes": "All geography in this fixture is invented.",
+      "languages": [
+        "English"
+      ],
+      "time_window": "Current synthetic demonstration",
+      "known_seasonality": "research_this"
+    },
+    "business_model": {
+      "acquisition_model": "internal_lead_generation",
+      "conversion_unit": "form_lead",
+      "lead_is_for_internal_use": true,
+      "lead_is_sold_or_transferred": false,
+      "underlying_service_or_product": "A fictional beginner workshop",
+      "known_value_chain": "The fictional workshop operator receives its own inquiries.",
+      "success_definition": "A reviewable research plan with unknowns and gates preserved."
+    },
+    "b2b_lead_buyers": {
+      "buyer_relationship": "same_organization_generating_the_lead",
+      "organization_types": [
+        "Fictional workshop operator"
+      ],
+      "decision_maker_roles": [
+        "Workshop coordinator"
+      ],
+      "company_size_or_maturity": [
+        "Unknown"
+      ],
+      "service_areas": [
+        "Maple Junction (invented)"
+      ],
+      "capacity_and_hours": "unknown",
+      "intake_workflow": "A coordinator reviews each inquiry.",
+      "crm_or_routing_systems": [],
+      "desired_volume": "unknown",
+      "delivery_preferences": [
+        "Internal notification"
+      ],
+      "speed_to_lead_expectation": "unknown",
+      "lead_quality_definition": "research_this",
+      "proof_required": "research_this",
+      "common_objections": "research_this",
+      "vendor_or_channel_history": "not_applicable",
+      "commercial_constraints": "Internal lead generation; external lead-sale terms are not applicable.",
+      "source_permissions": "First-party and public research only for the demonstration.",
+      "buyer_exclusions": []
+    },
+    "b2c_lead_consumers": {
+      "segment_definition": "Adults in an invented town who may want a beginner-friendly weekend workshop.",
+      "demographic_or_firmographic_boundaries": [],
+      "situational_boundaries": [
+        "Able to attend an in-person weekend session"
+      ],
+      "trigger_events": "research_this",
+      "known_awareness_stage": "research_this",
+      "desired_outcomes": "research_this",
+      "decision_roles_or_gatekeepers": "research_this",
+      "known_objections": "research_this",
+      "trust_requirements": "research_this",
+      "qualification_conditions": [
+        "Within the invented service area",
+        "Requests workshop information"
+      ],
+      "disqualification_conditions": [
+        "Outside the invented service area"
+      ],
+      "accessibility_or_language_needs": [
+        "English-language information"
+      ],
+      "consumer_exclusions": []
+    },
+    "lead_product": {
+      "conversion_definition": "A submitted information-request form.",
+      "payable_or_accepted_event": "not_applicable",
+      "required_fields_or_call_conditions": [
+        "Name",
+        "Contact preference",
+        "Workshop interest"
+      ],
+      "geography": [
+        "Maple Junction (invented)"
+      ],
+      "operating_hours": "unknown",
+      "consent_and_disclosure_requirements": "Permission to respond to the inquiry; exact language requires review.",
+      "delivery_method": "Internal notification",
+      "delivery_latency": "unknown",
+      "exclusivity": "not_applicable",
+      "duplicate_policy": "unknown",
+      "return_or_replacement_policy": "not_applicable",
+      "quality_feedback_loop": "unknown",
+      "tracking_and_attribution": "unknown",
+      "buyer_value_or_payout": "not_applicable",
+      "target_acquisition_ceiling": "unknown",
+      "allowed_sources": "Owned and approved non-search channels only; verify before any launch.",
+      "prohibited_sources_or_claims": "No fabricated outcomes, endorsements, urgency, or performance claims."
+    },
+    "brands": {
+      "research_publisher": {
+        "name": "Workbench Demo",
+        "brand_profile_path_or_url": null,
+        "google_doc_template_url": null,
+        "assets": []
+      },
+      "buyer_facing_brand": {
+        "name": null,
+        "brand_profile_path_or_url": null,
+        "assets": []
+      },
+      "consumer_facing_brand": {
+        "name": null,
+        "brand_profile_path_or_url": null,
+        "assets": []
+      },
+      "allow_provisional_document_styling": true
+    },
+    "channels": {
+      "priority_non_search_platforms": [],
+      "excluded_platforms": [
+        "Keyword search analysis"
+      ],
+      "recommend_platforms": true,
+      "include_search_comparison": false,
+      "known_accounts_or_advertisers": []
+    },
+    "sources": {
+      "attachments": [],
+      "urls": [],
+      "first_party_interviews": [],
+      "call_transcripts": [],
+      "buyer_feedback_or_disposition_data": [],
+      "prior_research": [],
+      "source_role_notes": []
+    },
+    "constraints": {
+      "budget_for_paid_data": 0,
+      "data_or_source_restrictions": [
+        "Synthetic demonstration only"
+      ],
+      "compliance_or_reputation_concerns": [
+        "Do not present fixture output as research"
+      ],
+      "competitors_to_include": [],
+      "competitors_to_exclude": [],
+      "external_actions_allowed": [],
+      "additional_exclusions": [
+        "No live research or campaign action in fixture mode"
+      ]
+    },
+    "delivery": {
+      "local_output_root": null,
+      "google_drive_folder_url": null,
+      "create_section_markdown": true,
+      "create_section_google_docs": true,
+      "create_master_markdown": true,
+      "create_master_google_doc": true,
+      "sharing_instruction": "owner_only",
+      "additional_formats": [],
+      "reviewers": []
+    }
+  }
+}

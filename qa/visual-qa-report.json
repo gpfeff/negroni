@@ -1,0 +1,169 @@
+{
+  "generated_at": "2026-07-29T02:04:35.479Z",
+  "base_url": "http://localhost:3000",
+  "viewport_states": [
+    "1440x1000",
+    "390x844"
+  ],
+  "checks": [
+    {
+      "name": "fixture visible",
+      "passed": true
+    },
+    {
+      "name": "buyer summary visible",
+      "passed": true
+    },
+    {
+      "name": "consumer summary visible",
+      "passed": true
+    },
+    {
+      "name": "dashboard-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "dashboard desktop: no serious or critical axe violations",
+      "passed": true
+    },
+    {
+      "name": "intake opened",
+      "passed": true
+    },
+    {
+      "name": "intake-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "lead product step opened",
+      "passed": true
+    },
+    {
+      "name": "sources opened",
+      "passed": true
+    },
+    {
+      "name": "sources-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "preflight passed",
+      "passed": true
+    },
+    {
+      "name": "allowlist visible",
+      "passed": true
+    },
+    {
+      "name": "preflight-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "fixture run labeled",
+      "passed": true
+    },
+    {
+      "name": "run-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "run desktop: no serious or critical axe violations",
+      "passed": true
+    },
+    {
+      "name": "evidence ledger opened",
+      "passed": true
+    },
+    {
+      "name": "evidence filter applied",
+      "passed": true
+    },
+    {
+      "name": "evidence-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "evidence desktop: no serious or critical axe violations",
+      "passed": true
+    },
+    {
+      "name": "representative markdown count",
+      "passed": true
+    },
+    {
+      "name": "document manifest not fabricated",
+      "passed": true
+    },
+    {
+      "name": "native docs and parity remain zero",
+      "passed": true
+    },
+    {
+      "name": "deliverables-desktop: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "deliverables desktop: no serious or critical axe violations",
+      "passed": true
+    },
+    {
+      "name": "keyboard focus is visible",
+      "passed": true
+    },
+    {
+      "name": "dashboard-mobile: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "intake-mobile: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "deliverables-mobile: horizontal viewport overflow",
+      "passed": true
+    },
+    {
+      "name": "deliverables mobile: no serious or critical axe violations",
+      "passed": true
+    },
+    {
+      "name": "no unexpected browser console errors",
+      "passed": true
+    }
+  ],
+  "axe": [
+    {
+      "name": "dashboard desktop",
+      "material_violations": []
+    },
+    {
+      "name": "run desktop",
+      "material_violations": []
+    },
+    {
+      "name": "evidence desktop",
+      "material_violations": []
+    },
+    {
+      "name": "deliverables desktop",
+      "material_violations": []
+    },
+    {
+      "name": "deliverables mobile",
+      "material_violations": []
+    }
+  ],
+  "console_errors": [
+    {
+      "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "url": "http://127.0.0.1:4317/health"
+    }
+  ],
+  "expected_optional_runtime_probe_errors": [
+    {
+      "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+      "url": "http://127.0.0.1:4317/health"
+    }
+  ],
+  "passed": true
+}
