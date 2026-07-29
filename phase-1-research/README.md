@@ -147,7 +147,7 @@ Negroni packages as a normal local web app. Install the generated package, then
 run it from any directory:
 
 ```bash
-npm install --global ./release/negroni-local-0.8.0.tgz
+npm install --global ./release/negroni-local-0.9.0.tgz
 negroni start
 ```
 

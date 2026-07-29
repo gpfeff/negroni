@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Manrope } from "next/font/google";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 
-const sans = Manrope({ variable: "--font-sans", subsets: ["latin"] });
+const sans = Inter({ variable: "--font-sans", subsets: ["latin"] });
 const mono = IBM_Plex_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["500", "600", "700"] });
 
 export const metadata: Metadata = {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" data-theme="system" suppressHydrationWarning>
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
       <body className={`${sans.variable} ${mono.variable}`}>{children}</body>
     </html>
   );

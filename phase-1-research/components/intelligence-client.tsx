@@ -152,7 +152,7 @@ export function IntelligenceClient() {
   const [kieKey, setKieKey] = useState("");
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
   const [settingsBusy, setSettingsBusy] = useState(false);
-  const [appearance, setAppearance] = useState<Appearance>("system");
+  const [appearance, setAppearance] = useState<Appearance>("dark");
   const [operatingMode, setOperatingMode] = useState<OperatingMode>("safety");
   const [activeResearchSection, setActiveResearchSection] = useState<ResearchSection>("run");
 
@@ -462,7 +462,18 @@ export function IntelligenceClient() {
             </div>
           ) : null}
         </nav>
-        <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
+        <div className="sidebar-footer">
+          <div className="sidebar-toggle">
+            <span><strong>Dark mode</strong><small>The studio at night</small></span>
+            <button className={appearance === "dark" ? "toggle-on" : ""} type="button" onClick={() => setAppearance(appearance === "dark" ? "light" : "dark")} aria-label="Toggle dark mode"><i /></button>
+          </div>
+          <div className="sidebar-toggle">
+            <span><strong>Safety mode</strong><small>Confirms before committing</small></span>
+            <button className={operatingMode === "safety" ? "toggle-on" : ""} type="button" onClick={() => setOperatingMode(operatingMode === "safety" ? "yolo" : "safety")} aria-label="Toggle safety mode"><i /></button>
+          </div>
+          <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
+          <div className="connection-state"><i /> Workspace ready · Negroni v0.9</div>
+        </div>
       </aside>
 
       <main className="app-main">
@@ -476,15 +487,14 @@ export function IntelligenceClient() {
       {activeView === "home" ? (
         <div className="dashboard" id="top">
           <section className="dashboard-heading" aria-labelledby="home-title">
-            <div><p className="utility-label">Phase 01 · Find the signal</p><h1 id="home-title">What are we researching?</h1><p>Start with one thin brief. Negroni turns it into client, customer, and competitor intelligence you can edit and approve.</p></div>
-            <button type="button" onClick={() => openResearchSection("run")}>Run Research <span aria-hidden="true">→</span></button>
+            <div><p className="utility-label">Negroni campaign studio</p><h1 id="home-title">What are we making?</h1><p>Pick a tool to get started. Working on <strong>{selectedProfile?.offer_or_lead_type ?? "your next lead campaign"}</strong>.</p></div>
           </section>
 
           <section className="research-home-layout" aria-label="Research workspace">
             <div className="research-tool-board">
               <div className="research-board-heading">
-                <div><span>01</span><h2>Research tools</h2></div>
-                <p>Build the evidence before you build the ads.</p>
+                <div><span>01</span><i /><h2>Research</h2></div>
+                <p>Know your customer, client, and market. Run once per campaign.</p>
               </div>
               <div className="research-tool-grid">
                 {RESEARCH_TOOLS.map((tool, index) => (
@@ -494,6 +504,11 @@ export function IntelligenceClient() {
                     type="button"
                     onClick={() => openResearchSection(tool.id)}
                   >
+                    <span className={`tool-visual tool-visual-${tool.id}`} aria-hidden="true">
+                      <span className="tool-glass" />
+                      <span className="tool-sheet tool-sheet-one">{tool.marker}</span>
+                      <span className="tool-sheet tool-sheet-two">NEGRONI</span>
+                    </span>
                     <span className="tool-marker" aria-hidden="true">{tool.marker}</span>
                     <span className="tool-copy">
                       <small>{tool.eyebrow}</small>
@@ -506,24 +521,6 @@ export function IntelligenceClient() {
               </div>
             </div>
 
-            <aside className="home-next-rail" aria-label="Research guidance">
-              <div className="readiness-meter">
-                <div><span>Research readiness</span><b>{[intake.offer_or_lead_type, intake.industry, intake.country_region, intake.target_age_range].filter((value) => value.trim()).length} / 4 inputs</b></div>
-                <progress max={4} value={[intake.offer_or_lead_type, intake.industry, intake.country_region, intake.target_age_range].filter((value) => value.trim()).length}>Research setup progress</progress>
-                <p>Complete the brief once. Negroni carries the approved evidence into every later phase.</p>
-              </div>
-              <div className="next-action-card">
-                <span>Do this next</span>
-                <strong>{selectedProfile ? "Continue this research set" : "Describe the lead offer"}</strong>
-                <p>{selectedProfile ? `${selectedProfile.offer_or_lead_type} · ${selectedProfile.country_region}` : "Tell Negroni what the customer receives and where the campaign will run."}</p>
-                <button type="button" onClick={() => openResearchSection("run")}>{selectedProfile ? "Continue Research" : "Start Research"} →</button>
-              </div>
-              <div className="rail-checks">
-                <div><span className={capability.available ? "check-ready" : "check-blocked"} /><p><strong>Research runner</strong><small>{checking ? "Checking connection" : capability.available ? "Ready" : "Setup required"}</small></p></div>
-                <div><span className="check-ready" /><p><strong>Spend protection</strong><small>No live actions in Research</small></p></div>
-                <button type="button" onClick={() => navigate("settings")}>Review connections</button>
-              </div>
-            </aside>
           </section>
 
           <section className="pipeline-card" aria-labelledby="pipeline-title">
@@ -819,6 +816,37 @@ export function IntelligenceClient() {
       )}
 
       </main>
+      <aside className="app-right-rail" aria-label="Up next">
+        <section className="weekly-goal">
+          <div><span>This week</span><button type="button" disabled title="Goal editing is planned">Edit goal</button></div>
+          <strong><b>0</b> / 20 ads</strong>
+          <progress max={20} value={0}>0 of 20 ads</progress>
+          <p>Build the research foundation, then ship the first campaign assets.</p>
+          <small>Resets in 5 days</small>
+        </section>
+        <section className="up-next">
+          <h2>Up next</h2>
+          <div className="next-rail-list">
+            <article className="next-rail-primary">
+              <span>Do this next</span>
+              <strong>{selectedProfile ? "Continue customer research" : "Run customer research"}</strong>
+              <p>Mine what your customers actually say—it fuels every ad you make.</p>
+              <button type="button" onClick={() => openResearchSection("run")}>Start →</button>
+            </article>
+            <article>
+              <strong>Complete the client brief</strong>
+              <p>Capture the offer, economics, proof, and campaign boundaries.</p>
+              <button type="button" onClick={() => openResearchSection("client")}>Start →</button>
+            </article>
+            <article>
+              <strong>Spy on competitor ads</strong>
+              <p>See what is already winning in your niche.</p>
+              <button type="button" onClick={() => openResearchSection("competitor-ads")}>Start →</button>
+            </article>
+          </div>
+        </section>
+        <button className="jarvis-pill" type="button" onClick={() => navigate("settings")}><span className="brand-mark" aria-hidden="true" /> Negroni</button>
+      </aside>
     </div>
   );
 }

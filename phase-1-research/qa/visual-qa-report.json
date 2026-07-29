@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T22:03:44.453Z",
+  "generated_at": "2026-07-29T22:30:26.723Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
@@ -11,11 +11,11 @@
   ],
   "checks": [
     {
-      "name": "home visible: What are we researching?",
+      "name": "home visible: What are we making?",
       "passed": true
     },
     {
-      "name": "home visible: Research tools",
+      "name": "home visible: Research",
       "passed": true
     },
     {
@@ -43,7 +43,7 @@
       "passed": true
     },
     {
-      "name": "home visible: Research readiness",
+      "name": "home visible: Up next",
       "passed": true
     },
     {
@@ -195,11 +195,19 @@
       "passed": true
     },
     {
-      "name": "settings visible: Connections & storage",
+      "name": "settings visible: Your Negroni, your engines",
       "passed": true
     },
     {
       "name": "settings visible: Codex",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Claude Code",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Kie.ai",
       "passed": true
     },
     {
@@ -211,11 +219,11 @@
       "passed": true
     },
     {
-      "name": "settings visible: Settings blocked",
+      "name": "settings visible: Connections need the installed Negroni bridge",
       "passed": true
     },
     {
-      "name": "Codex OAuth disabled without broker",
+      "name": "Codex connection disabled without broker",
       "passed": true
     },
     {

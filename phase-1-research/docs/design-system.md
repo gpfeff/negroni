@@ -1,9 +1,37 @@
-# Design system
+# Negroni studio design system
 
-The interface is quiet, form-first, and constrained to an 880-pixel reading column. A restrained forest-green and warm-paper palette distinguishes action and status without dashboard chrome. Lora provides report-like headings; DM Sans provides readable form text.
+The interface follows the compact dark studio structure supplied in the
+AI Ad Lab references while retaining Negroni's own identity.
 
-The first viewport explains the workflow and begins the four-field intake.
-Saved research sets use one compact record bar. The five prompts appear as a
-short sequence, status is a single panel, and outputs are three large,
-accessible actions. Settings uses restrained provider cards on the same route.
-There are no sidebars, ornamental diagrams, or marketing-scale headline blocks.
+## Layout
+
+- 250-pixel persistent navigation on desktop
+- flexible dotted workspace in the center
+- 340-pixel `Up next` guidance rail
+- one compact 58-pixel navigation bar on mobile
+- two-column tool cards on desktop and one column on mobile
+
+## Typography
+
+Inter carries headings, navigation, forms, and body copy. IBM Plex Mono is
+reserved for phase numbers, state labels, and small operational metadata.
+The main home heading tops out at 46 pixels; body copy stays between 11 and
+16 pixels depending on hierarchy.
+
+## Color
+
+- studio background: `#0b1322`
+- navigation and rail: `#0c1422`
+- cards: `#101a2c`
+- borders: `#263349`
+- primary text: `#f4f6fa`
+- muted text: `#a5afbe`
+- Negroni accent: `#cf4d45`
+- bright accent: `#ef6a5f`
+
+Red is deliberately limited to active navigation rules, progress, primary
+actions, and the Negroni glass glow. It does not replace status semantics:
+green still means connected or safe, and blocked states remain explicit.
+
+Light mode keeps the same information hierarchy with a pale neutral canvas.
+Dark mode is the default and matches the supplied reference.

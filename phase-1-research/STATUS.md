@@ -6,7 +6,7 @@ Repository path: `phase-1-research/`
 
 ## State
 
-Version 0.8 implements the Negroni application shell and Phase 1 interface on
+Version 0.9 implements the Negroni application shell and Phase 1 interface on
 one route:
 
 - a branded Home workspace with a focused Phase 1 tool board, factual research
@@ -33,6 +33,12 @@ one route:
 - a loopback-only credential bridge that keeps API keys under `~/.negroni`
   with owner-only permissions and checks native CLI authentication without
   copying OAuth tokens.
+
+The visual system now follows the supplied AI Ad Lab references: compact Inter
+typography, dark navy dotted workspace, fixed left navigation, two-column
+tool cards, and a persistent `Up next` rail. Negroni red is limited to active
+navigation, primary actions, progress, and glass highlights. The same hierarchy
+collapses to one readable column on mobile.
 
 Saved sets use the site D1 binding and contain the four research values, owner
 identity, timestamps, Markdown seed revisions, review messages, and approval
@@ -105,7 +111,9 @@ The existing owner-restricted Site and project ID are preserved:
 - Contract/security tests: 31/31 passed
 - Vinext production build: passed
 - Install smoke test: global package, local app, and six-provider Settings API passed
-- Visual QA: light and dark Settings passed in a real browser at 1280×720
+- Visual QA: Home, Research, and Settings passed at 1440×1000 and 390×844
+- Accessibility: zero serious or critical Axe violations across all six states
+- Browser runtime: no console errors or horizontal overflow
 - Accessibility: no serious or critical Axe violations
 - Browser runtime: no unexpected console errors or horizontal overflow
 

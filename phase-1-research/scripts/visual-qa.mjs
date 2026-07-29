@@ -48,7 +48,7 @@ try {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(500);
-  for (const text of ["What are we researching?", "Research tools", "Run Research", "Client", "Customer", "Competitors", "Competitor Ads", "Review & Approve", "Research readiness", "Campaign pipeline", "Create", "Launch", "Iterate", "Loop"]) {
+  for (const text of ["What are we making?", "Research", "Run Research", "Client", "Customer", "Competitors", "Competitor Ads", "Review & Approve", "Up next", "Campaign pipeline", "Create", "Launch", "Iterate", "Loop"]) {
     checks.push({ name: `home visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   await inspect(page, "home-desktop");
@@ -70,10 +70,10 @@ try {
   await inspect(page, "thin-client-mobile");
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Settings" }).click();
-  for (const text of ["Connections & storage", "Codex", "Gemini", "Google Drive", "Settings blocked"]) {
+  for (const text of ["Your Negroni, your engines", "Codex", "Claude Code", "Kie.ai", "Gemini", "Google Drive", "Connections need the installed Negroni bridge"]) {
     checks.push({ name: `settings visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
-  checks.push({ name: "Codex OAuth disabled without broker", passed: await page.getByRole("button", { name: "Connect Codex OAuth" }).isDisabled() });
+  checks.push({ name: "Codex connection disabled without broker", passed: await page.getByRole("button", { name: "Connect Codex" }).isDisabled() });
   checks.push({ name: "Google OAuth disabled without broker", passed: await page.getByRole("button", { name: "Connect Google Drive" }).isDisabled() });
   checks.push({ name: "Gemini key uses password input", passed: await page.getByLabel("Gemini API key").getAttribute("type") === "password" });
   await inspect(page, "settings-desktop");
