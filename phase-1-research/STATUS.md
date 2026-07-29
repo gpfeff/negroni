@@ -26,7 +26,11 @@ scheduler owner are also not configured. No fake run, schedule, watch count,
 Google ID, output URL, publication state, research finding, or parity state is
 present.
 
-Publishing the rebuilt source is also blocked: the project ID persisted in `.openai/hosting.json` returns `Sites project not found` to the current connector. A duplicate site was not created. The prior `lead-intelligence-workbench.g-pfeffer.chatgpt.site` deployment remains stale and does not contain this reduction.
+The rebuilt source is published to the existing owner-restricted Site at
+`https://lead-intelligence-workbench.g-pfeffer.chatgpt.site`. The persisted
+project ID and prior deployment history were preserved; no duplicate site was
+created. The hosted environment has no runner variables, so the production UI
+correctly remains blocked rather than simulating research.
 
 ## Artifacts
 
@@ -59,8 +63,6 @@ an authorized Meta Ads Intelligence adapter that
 creates project-isolated watchlists, reuses one scheduler owner, updates the
 same competitor Sheet nightly, and returns the strict `3.0` receipt. Until then,
 the page remains honest and non-executable.
-
-For hosting, restore current-connector access to the persisted Sites project ID. Do not create a replacement project unless the original is intentionally retired and the hosting manifest is migrated.
 
 ## Remaining risks
 
