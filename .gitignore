@@ -16,7 +16,6 @@ receipts/private/
 
 # Local integrations and hosting identity
 /meta-ads-intelligence
-/web/
 /phase-1-research/.agents/
 /phase-1-research/archive/
 /phase-1-research/qa/retired-workbench-screenshots/
@@ -27,6 +26,7 @@ node_modules/
 .next/
 dist/
 coverage/
+/web/output/
 
 # Python
 __pycache__/

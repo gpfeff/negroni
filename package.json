@@ -7,11 +7,15 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "setup": "npm --prefix phase-1-research ci",
-    "dev": "npm --prefix phase-1-research run dev",
-    "build": "npm --prefix phase-1-research run build",
+    "setup": "npm --prefix web ci && npm --prefix phase-1-research ci",
+    "dev": "npm --prefix web run dev",
+    "dev:web": "npm --prefix web run dev",
+    "dev:research": "npm --prefix phase-1-research run dev",
+    "build": "npm run build:web && npm run build:research",
+    "build:web": "npm --prefix web run build",
+    "build:research": "npm --prefix phase-1-research run build",
     "test": "npm --prefix phase-1-research test",
-    "check": "npm --prefix phase-1-research run check",
-    "validate": "npm --prefix phase-1-research run validate"
+    "check": "npm --prefix web run typecheck && npm --prefix phase-1-research run check",
+    "validate": "npm run build:web && npm --prefix phase-1-research run validate"
   }
 }

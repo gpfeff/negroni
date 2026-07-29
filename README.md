@@ -50,7 +50,13 @@ giving an agent silent authority over spend, customer data, or live accounts.
 
 ## What works today
 
-Negroni is an alpha. Phase 1 currently includes:
+Negroni is an alpha. The top-level product interface currently includes:
+
+- an interactive view of all five phases and their artifact handoffs;
+- a local-only project draft flow with explicit external-action boundaries;
+- responsive desktop and mobile layouts.
+
+Phase 1 currently includes:
 
 - a responsive Research intake and deliverables interface;
 - strict server-response and output validation;
@@ -62,6 +68,10 @@ The Research interface is validated, but live research remains intentionally
 blocked until a secure runner and verified Google Workspace output path are
 configured. Creative, Launch, Iteration, and Loop currently have defined
 contracts and implementation roadmaps.
+
+<p align="center">
+  <img src="web/qa/screenshots/desktop-hero.png" alt="Negroni five-phase product interface" width="880">
+</p>
 
 <p align="center">
   <img src="phase-1-research/qa/screenshots/thin-client-desktop.png" alt="Negroni Phase 1 Research interface" width="880">
@@ -80,7 +90,13 @@ npm run dev
 
 Open the local URL printed by the development server.
 
-Run the full Phase 1 validation suite:
+To run the existing Phase 1 Research interface instead:
+
+```bash
+npm run dev:research
+```
+
+Run the top-level UI build and full Phase 1 validation suite:
 
 ```bash
 npm run validate
@@ -187,6 +203,7 @@ See [`05-loop/`](05-loop/).
 
 ```text
 negroni/
+├── web/                      # Interactive five-phase product interface
 ├── 01-research/              # Three-C research contract and roadmap
 ├── 02-creative/              # Image and video creative contract and roadmap
 ├── 03-launch/                # Media-plan, account-change, and QA contract
@@ -198,6 +215,12 @@ negroni/
 Meta Ads Intelligence belongs to Research conceptually. Its current local
 source has path-sensitive callers and runtime ownership, so it will enter the
 public repository only after an isolated packaging and privacy review.
+
+## UI system
+
+The canonical visual and interaction reference is
+[`docs/UI.md`](docs/UI.md). Phase interfaces should reuse its tokens, status
+language, approval boundaries, responsive rules, and QA requirements.
 
 ## Product principles
 
@@ -218,9 +241,9 @@ public repository only after an isolated packaging and privacy review.
 
 ## Current status
 
-Negroni is in alpha development. Research has two implementation tracks;
-Creative, Launch, Iteration, and Loop have phase contracts and initial build
-plans but not production implementations.
+Negroni is in alpha development. The five-phase interface and Research
+implementation are active; Creative, Launch, Iteration, and Loop have phase
+contracts and initial build plans but not production implementations.
 
 No campaign launch, account mutation, budget change, or traffic activation is
 authorized by this repository alone.
