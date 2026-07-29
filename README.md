@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-c94b32">
+  <img alt="Status: beta" src="https://img.shields.io/badge/status-beta-c94b32">
   <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-315e87">
   <img alt="Harness: agnostic" src="https://img.shields.io/badge/harness-agnostic-242424">
   <img alt="Live actions: approval gated" src="https://img.shields.io/badge/live_actions-approval_gated-e8dfcf">
@@ -51,7 +51,8 @@ giving an agent silent authority over spend, customer data, or live accounts.
 
 ## What works today
 
-Negroni is an alpha. The top-level product interface currently includes:
+Negroni is in beta. [`app/`](app/) is the canonical product source and the
+top-level product interface currently includes:
 
 - an interactive view of all five phases and their artifact handoffs;
 - a local-only project draft flow with explicit external-action boundaries;

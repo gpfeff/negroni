@@ -73,6 +73,7 @@ authorization is persisted as blocked. The adapter never creates a scheduler.
 
 Settings provides:
 
+- one home for all preferences and connection setup
 - Codex CLI login
 - Claude Code login
 - Gemini API key or Google OAuth through Application Default Credentials
@@ -80,6 +81,10 @@ Settings provides:
 - Google Workspace OAuth with the minimum `drive.file` scope
 - light, dark, or system appearance
 - Safety or YOLO local operating mode
+
+The sidebar stays navigation-only. Appearance, approval behavior, API-key
+fields, provider status, storage, and the local `negroni start` setup steps all
+live in Settings.
 
 The installed edition uses each agent CLI's native login. Negroni checks
 `codex login status` or `claude auth status`; it never reads, copies, or

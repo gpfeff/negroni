@@ -463,16 +463,8 @@ export function IntelligenceClient() {
           ) : null}
         </nav>
         <div className="sidebar-footer">
-          <div className="sidebar-toggle">
-            <span><strong>Dark mode</strong><small>The studio at night</small></span>
-            <button className={appearance === "dark" ? "toggle-on" : ""} type="button" onClick={() => setAppearance(appearance === "dark" ? "light" : "dark")} aria-label="Toggle dark mode"><i /></button>
-          </div>
-          <div className="sidebar-toggle">
-            <span><strong>Safety mode</strong><small>Confirms before committing</small></span>
-            <button className={operatingMode === "safety" ? "toggle-on" : ""} type="button" onClick={() => setOperatingMode(operatingMode === "safety" ? "yolo" : "safety")} aria-label="Toggle safety mode"><i /></button>
-          </div>
           <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
-          <div className="connection-state"><i /> Workspace ready · Negroni v0.9</div>
+          <div className="connection-state"><i /> Workspace ready · Negroni v0.9 beta</div>
         </div>
       </aside>
 
@@ -691,9 +683,39 @@ export function IntelligenceClient() {
             <p>Use Codex or Claude Code as the local operator, connect the media engines you trust, and decide how often Negroni pauses for approval. Secrets stay behind the browser.</p>
           </section>
 
-          <section className="section-card settings-section">
+          <section className="section-card settings-section" id="preferences">
             <div className="settings-heading">
               <span>01</span>
+              <div><h2>Appearance &amp; approvals</h2><p>Personal preferences stay on this device. Campaign safety remains visible and explicit.</p></div>
+            </div>
+            <div className="preference-grid">
+              <fieldset className="preference-card">
+                <legend>Appearance</legend>
+                <div className="segmented-control">
+                  {(["light", "dark", "system"] as const).map((option) => (
+                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)}>
+                      {option[0].toUpperCase() + option.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <p>System follows this computer’s light or dark setting.</p>
+              </fieldset>
+
+              <fieldset className={`preference-card mode-card mode-${operatingMode}`}>
+                <legend>Commit approvals</legend>
+                <div className="segmented-control">
+                  <button className={operatingMode === "safety" ? "selected" : ""} type="button" onClick={() => setOperatingMode("safety")}>Safety</button>
+                  <button className={operatingMode === "yolo" ? "selected" : ""} type="button" onClick={() => setOperatingMode("yolo")}>YOLO</button>
+                </div>
+                <p>{operatingModeCopy(operatingMode)}</p>
+                <strong>Spending, publishing, forms, budgets, and live traffic always stop for explicit approval.</strong>
+              </fieldset>
+            </div>
+          </section>
+
+          <section className="section-card settings-section" id="operators">
+            <div className="settings-heading">
+              <span>02</span>
               <div><h2>Agent operator</h2><p>Pick either one. Negroni checks the login already owned by the installed command-line tool.</p></div>
             </div>
             <div className="settings-grid">
@@ -713,10 +735,10 @@ export function IntelligenceClient() {
             </div>
           </section>
 
-          <section className="section-card settings-section">
+          <section className="section-card settings-section" id="connections">
             <div className="settings-heading">
-              <span>02</span>
-              <div><h2>Generation &amp; storage</h2><p>API keys go straight to the server-side vault and are cleared from this form.</p></div>
+              <span>03</span>
+              <div><h2>API keys &amp; storage</h2><p>Paste keys here. They go straight to the server-side vault and are cleared from this form.</p></div>
             </div>
             <div className="settings-grid">
               <form className="provider-card media-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("kie_ai"); }}>
@@ -774,38 +796,26 @@ export function IntelligenceClient() {
             </div>
           </section>
 
-          <section className="section-card settings-section">
+          <section className="section-card settings-section" id="local-setup">
             <div className="settings-heading">
-              <span>03</span>
-              <div><h2>Look &amp; guardrails</h2><p>These preferences stay on this device. Campaign safety rules remain part of every durable action receipt.</p></div>
+              <span>04</span>
+              <div><h2>Local app setup</h2><p>The installed app is the secure bridge between this screen and your command-line logins or API-key vault.</p></div>
             </div>
-            <div className="preference-grid">
-              <fieldset className="preference-card">
-                <legend>Appearance</legend>
-                <div className="segmented-control">
-                  {(["light", "dark", "system"] as const).map((option) => (
-                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)}>
-                      {option[0].toUpperCase() + option.slice(1)}
-                    </button>
-                  ))}
-                </div>
-                <p>System follows this computer’s light or dark setting.</p>
-              </fieldset>
-
-              <fieldset className={`preference-card mode-card mode-${operatingMode}`}>
-                <legend>Operating mode</legend>
-                <div className="segmented-control">
-                  <button className={operatingMode === "safety" ? "selected" : ""} type="button" onClick={() => setOperatingMode("safety")}>Safety</button>
-                  <button className={operatingMode === "yolo" ? "selected" : ""} type="button" onClick={() => setOperatingMode("yolo")}>YOLO</button>
-                </div>
-                <p>{operatingModeCopy(operatingMode)}</p>
-                <strong>Spending, publishing, forms, budgets, and live traffic always stop for explicit approval.</strong>
-              </fieldset>
+            <div className={`local-setup-card ${settingsAvailable ? "local-setup-ready" : ""}`}>
+              <div className="local-setup-state">
+                <span className={`provider-dot provider-${settingsAvailable ? "connected" : "blocked"}`} />
+                <div><strong>{settingsAvailable ? "Secure bridge ready" : "Secure bridge not connected"}</strong><small>{settingsAvailable ? "Provider controls and key fields are available." : "Start the installed Negroni app to unlock provider controls."}</small></div>
+              </div>
+              <ol className="setup-steps">
+                <li><span>1</span><div><strong>Start Negroni</strong><p>Open Terminal and run <code>negroni start</code>.</p></div></li>
+                <li><span>2</span><div><strong>Return to Settings</strong><p>Your Codex or Claude login status and API-key fields will become available.</p></div></li>
+                <li><span>3</span><div><strong>Add connections here</strong><p>Keys are stored under <code>~/.negroni</code> with owner-only permissions—not in the browser or project.</p></div></li>
+              </ol>
+              {settingsBlocker ? <div className="settings-blocker"><strong>Connection setup needed</strong><p>{settingsBlocker}</p></div> : null}
             </div>
           </section>
 
           <section className="settings-feedback" aria-live="polite">
-            {settingsBlocker ? <div className="settings-blocker"><strong>Connections need the installed Negroni bridge</strong><p>{settingsBlocker}</p></div> : null}
             {settingsMessage ? <p className="inline-message" role="status">{settingsMessage}</p> : null}
           </section>
         </div>

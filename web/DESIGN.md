@@ -1,4 +1,4 @@
-# Negroni UI direction — 1959 agency edition
+# Negroni UI direction — compact agency workspace
 
 ## Subject and job
 
@@ -7,27 +7,25 @@ primary audience is an operator building a campaign and a portfolio reviewer
 judging whether the product has a coherent system behind it.
 
 The first screen has one job: make Negroni feel like a memorable advertising
-agency, explain the five-phase operating loop, and give the operator one honest
-starting action.
+agency with the calm density of a modern AI workspace, explain the five-phase
+operating loop, and give the operator one honest starting action.
 
 ## Visual system
 
 ### Color
 
 - Ink: `#1d1b18`
-- Cream paper: `#f3e5c7`
-- Paper light: `#fff9e9`
-- Aperitivo orange: `#e5532d`
-- Vermouth burgundy: `#6b2436`
-- Olive green: `#66743b`
-- Brass: `#d5a23a`
-- Mineral teal: `#27626b`
+- Cream paper: `#f4f0e7`
+- Paper light: `#fffdfa`
+- Aperitivo orange: `#e85a36`
+- Vermouth burgundy: `#70283c`
+- Olive green: `#6c7951`
+- Brass: `#d9a746`
+- Mineral teal: `#315f7b`
 
 ### Type
 
-- Display: Bodoni Moda, often italic, for campaign-level language and the
-  Negroni wordmark.
-- Body: Archivo Variable and Manrope Variable for clear operational copy.
+- Display and body: Manrope Variable for a compact, product-first hierarchy.
 - Utility: IBM Plex Mono for phase IDs, statuses, and artifact names.
 
 ### Layout
@@ -48,13 +46,14 @@ starting action.
 
 The memorable element is one original late-1950s commercial illustration: a
 sunlit Manhattan lunch table with a Negroni, an open campaign pitchbook, and the
-tools of the trade. The cocktail-glass mark, print grain, offset shadows, and
-Bodoni typography carry that identity through the operational interface.
+tools of the trade. The cocktail-glass mark and campaign palette carry that
+identity through a quieter, rounded product interface.
 
 ## Self-critique
 
-The foundation direction was precise but could have belonged to any polished
-AI product. This revision commits to the user's requested three-martini-lunch
-world while avoiding a dark bar, nostalgia theme park, or generic retro diner.
-The visual risk is a full vintage-ad illustration in the hero; the rest stays
-disciplined so phase contracts, state, and approval boundaries remain clear.
+The vintage-agency layer had become visually louder and larger than the product
+work it contained. This revision keeps the singular three-martini-lunch artwork
+but adopts a more compact modern workspace scale: 64px desktop navigation,
+32–42px controls, 46–57px hero type, one-pixel rules, restrained shadows, and
+12–20px surface radii. The result remains recognizably Negroni without making
+operators parse a poster-sized interface.

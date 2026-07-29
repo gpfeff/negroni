@@ -8,10 +8,10 @@ implementation rationale lives in [`../web/DESIGN.md`](../web/DESIGN.md).
 
 ## Product character
 
-Negroni should feel like a sharp late-1950s Madison Avenue agency that happens
-to run on agents: witty, optimistic, tactile, and operational. It should not
-look like a generic AI dashboard, a dark cocktail bar, or a costume-party
-version of the past.
+Negroni should feel like a sharp late-1950s Madison Avenue agency inside a
+compact modern AI workspace: witty, optimistic, tactile, and operational. It
+should not look like a generic AI dashboard, a dark cocktail bar, or a
+costume-party version of the past.
 
 The name informs the cocktail-glass mark, vermouth-and-aperitivo palette, and
 three-martini-lunch wit. The product remains grounded in campaign artifacts,
@@ -35,13 +35,13 @@ Every screen should make these answers visible:
 | Token | Value | Use |
 |---|---|---|
 | Ink | `#1d1b18` | Primary text, outlines, and hard shadows |
-| Cream paper | `#f3e5c7` | Main application field |
-| Paper light | `#fff9e9` | Working surfaces and phase contracts |
-| Aperitivo orange | `#e5532d` | Primary actions and creation energy |
-| Vermouth burgundy | `#6b2436` | Research, evidence, and major brand fields |
-| Olive green | `#66743b` | Safe local state and measured progress |
-| Brass | `#d5a23a` | Highlights, marks, and optimistic emphasis |
-| Mineral teal | `#27626b` | Launch and delivery systems |
+| Cream paper | `#f4f0e7` | Main application field |
+| Paper light | `#fffdfa` | Working surfaces and phase contracts |
+| Aperitivo orange | `#e85a36` | Primary actions and creation energy |
+| Vermouth burgundy | `#70283c` | Research, evidence, and major brand fields |
+| Olive green | `#6c7951` | Safe local state and measured progress |
+| Brass | `#d9a746` | Highlights, marks, and optimistic emphasis |
+| Mineral teal | `#315f7b` | Launch and delivery systems |
 
 Use accents to encode a real phase or state. Do not scatter them as decoration.
 Live-action warnings and destructive states need their own explicit treatment
@@ -49,10 +49,8 @@ when those capabilities are introduced.
 
 ### Typography
 
-- **Display:** Bodoni Moda, often italic, for thesis statements, active phases,
-  and the Negroni wordmark.
-- **Body:** Archivo Variable or Manrope Variable for forms, explanations, and
-  operational copy.
+- **Display and body:** Manrope Variable for thesis statements, forms,
+  explanations, and operational copy.
 - **Utility:** IBM Plex Mono for phase numbers, statuses, file names, receipts,
   and system metadata.
 
@@ -61,11 +59,18 @@ specific. Avoid clever labels when a familiar action verb is clearer.
 
 ### Shape and depth
 
-- Use square or nearly square working surfaces with hard offset shadows.
-- Reserve pill shapes for actions and circular forms for the cocktail mark,
-  state dots, or genuinely cyclic relationships.
+- Use 12–20px radii for major working surfaces and restrained soft shadows.
+- Use 6–9px radii for controls, chips, inputs, and small nested surfaces.
 - Avoid large collections of floating rounded cards.
 - Use blur only when it clarifies layers such as a sticky header or modal.
+
+### Product scale
+
+- Desktop masthead: 64px; mobile masthead: 58px.
+- Header actions: 32–34px; primary content actions: 38–42px.
+- Desktop hero type: 46–57px depending on viewport; body copy: 15–17px.
+- Operational section headings: 32–50px; card and control labels: 11–15px.
+- Prefer 64–104px section padding over poster-scale empty space.
 
 ## Signature element
 

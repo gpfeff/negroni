@@ -51,6 +51,11 @@ try {
   for (const text of ["What are we making?", "Research", "Run Research", "Client", "Customer", "Competitors", "Competitor Ads", "Review & Approve", "Up next", "Campaign pipeline", "Create", "Launch", "Iterate", "Loop"]) {
     checks.push({ name: `home visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
+  checks.push({
+    name: "sidebar keeps appearance and approval controls inside Settings",
+    passed: await page.locator(".app-sidebar").getByText("Dark mode", { exact: true }).count() === 0
+      && await page.locator(".app-sidebar").getByText("Safety mode", { exact: true }).count() === 0,
+  });
   await inspect(page, "home-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -70,7 +75,7 @@ try {
   await inspect(page, "thin-client-mobile");
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Settings" }).click();
-  for (const text of ["Your Negroni, your engines", "Codex", "Claude Code", "Kie.ai", "Gemini", "Google Drive", "Connections need the installed Negroni bridge"]) {
+  for (const text of ["Your Negroni, your engines", "Appearance & approvals", "Commit approvals", "Codex", "Claude Code", "API keys & storage", "Kie.ai API key", "Gemini API key", "Google Drive", "Local app setup", "Connection setup needed"]) {
     checks.push({ name: `settings visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "Codex connection disabled without broker", passed: await page.getByRole("button", { name: "Connect Codex" }).isDisabled() });

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-29T22:47:25.234Z",
+  "generated_at": "2026-07-29T22:55:05.324Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
@@ -64,6 +64,10 @@
     },
     {
       "name": "home visible: Loop",
+      "passed": true
+    },
+    {
+      "name": "sidebar keeps appearance and approval controls inside Settings",
       "passed": true
     },
     {
@@ -199,6 +203,14 @@
       "passed": true
     },
     {
+      "name": "settings visible: Appearance & approvals",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Commit approvals",
+      "passed": true
+    },
+    {
       "name": "settings visible: Codex",
       "passed": true
     },
@@ -207,11 +219,15 @@
       "passed": true
     },
     {
-      "name": "settings visible: Kie.ai",
+      "name": "settings visible: API keys & storage",
       "passed": true
     },
     {
-      "name": "settings visible: Gemini",
+      "name": "settings visible: Kie.ai API key",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Gemini API key",
       "passed": true
     },
     {
@@ -219,7 +235,11 @@
       "passed": true
     },
     {
-      "name": "settings visible: Connections need the installed Negroni bridge",
+      "name": "settings visible: Local app setup",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Connection setup needed",
       "passed": true
     },
     {

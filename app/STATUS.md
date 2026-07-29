@@ -6,8 +6,8 @@ Repository path: `app/`
 
 ## State
 
-Version 0.9 implements the Negroni application shell and Phase 1 interface on
-one route:
+Version 0.9.0-beta.1 is the canonical Negroni beta application and implements
+the application shell and Phase 1 interface on one route:
 
 - a branded Home workspace with a focused Phase 1 tool board, factual research
   readiness, runner state, phase progression, and artifact handoffs;

@@ -1,12 +1,13 @@
-# Negroni web UI QA — foundation baseline
+# Negroni web UI QA — compact workspace refresh
 
 Updated: 2026-07-29
 
 ## Result
 
-Pass for the pre-1959 foundation interface scope. The screenshots below remain
-useful as interaction and responsive-layout evidence, but they do not represent
-the current brand layer in `src/brand-1959.css`.
+Pass for the compact workspace refresh. The interface now uses Manrope for
+display and body copy, IBM Plex Mono for operational metadata, a 64px desktop
+masthead, 32–42px controls, 46–57px hero type, rounded working surfaces, and
+restrained one-pixel rules and shadows.
 
 ## Viewports
 
@@ -50,11 +51,10 @@ the current brand layer in `src/brand-1959.css`.
 
 ## Reviewed screenshots
 
-- `screenshots/desktop-hero.png`
-- `screenshots/desktop-workspace.png`
-- `screenshots/mobile-hero.png`
-- `screenshots/mobile-workspace.png`
-- `screenshots/mobile-project-dialog.png`
+- `../../output/playwright/negroni-after-1440x1000.png`
+- `../../output/playwright/negroni-workspace-1440x1000.png`
+- `../../output/playwright/negroni-after-390x844.png`
+- `../../output/playwright/negroni-dialog-390x844.png`
 
 ## Remaining limitations
 

@@ -11,9 +11,10 @@ sidebar, and Settings. User-facing phase labels are Research, Create, Launch,
 Iterate, and Loop. Home shows campaign state, phase progression, agent
 readiness, artifact handoffs, and the honest next action. Research contains
 saved sets, the four required inputs, five-prompt sequence, run status, monitor
-receipt, three outputs, and the interactive seed editor. Settings contains only
-supported provider connections. Do not add wizards, fixture runs, or synthetic
-publication states.
+receipt, three outputs, and the interactive seed editor. Settings is the single
+home for appearance, commit approvals, supported provider connections, API
+keys, storage, and local setup. Do not duplicate settings in the sidebar or add
+wizards, fixture runs, or synthetic publication states.
 
 Treat each accepted seed revision as immutable. AI review returns a proposed
 revision only; it must never overwrite the current seed. Applying, rejecting,
