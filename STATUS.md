@@ -6,7 +6,8 @@ Updated: 2026-07-28
 
 The narrow MVP is implemented and validated. The real executor is Mac-local;
 the hosted build contains only the labeled synthetic demonstration. An
-owner-only Sites project is configured and awaiting the saved-version deploy.
+owner-only Sites preview is deployed at
+`https://lead-intelligence-workbench.g-pfeffer.chatgpt.site`.
 
 ## Artifacts
 
@@ -29,7 +30,9 @@ owner-only Sites project is configured and awaiting the saved-version deploy.
   overflow, unexpected console errors, or serious/critical Axe violations
 - Mac real-adapter health: passed from the canonical Mac path; Codex App Server
   activated the scoped profile and resolved the exact canonical skill
-- Sites access: verified `custom`, one owner, no groups; deployment pending
+- Sites access: verified `custom`, one owner, no groups
+- Sites version 1: deployed successfully from commit
+  `25330e1bb7c93e7858680a38c688be0bc4b3b507`
 
 ## Blockers
 
@@ -38,8 +41,9 @@ local-file content ingestion are intentionally outside this vertical slice.
 
 ## Next action
 
-Commit and push the validated source, then save and deploy the owner-restricted
-Sites version.
+Run one bounded non-synthetic project through the Mac-local executor, review its
+evidence and lane states, and use that result to decide whether local-file
+content ingestion is the next vertical slice.
 
 ## Remaining risks
 
