@@ -115,3 +115,22 @@ for one immutable daily run. Re-reading that run must produce the same delta.
 Collection must use an authorized public or official route. It must never
 automate a restricted UI, bypass access controls, click ads, submit forms, or
 launch traffic.
+
+## Review runner
+
+`POST /api/review` calls the secure review runner with contract
+`negroni-research-seed-review` version `1.0` only when the owner asks Negroni to
+revise a seed. The request contains:
+
+- the owner-scoped profile and current revision IDs;
+- the current Markdown seed;
+- the owner's feedback and at most 20 recent review messages; and
+- fixed rules marking collected content untrusted, preserving citations and
+  unknowns, forbidding external mutations, and requiring a proposal only.
+
+The runner returns `message`, `proposed_markdown`, and `change_summary`.
+Negroni stores the proposed Markdown separately. It becomes current only after
+the owner explicitly applies it, and only if its parent is still the current
+revision. Invalid, unsafe, stale, or failed proposals never change the seed.
+Manual editing, notes, revision history, and approval continue to work without
+this runner.

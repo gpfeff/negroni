@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createEmptyIntake } from "@/lib/intelligence/defaults";
+import { ResearchReview } from "@/components/research-review";
 import {
   RESEARCH_PROMPTS,
   type IntelligenceIntake,
@@ -217,6 +218,7 @@ export function IntelligenceClient() {
 
   async function deleteProfile() {
     if (!selectedProfileId) return;
+    if (!window.confirm("Delete this research set, its seed revisions, feedback, and Phase 2 approval? This cannot be undone.")) return;
     const response = await fetch("/api/profiles", {
       method: "DELETE",
       headers: { "content-type": "application/json" },
@@ -229,6 +231,7 @@ export function IntelligenceClient() {
     }
     newProfile();
     await refreshProfiles();
+    setProfileMessage("Research set deleted. It cannot be recovered.");
   }
 
   async function runResearch() {
@@ -297,6 +300,7 @@ export function IntelligenceClient() {
   const codexStatus = providerStatus("codex_oauth");
   const geminiStatus = providerStatus("gemini");
   const googleStatus = providerStatus("google_drive");
+  const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
 
   function navigate(view: AppView) {
     setActiveView(view);
@@ -414,6 +418,7 @@ export function IntelligenceClient() {
               </select>
               <button type="button" onClick={newProfile}>New</button>
               <button type="button" onClick={() => void saveProfile()} disabled={!profiles.available}>Save</button>
+              <button className="record-review" type="button" onClick={() => document.getElementById("research-review")?.scrollIntoView({ behavior: "smooth" })} disabled={!selectedProfileId}>Review seed</button>
               <button className="record-delete" type="button" onClick={() => void deleteProfile()} disabled={!selectedProfileId}>Delete</button>
             </div>
             {profiles.blocker ? <p className="inline-blocker">{profiles.blocker}</p> : null}
@@ -515,6 +520,8 @@ export function IntelligenceClient() {
               <button className={result ? "output-card" : "output-card output-disabled"} type="button" disabled={!result} onClick={() => result && downloadMarkdown(result)}><span className="output-icon markdown-icon">M</span><div><strong>Download Markdown</strong><small>{result?.outputs.markdown.filename ?? "Portable master research report"}</small></div><span aria-hidden="true">↓</span></button>
             </div>
           </section>
+
+          <ResearchReview key={selectedProfileId || "no-profile"} profile={selectedProfile} runResult={result} />
         </div>
       ) : (
         <div className="content-column settings-column" id="top">

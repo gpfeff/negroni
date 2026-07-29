@@ -90,6 +90,11 @@ export async function DELETE(request: Request): Promise<Response> {
   const body = await request.json() as { id?: string };
   if (!body.id?.trim()) return Response.json({ error: "Choose a saved research set." }, { status: 400 });
   await ensureResearchSchema(database);
-  await database.prepare("DELETE FROM research_profiles WHERE id = ? AND owner_email = ?").bind(body.id, owner).run();
+  await database.batch([
+    database.prepare("DELETE FROM research_messages WHERE profile_id = ? AND owner_email = ?").bind(body.id, owner),
+    database.prepare("DELETE FROM research_revisions WHERE profile_id = ? AND owner_email = ?").bind(body.id, owner),
+    database.prepare("DELETE FROM research_workspaces WHERE profile_id = ? AND owner_email = ?").bind(body.id, owner),
+    database.prepare("DELETE FROM research_profiles WHERE id = ? AND owner_email = ?").bind(body.id, owner),
+  ]);
   return Response.json({ deleted: true }, { headers: { "cache-control": "no-store" } });
 }

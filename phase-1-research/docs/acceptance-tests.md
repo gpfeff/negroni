@@ -20,8 +20,12 @@ Automated tests cover:
 - credential-broker status parsing and HTTPS-only OAuth redirects;
 - Google Workspace connection metadata without secret material;
 - fake Google URLs, failed parity, and incomplete validations.
+- research-seed size bounds and deterministic approval fingerprints;
+- approved-seed edits becoming draft changes without moving the Phase 2
+  pointer; and
+- AI proposals applying only to the exact current base revision.
 
 Visual QA covers both tabs, all four inputs, the five prompt labels, exactly
 three output cards, the visible runtime and settings blockers, disabled actions
-when blocked, desktop/mobile overflow, browser errors, and material
-accessibility violations.
+when blocked, the interactive seed editor, desktop/mobile overflow, browser
+errors, and material accessibility violations.

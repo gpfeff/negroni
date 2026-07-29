@@ -6,13 +6,16 @@ Repository path: `phase-1-research/`
 
 ## State
 
-Version 0.5 implements the Negroni application shell and Phase 1 interface on
+Version 0.6 implements the Negroni application shell and Phase 1 interface on
 one route:
 
 - a B2B SaaS Home workspace with campaign state, agent readiness, phase
   progression, recent activity, and artifact handoffs;
 - persistent navigation using Research, Create, Launch, Iterate, and Loop;
 - Research tab with owner-scoped saved research sets;
+- interactive, versioned Markdown seeds with direct editing, permanent notes,
+  recoverable revision history, optional AI proposals, and explicit Phase 2
+  approval;
 - four required inputs: lead offer or service, industry, country or region,
   and target age range;
 - the fixed five-prompt sequence from the supplied Google Doc;
@@ -24,10 +27,16 @@ one route:
 - Settings tab for Google Drive OAuth/automatic filing, Codex OAuth, and a
   Gemini API key.
 
-Saved sets use the site D1 binding and contain only the four research values,
-owner identity, and timestamps. Duplicate combinations are reused instead of
-creating another record. Provider secrets stay outside D1 and the browser; the
-server forwards them only to an owner-scoped credential broker.
+Saved sets use the site D1 binding and contain the four research values, owner
+identity, timestamps, Markdown seed revisions, review messages, and approval
+fingerprints. Duplicate combinations are reused instead of creating another
+record. Provider secrets stay outside D1 and the browser; the server forwards
+them only to an owner-scoped credential broker.
+
+The current draft and approved Phase 2 seed are separate. Editing after
+approval creates `draft_changes`; it does not silently change the approved
+revision or ads already tied to an older revision. AI output remains proposed
+until explicitly applied.
 
 Contract `4.0` requires exact source document
 `1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o`, the five prompts in order,
@@ -64,6 +73,8 @@ The existing owner-restricted Site and project ID are preserved:
 ## Artifacts
 
 - Interface: `components/intelligence-client.tsx`, `app/globals.css`
+- Seed review: `components/research-review.tsx`, `app/api/review/route.ts`,
+  `lib/research-seed.ts`
 - Research endpoint: `app/api/run/route.ts`
 - Saved-set endpoint and D1 schema: `app/api/profiles/route.ts`, `db/`, `drizzle/`
 - Provider endpoint and safe response parsing: `app/api/settings/route.ts`,
@@ -79,7 +90,7 @@ The existing owner-restricted Site and project ID are preserved:
 
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
-- Contract/security tests: 25/25 passed
+- Contract/security tests: 29/29 passed
 - Vinext production build: passed
 - Visual QA: passed for Home, Research, and Settings at 1440×1000 and 390×844
 - Accessibility: no serious or critical Axe violations
@@ -91,6 +102,7 @@ Configure these server-side values with their real services:
 
 - `LEAD_INTELLIGENCE_RUNNER_URL`
 - `LEAD_INTELLIGENCE_RUNNER_TOKEN`
+- `LEAD_INTELLIGENCE_REVIEW_URL`
 - `CREDENTIAL_BROKER_URL`
 - `CREDENTIAL_BROKER_TOKEN`
 
@@ -112,3 +124,5 @@ owner-scoped Codex OAuth, Gemini secret storage, and Google OAuth with
 - Broker connection flows need integration tests against the eventual service.
 - D1 record persistence needs one production authenticated save/reload check
   after the deployed binding is provisioned.
+- Edited seed revisions do not yet regenerate the Google Doc or Markdown
+  output; those remain run snapshots.

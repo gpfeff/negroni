@@ -32,6 +32,25 @@ Each authenticated user can save, reopen, update, and delete combinations of
 those inputs. Records are owner-scoped in the site database. The app never puts
 provider credentials in those records.
 
+## Review and Phase 2 seed
+
+Research does not end at export. Every saved set has an interactive Markdown
+seed workspace where the owner can:
+
+- edit findings directly and save recoverable revisions;
+- preserve disagreement or additional context as permanent notes;
+- ask the configured review runner for a proposed rewrite;
+- apply or reject an AI proposal explicitly;
+- restore an earlier revision as a new draft; and
+- approve one exact revision for Phase 2.
+
+Approval pins both the revision ID and a SHA-256 fingerprint. Editing the
+research later creates `draft_changes`; it does not silently replace the
+approved Phase 2 seed or rewrite ads that were created from an older seed.
+Reapprove the new revision when it should become authoritative. Google Doc,
+Markdown, and competitor archive outputs remain snapshots of the original run
+until a future export-sync integration regenerates them.
+
 The five-prompt source is the approved Google Doc
 `1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o` and the sequence is fixed:
 Market Awareness, Competitor Research, Avatar/Psychographic Research, Master
@@ -67,8 +86,13 @@ Configure these server-side values in the hosting environment:
 
 - `LEAD_INTELLIGENCE_RUNNER_URL`
 - `LEAD_INTELLIGENCE_RUNNER_TOKEN`
+- `LEAD_INTELLIGENCE_REVIEW_URL`
 - `CREDENTIAL_BROKER_URL`
 - `CREDENTIAL_BROKER_TOKEN`
+
+`LEAD_INTELLIGENCE_REVIEW_URL` may point to the same service as the main
+runner, but it must implement the proposal-only review contract. Manual seed
+editing, version history, notes, and approval do not require the review runner.
 
 The runner additionally configures `META_ADS_INTELLIGENCE_CLI`,
 `META_ADS_INTELLIGENCE_PYTHON`, and

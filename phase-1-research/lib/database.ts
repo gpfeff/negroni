@@ -1,4 +1,13 @@
-import { CREATE_RESEARCH_PROFILES, CREATE_RESEARCH_PROFILES_OWNER_INDEX } from "@/db/schema";
+import {
+  CREATE_RESEARCH_MESSAGES,
+  CREATE_RESEARCH_MESSAGES_PROFILE_INDEX,
+  CREATE_RESEARCH_PROFILES,
+  CREATE_RESEARCH_PROFILES_OWNER_INDEX,
+  CREATE_RESEARCH_REVISIONS,
+  CREATE_RESEARCH_REVISIONS_PROFILE_INDEX,
+  CREATE_RESEARCH_WORKSPACES,
+  CREATE_RESEARCH_WORKSPACES_OWNER_INDEX,
+} from "@/db/schema";
 
 type D1RunResult = { success: boolean; meta?: { changes?: number } };
 type D1AllResult<T> = { success: boolean; results?: T[] };
@@ -27,5 +36,11 @@ export async function ensureResearchSchema(database: Database): Promise<void> {
   await database.batch([
     database.prepare(CREATE_RESEARCH_PROFILES),
     database.prepare(CREATE_RESEARCH_PROFILES_OWNER_INDEX),
+    database.prepare(CREATE_RESEARCH_WORKSPACES),
+    database.prepare(CREATE_RESEARCH_REVISIONS),
+    database.prepare(CREATE_RESEARCH_MESSAGES),
+    database.prepare(CREATE_RESEARCH_WORKSPACES_OWNER_INDEX),
+    database.prepare(CREATE_RESEARCH_REVISIONS_PROFILE_INDEX),
+    database.prepare(CREATE_RESEARCH_MESSAGES_PROFILE_INDEX),
   ]);
 }
