@@ -1,11 +1,35 @@
 # PHASE 1: RESEARCH
 
-Keep the shared `lead-generation-ads-discovery-intelligence` skill canonical. The app owns only intake, run and nightly-monitor status, strict response validation, and three output links. Do not duplicate or weaken the skill’s research method. Keep Meta Ads Intelligence behind the runner's competitor-monitoring adapter; do not copy its collection or archive logic into the app.
+Keep the shared `lead-generation-ads-discovery-intelligence` skill canonical.
+The app owns the four-field intake, saved research sets, provider connection
+status, run and nightly-monitor status, strict response validation, and three
+output links. Do not duplicate or weaken the skill’s method.
 
-This is one page with three sections: Intake, Run status, and Outputs. Do not add dashboards, sidebars, projects, routes, wizards, lanes, evidence workbenches, fixture runs, or synthetic publication states.
+Keep the interface compact: one route with Research and Settings tabs. Research
+contains saved sets, the four required inputs, five-prompt sequence, run status,
+monitor receipt, and three outputs. Settings contains only supported provider
+connections. Do not add dashboards, sidebars, wizards, evidence workbenches,
+fixture runs, or synthetic publication states.
 
-A complete run must use the canonical skill and return exactly one verified Google Doc, one verified Google Sheet, one matching Markdown report, complete research-coverage receipts, and an active receipt for one nightly Meta Ads Intelligence monitor. A partial run may return verified research deliverables with explicit research or monitoring limitations. If secure execution or native Google-file creation is unavailable, show the blocker. Never fall back to synthetic results or fabricate IDs, URLs, schedules, watch counts, evidence, completion, coverage, or parity.
+A complete run must execute the five prompts from source document
+`1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o` in the declared order and
+return exactly one verified Google Doc, one verified Google Sheet, one matching
+Markdown report, five prompt receipts, and an active nightly competitor-monitor
+receipt. A partial run requires an explicit prompt or monitoring limitation.
+Never fabricate IDs, URLs, schedules, watch counts, evidence, completion, or
+parity.
 
-Keep external actions limited to public research, creation of the requested Google Doc and Google Sheet, and configuration of the explicitly requested nightly competitor monitor. Collection must use a documented authorized adapter and remain public and read-only; it must never bypass controls, submit forms, or create traffic. Keep secrets out of the browser, intake, attachments metadata, logs, fixtures, and source. Preserve secret detection, citations, source attribution, unknown states, and structural-example leak rejection.
+Keep research records owner-scoped in D1 and free of secrets. OAuth tokens and
+API keys belong only in the server-side credential broker; never store them in
+browser storage, D1, intake, logs, fixtures, or source. Google OAuth must use
+the minimum `drive.file` scope and create outputs inside the Negroni Research
+folder.
 
-The site must not depend on localhost, a Mac-specific path, or a local companion. Runtime credentials belong only in the server environment. Run `npm run validate` and desktop/mobile visual QA before reporting ready.
+External actions are limited to public research, creation of the requested
+Google Doc and Sheet, and the requested nightly competitor monitor. Collection
+must remain authorized, public, and read-only. Never bypass controls, submit
+forms, launch traffic, spend money, or mutate ad accounts.
+
+The site must not depend on localhost, a machine-specific path, or a local
+companion. Run `npm run validate` and desktop/mobile visual QA before reporting
+ready.

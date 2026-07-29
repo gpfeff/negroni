@@ -1,54 +1,70 @@
 # PHASE 1: RESEARCH
 
-A one-page thin client for turning partial lead-generation context into three complete deliverables and one ongoing competitor-ad monitor:
+A focused Negroni interface for saving a reusable research set, running the
+five approved research prompts in order, and producing:
 
 1. Google Doc — complete master research report
-2. Google Sheet — authoritative competitor-ad archive
-3. Markdown — portable master report matching the Google Doc
+2. Markdown — portable report matching the Google Doc
+3. Google Sheet — authoritative competitor-ad archive
 
-The research covers the client, market awareness, B2B lead buyer, B2C customer,
-competitors, and master synthesis. After the initial run resolves a verified
-competitor watchlist, the secure runner configures Meta Ads Intelligence to
-refresh the same archive nightly at 02:17 in the intake timezone. The page
-shows the returned schedule receipt or the exact blocker; it never claims
-monitoring is active from a request alone.
+The Research tab asks only:
 
-The shared `lead-generation-ads-discovery-intelligence` skill remains the sole research engine. The app does not contain a research methodology or synthetic market fixture.
+- Lead offer or service
+- Industry
+- Country or region
+- Target age range
 
-## Runtime boundary
+Each authenticated user can save, reopen, update, and delete combinations of
+those inputs. Records are owner-scoped in the site database. The app never puts
+provider credentials in those records.
 
-The browser submits intake and attachments to the same-origin `/api/run` route.
-That route keeps credentials server-side and forwards the package to a
-configured secure runner. A response is accepted only when it attests to the
-canonical skill and passes the exact-three-output, research-coverage, Google
-readback, report-parity, competitor-evidence, citation, secret, example-leak,
-and monitoring-receipt checks.
+The five-prompt source is the approved Google Doc
+`1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o` and the sequence is fixed:
+Market Awareness, Competitor Research, Avatar/Psychographic Research, Master
+Research, and Tone of Voice. The secure runner must return a receipt for every
+prompt.
+
+After competitor research verifies a watchlist, the runner configures Meta Ads
+Intelligence to refresh the same Google Sheet nightly at 02:17 in the intake
+timezone. The UI shows the real schedule receipt or exact blocker.
+
+## Settings and secrets
+
+Settings provides:
+
+- Codex OAuth
+- Gemini API key
+- Google Workspace OAuth with the minimum `drive.file` scope
+
+OAuth and API-key material must be stored only by a secure server-side
+credential broker. The Gemini key is sent directly to that broker and cleared
+from the form. Negroni does not persist secret values in the browser, site
+database, repository, logs, or research payload.
+
+Google OAuth uses the web-server authorization-code flow with offline access.
+The broker verifies OAuth state, stores refresh tokens securely, and creates or
+reuses one app-owned `Negroni Research` folder. Each connected owner's Doc,
+Sheet, and matching Markdown file are filed there automatically. The app
+forwards only the authenticated owner identity to the broker and runner.
 
 Configure these server-side values in the hosting environment:
 
 - `LEAD_INTELLIGENCE_RUNNER_URL`
 - `LEAD_INTELLIGENCE_RUNNER_TOKEN`
+- `CREDENTIAL_BROKER_URL`
+- `CREDENTIAL_BROKER_TOKEN`
 
-When either value is unavailable, the page reports the exact blocker and
-disables execution. The runner must separately possess an authorized
-competitor-ad collection route and one scheduler owner. Without that route,
-usable research may return `partial` with an explicit monitoring blocker. The
-page never falls back to a fixture or fabricates output links or schedule state.
+Without the runner and verified Google connection, research is visibly blocked.
+Without the credential broker, Settings is visibly blocked. The app never
+falls back to fixtures or invents Google IDs, output URLs, research findings,
+or monitoring state.
 
-## Step #2 reference boundary
+The connector follows Google's narrow-scope and server-side token guidance:
+[Drive scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
+and
+[OAuth for web-server apps](https://developers.google.com/identity/protocols/oauth2/web-server).
 
-The four research lanes follow the structure of the Pay Per Lead Nation Pro
-Step #2 prompt: market awareness, competitors, customer psychographics, and
-master marketing intelligence. The course is a structural reference only.
-Its niche examples, outputs, claims, and branded text must not enter source,
-fixtures, or deliverables.
-
-The course archive contains metadata for lessons 2.1–2.5 and their linked live
-prompt. The corresponding videos and transcripts are not stored locally, and
-the example PDF and DOCX resources are represented only by archive metadata.
-Do not claim those unavailable materials were reviewed.
-
-The deterministic runner and monitoring requirements are defined in
+The exact runner and monitoring requirements are in
 [`docs/runner-contract.md`](docs/runner-contract.md).
 
 ## Commands
@@ -60,4 +76,5 @@ npm run validate
 npm run qa:visual
 ```
 
-Dependencies are runtime state and should live outside the synced Documents tree.
+Dependencies are runtime state and should live outside the synced Documents
+tree.
