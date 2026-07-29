@@ -1,13 +1,51 @@
 {
-  "generated_at": "2026-07-29T08:15:48.393Z",
+  "generated_at": "2026-07-29T08:41:30.542Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
-    "1440x1000",
-    "390x844"
+    "research: 1440x1000",
+    "research: 390x844",
+    "settings: 1440x1000",
+    "settings: 390x844"
   ],
   "checks": [
     {
-      "name": "visible: Intake",
+      "name": "visible: Research setup",
+      "passed": true
+    },
+    {
+      "name": "visible: Lead offer or service",
+      "passed": true
+    },
+    {
+      "name": "visible: Industry",
+      "passed": true
+    },
+    {
+      "name": "visible: Country or region",
+      "passed": true
+    },
+    {
+      "name": "visible: Target age range",
+      "passed": true
+    },
+    {
+      "name": "visible: Market awareness",
+      "passed": true
+    },
+    {
+      "name": "visible: Competitor research",
+      "passed": true
+    },
+    {
+      "name": "visible: Customer psychology",
+      "passed": true
+    },
+    {
+      "name": "visible: Master research",
+      "passed": true
+    },
+    {
+      "name": "visible: Tone of voice",
       "passed": true
     },
     {
@@ -23,7 +61,7 @@
       "passed": true
     },
     {
-      "name": "visible: No secure canonical-skill runner",
+      "name": "visible: No secure five-prompt research runner",
       "passed": true
     },
     {
@@ -47,10 +85,6 @@
       "passed": true
     },
     {
-      "name": "progressive detail opens on-page",
-      "passed": true
-    },
-    {
       "name": "thin-client-desktop: no horizontal overflow",
       "passed": true
     },
@@ -67,6 +101,54 @@
       "passed": true
     },
     {
+      "name": "settings visible: Connections & storage",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Codex",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Gemini",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Google Drive",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Settings blocked",
+      "passed": true
+    },
+    {
+      "name": "Codex OAuth disabled without broker",
+      "passed": true
+    },
+    {
+      "name": "Google OAuth disabled without broker",
+      "passed": true
+    },
+    {
+      "name": "Gemini key uses password input",
+      "passed": true
+    },
+    {
+      "name": "settings-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "settings-desktop: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "settings-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "settings-mobile: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
       "name": "no unexpected console errors",
       "passed": true
     }
@@ -78,6 +160,14 @@
     },
     {
       "name": "thin-client-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "settings-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "settings-mobile",
       "material_violations": []
     }
   ],

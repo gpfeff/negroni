@@ -1,21 +1,43 @@
 import { scanForExampleLeaks } from "@/lib/contracts/example-leak-scan.mjs";
 import { assertNoSecretMaterial } from "@/lib/contracts/secrets-core.mjs";
-import { FIELD_STATES, OPTIONAL_FIELD_IDS, RESEARCH_LANES, type IntelligenceIntake, type RunResult } from "./contracts";
+import {
+  RESEARCH_ARTIFACT_FILENAMES,
+  type ResearchArtifactKey,
+} from "@/lib/meta-ads/contracts";
+import { validateCompetitorAdsIntelligence } from "@/lib/meta-ads/validation";
+import {
+  PROMPT_SOURCE_DOCUMENT_ID,
+  RESEARCH_PROMPTS,
+  type IntelligenceIntake,
+  type RunResult,
+} from "./contracts";
 
-export const RUNNER_BLOCKER = "No secure canonical-skill runner and verified Google Workspace connector are configured for this environment.";
-export const MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;
-export const MAX_TOTAL_ATTACHMENT_BYTES = 50 * 1024 * 1024;
+export const RUNNER_BLOCKER = "No secure five-prompt research runner and verified Google Workspace connector are configured for this environment.";
 const ALLOWED_ACTIONS = ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"] as const;
+const INTAKE_KEYS = [
+  "allowed_actions",
+  "competitor_monitoring",
+  "contract",
+  "contract_version",
+  "country_region",
+  "industry",
+  "offer_or_lead_type",
+  "prompt_source",
+  "research_engine",
+  "target_age_range",
+] as const;
 const RESULT_VALIDATIONS = [
   "citation_integrity",
   "competitor_monitor_receipt_verified",
+  "competitor_ads_intelligence_verified",
   "competitor_rows_evidence_backed",
   "exactly_three_outputs",
   "example_leak_scan_passed",
+  "five_prompt_sequence_verified",
   "google_doc_readback",
   "google_sheet_readback",
   "markdown_doc_parity",
-  "research_coverage_verified",
+  "research_artifacts_verified",
   "secret_scan_passed",
 ] as const;
 
@@ -37,80 +59,6 @@ function isTimestamp(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0 && Number.isFinite(Date.parse(value));
 }
 
-export function slugifyProjectName(value: string): string {
-  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lead-generation-report";
-}
-
-export function validateIntake(intake: IntelligenceIntake): string[] {
-  const errors: string[] = [];
-  if (!intake || typeof intake !== "object" || Array.isArray(intake)) return ["The research intake is invalid."];
-  if (intake.contract !== "lead-generation-intelligence-intake" || intake.contract_version !== "3.0") errors.push("The intake contract is not supported.");
-  if (intake.research_engine !== "lead-generation-ads-discovery-intelligence") errors.push("The intake must use the canonical research engine.");
-  if (!Array.isArray(intake.allowed_actions)
-    || intake.allowed_actions.length !== ALLOWED_ACTIONS.length
-    || ALLOWED_ACTIONS.some((action, index) => intake.allowed_actions[index] !== action)) {
-    errors.push("The intake contains unsupported external actions.");
-  }
-  const monitoring = intake.competitor_monitoring;
-  if (!monitoring
-    || monitoring.enabled !== true
-    || monitoring.engine !== "meta-ads-intelligence"
-    || monitoring.cadence !== "nightly"
-    || monitoring.local_time !== "02:17"
-    || !isValidTimezone(monitoring.timezone)) {
-    errors.push("The nightly competitor monitoring request is invalid.");
-  }
-  if (typeof intake.project_name !== "string" || intake.project_name.trim().length < 2) errors.push("Enter a project or report name.");
-  const fields = intake.fields && typeof intake.fields === "object" && !Array.isArray(intake.fields) ? intake.fields : null;
-  if (!fields || Object.keys(fields).sort().join(",") !== [...OPTIONAL_FIELD_IDS].sort().join(",")) errors.push("The intake field set does not match the supported contract.");
-  const structuredContext = fields
-    ? OPTIONAL_FIELD_IDS.some((id) => fields[id]?.state === "answered" && typeof fields[id].value === "string" && fields[id].value.trim().length >= 3)
-    : false;
-  if ((typeof intake.market_context !== "string" || intake.market_context.trim().length < 10) && !structuredContext) errors.push("Add at least one substantive piece of market context.");
-  for (const id of OPTIONAL_FIELD_IDS) {
-    const field = fields?.[id];
-    if (!field || !FIELD_STATES.includes(field.state)) errors.push(`The ${id} field has an invalid state.`);
-    else if (typeof field.value !== "string") errors.push(`The ${id} field has an invalid value.`);
-    else if (field.state === "answered" && !field.value.trim()) errors.push(`Add an answer for ${id.replaceAll("_", " ")} or choose another state.`);
-  }
-  if (!Array.isArray(intake.attachments) || intake.attachments.length > 5) {
-    errors.push("Attach no more than five files.");
-  } else {
-    let totalBytes = 0;
-    for (const attachment of intake.attachments) {
-      if (!attachment
-        || typeof attachment.name !== "string"
-        || !attachment.name.trim()
-        || attachment.name.includes("/")
-        || attachment.name.includes("\\")
-        || !Number.isSafeInteger(attachment.size)
-        || attachment.size < 0
-        || attachment.size > MAX_ATTACHMENT_BYTES
-        || typeof attachment.type !== "string"
-        || !Number.isSafeInteger(attachment.last_modified)
-        || attachment.last_modified < 0) {
-        errors.push("One or more attachment metadata records are invalid.");
-        break;
-      }
-      totalBytes += attachment.size;
-    }
-    if (totalBytes > MAX_TOTAL_ATTACHMENT_BYTES) errors.push("Attachments must total 50 MB or less.");
-  }
-  try { assertNoSecretMaterial(intake, "Research intake"); }
-  catch (error) { errors.push(error instanceof Error ? error.message : "Remove secret material from the intake."); }
-  if (!scanForExampleLeaks(intake).passed) errors.push("Remove structural-example market material from the intake.");
-  return errors;
-}
-
-function isGoogleUrl(value: unknown, path: string): boolean {
-  if (typeof value !== "string") return false;
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && url.hostname === "docs.google.com" && url.pathname.startsWith(path);
-  } catch { return false; }
-}
-
 function isHttpsUrl(value: unknown): boolean {
   if (typeof value !== "string") return false;
   try {
@@ -120,30 +68,132 @@ function isHttpsUrl(value: unknown): boolean {
   }
 }
 
-export function parseRunResult(value: unknown, projectName: string): RunResult {
+function isGoogleUrl(value: unknown, path: string): boolean {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "docs.google.com" && url.pathname.startsWith(path);
+  } catch {
+    return false;
+  }
+}
+
+function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
+  return Object.keys(value).sort().join(",") === [...keys].sort().join(",");
+}
+
+function validAgeRange(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  const match = value.trim().match(/^(\d{1,3})\s*(?:-|–|—|to)\s*(\d{1,3})$/i);
+  if (!match) return false;
+  const minimum = Number(match[1]);
+  const maximum = Number(match[2]);
+  return minimum >= 1 && maximum <= 120 && minimum <= maximum;
+}
+
+export function slugifyProjectName(value: string): string {
+  return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lead-generation-report";
+}
+
+export function buildResearchName(offerOrLeadType: string, countryRegion: string): string {
+  const offer = offerOrLeadType.trim().replace(/\s+/g, " ");
+  const country = countryRegion.trim().replace(/\s+/g, " ");
+  return `${offer} (${country})`;
+}
+
+export function validateIntake(intake: IntelligenceIntake): string[] {
+  const errors: string[] = [];
+  if (!isRecord(intake)) return ["The research intake is invalid."];
+  if (!hasExactKeys(intake, INTAKE_KEYS)) errors.push("The research intake contains unsupported fields.");
+  if (intake.contract !== "lead-generation-intelligence-intake" || intake.contract_version !== "4.0") errors.push("The intake contract is not supported.");
+  if (intake.research_engine !== "lead-generation-ads-discovery-intelligence") errors.push("The intake must use the canonical research engine.");
+  if (!Array.isArray(intake.allowed_actions)
+    || intake.allowed_actions.length !== ALLOWED_ACTIONS.length
+    || ALLOWED_ACTIONS.some((action, index) => intake.allowed_actions[index] !== action)) {
+    errors.push("The intake contains unsupported external actions.");
+  }
+  if (typeof intake.offer_or_lead_type !== "string" || intake.offer_or_lead_type.trim().length < 3 || intake.offer_or_lead_type.length > 240) {
+    errors.push("Describe the lead offer or service.");
+  }
+  if (typeof intake.industry !== "string" || intake.industry.trim().length < 2 || intake.industry.length > 120) {
+    errors.push("Enter the industry.");
+  }
+  if (typeof intake.country_region !== "string" || intake.country_region.trim().length < 2 || intake.country_region.length > 160) {
+    errors.push("Enter the country or region.");
+  }
+  if (!validAgeRange(intake.target_age_range)) {
+    errors.push("Enter a target age range such as 30–60.");
+  }
+  const promptSource = intake.prompt_source;
+  if (!isRecord(promptSource)
+    || !hasExactKeys(promptSource, ["document_id", "prompt_ids"])
+    || promptSource.document_id !== PROMPT_SOURCE_DOCUMENT_ID
+    || !Array.isArray(promptSource.prompt_ids)
+    || promptSource.prompt_ids.length !== RESEARCH_PROMPTS.length
+    || RESEARCH_PROMPTS.some((prompt, index) => promptSource.prompt_ids[index] !== prompt)) {
+    errors.push("The required five-prompt research sequence is invalid.");
+  }
+  const monitoring = intake.competitor_monitoring;
+  if (!isRecord(monitoring)
+    || monitoring.enabled !== true
+    || monitoring.engine !== "meta-ads-intelligence"
+    || monitoring.cadence !== "nightly"
+    || monitoring.local_time !== "02:17"
+    || !isValidTimezone(monitoring.timezone)) {
+    errors.push("The nightly competitor monitoring request is invalid.");
+  }
+  try {
+    assertNoSecretMaterial(intake, "Research intake");
+  } catch (error) {
+    errors.push(error instanceof Error ? error.message : "Remove secret material from the intake.");
+  }
+  return errors;
+}
+
+export function parseRunResult(value: unknown, researchName: string): RunResult {
   if (!isRecord(value)) throw new Error("The runner returned an invalid result.");
   const result = value as RunResult;
   if (result.contract !== "lead-generation-intelligence-result"
-    || result.contract_version !== "3.0"
+    || result.contract_version !== "4.0"
     || !["complete", "partial"].includes(result.status)
     || result.research_engine !== "lead-generation-ads-discovery-intelligence") {
     throw new Error("The runner did not attest to the canonical research contract.");
   }
-  if (typeof result.run_id !== "string" || !result.run_id.trim() || !isTimestamp(result.completed_at)) throw new Error("The runner receipt identity or completion time is invalid.");
+  if (typeof result.run_id !== "string" || !result.run_id.trim() || !isTimestamp(result.completed_at)) {
+    throw new Error("The runner receipt identity or completion time is invalid.");
+  }
+
   const outputs = result.outputs;
-  if (!isRecord(outputs) || Object.keys(outputs).sort().join(",") !== "google_doc,google_sheet,markdown") throw new Error("A successful run must contain exactly three deliverables.");
+  if (!isRecord(outputs) || !hasExactKeys(outputs, ["google_doc", "google_sheet", "markdown"])) {
+    throw new Error("A successful run must contain exactly three deliverables.");
+  }
   const googleDoc = outputs.google_doc;
   const googleSheet = outputs.google_sheet;
   const markdown = outputs.markdown;
-  if (!isRecord(googleDoc) || !isGoogleUrl(googleDoc.url, "/document/d/") || googleDoc.verified !== true) throw new Error("The Google Doc was not created and read back successfully.");
-  if (!isRecord(googleSheet) || !isGoogleUrl(googleSheet.url, "/spreadsheets/d/") || googleSheet.verified !== true) throw new Error("The Google Sheet was not created and read back successfully.");
+  if (!isRecord(googleDoc) || !isGoogleUrl(googleDoc.url, "/document/d/") || googleDoc.verified !== true) {
+    throw new Error("The Google Doc was not created and read back successfully.");
+  }
+  if (!isRecord(googleSheet)) throw new Error("The competitor Sheet receipt is missing.");
   if (!isRecord(markdown)) throw new Error("The Markdown report is missing, abbreviated, or misnamed.");
-  if (googleDoc.title !== `${projectName.trim()} — Master Research`) throw new Error("The master research Doc title does not match the output contract.");
-  if (googleSheet.title !== `${projectName.trim()} — Competitor Ads`) throw new Error("The competitor Sheet title does not match the output contract.");
-  const expectedFilename = `${slugifyProjectName(projectName)}-master-research.md`;
-  if (markdown.filename !== expectedFilename || markdown.mime_type !== "text/markdown" || typeof markdown.content !== "string" || markdown.content.trim().length < 100) throw new Error("The Markdown report is missing, abbreviated, or misnamed.");
+  if (googleDoc.title !== `${researchName} — Master Research`) throw new Error("The master research Doc title does not match the output contract.");
+  if (googleSheet.title !== `${researchName} — Competitor Ads`) throw new Error("The competitor Sheet title does not match the output contract.");
+  if (!hasExactKeys(googleSheet, ["status", "title", "url", "verified"])
+    || googleSheet.status !== "published"
+    || !isGoogleUrl(googleSheet.url, "/spreadsheets/d/")
+    || googleSheet.verified !== true) {
+    throw new Error("The Google Sheet was not created and read back successfully.");
+  }
+  const expectedFilename = `${slugifyProjectName(researchName)}-master-research.md`;
+  if (markdown.filename !== expectedFilename
+    || markdown.mime_type !== "text/markdown"
+    || typeof markdown.content !== "string"
+    || markdown.content.trim().length < 100) {
+    throw new Error("The Markdown report is missing, abbreviated, or misnamed.");
+  }
+
   if (!isRecord(result.validation)
-    || Object.keys(result.validation).sort().join(",") !== [...RESULT_VALIDATIONS].sort().join(",")
+    || !hasExactKeys(result.validation, RESULT_VALIDATIONS)
     || Object.values(result.validation).some((passed) => passed !== true)) {
     throw new Error("The runner did not pass every delivery and evidence validation.");
   }
@@ -162,48 +212,61 @@ export function parseRunResult(value: unknown, projectName: string): RunResult {
     }
     sourceIds.add(source.id);
   }
-  if (!Array.isArray(result.limitations) || result.limitations.some((limitation) => typeof limitation !== "string" || !limitation.trim())) {
+  if (!Array.isArray(result.limitations)
+    || result.limitations.some((limitation) => typeof limitation !== "string" || !limitation.trim())) {
     throw new Error("The research limitations receipt is invalid.");
   }
   const citedIds = [...markdown.content.matchAll(/\[([A-Z][A-Z0-9-]*\d+)\]/g)].map((match) => match[1]);
-  if (sourceIds.size === 0 || citedIds.length === 0 || citedIds.some((id) => !sourceIds.has(id))) throw new Error("The Markdown report contains missing or unresolved citations.");
-  const coverage = result.research_coverage;
-  if (!coverage || Object.keys(coverage).sort().join(",") !== [...RESEARCH_LANES].sort().join(",")) {
-    throw new Error("The research coverage receipt is incomplete.");
+  if (citedIds.length === 0 || citedIds.some((id) => !sourceIds.has(id))) {
+    throw new Error("The Markdown report contains missing or unresolved citations.");
   }
-  let hasLimitedCoverage = false;
-  for (const lane of RESEARCH_LANES) {
-    const state = coverage[lane];
-    if (!state || !["complete", "limited"].includes(state.status)) throw new Error(`The ${lane} research coverage state is invalid.`);
-    if (state.status === "limited") {
-      hasLimitedCoverage = true;
-      if (typeof state.limitation !== "string" || !state.limitation.trim()) throw new Error(`The ${lane} research limitation is missing.`);
-    } else if (state.limitation !== null) {
-      throw new Error(`The ${lane} research coverage receipt is inconsistent.`);
+
+  const execution = result.prompt_execution;
+  if (!isRecord(execution)
+    || !hasExactKeys(execution, ["prompts", "source_document_id", "source_modified_at"])
+    || execution.source_document_id !== PROMPT_SOURCE_DOCUMENT_ID
+    || !isTimestamp(execution.source_modified_at)
+    || !isRecord(execution.prompts)
+    || !hasExactKeys(execution.prompts, RESEARCH_PROMPTS)) {
+    throw new Error("The five-prompt execution receipt is incomplete.");
+  }
+  let hasLimitedPrompt = false;
+  for (const prompt of RESEARCH_PROMPTS) {
+    const receipt = execution.prompts[prompt];
+    if (!isRecord(receipt) || !hasExactKeys(receipt, ["limitation", "status"]) || !["complete", "limited"].includes(receipt.status as string)) {
+      throw new Error(`The ${prompt} prompt receipt is invalid.`);
+    }
+    if (receipt.status === "limited") {
+      hasLimitedPrompt = true;
+      if (typeof receipt.limitation !== "string" || !receipt.limitation.trim()) {
+        throw new Error(`The ${prompt} prompt limitation is missing.`);
+      }
+    } else if (receipt.limitation !== null) {
+      throw new Error(`The ${prompt} prompt receipt is inconsistent.`);
     }
   }
+
   const monitoring = result.competitor_monitoring;
-  if (!monitoring
+  if (!isRecord(monitoring)
     || monitoring.engine !== "meta-ads-intelligence"
     || monitoring.cadence !== "nightly"
     || monitoring.local_time !== "02:17"
     || !isValidTimezone(monitoring.timezone)
     || !Number.isInteger(monitoring.watch_count)
-    || monitoring.watch_count < 0
+    || (monitoring.watch_count as number) < 0
     || (monitoring.last_run_at !== null && !isTimestamp(monitoring.last_run_at))) {
     throw new Error("The nightly competitor monitoring receipt is invalid.");
   }
   if (monitoring.status === "active") {
     if (typeof monitoring.schedule_id !== "string"
       || !monitoring.schedule_id.trim()
-      || monitoring.watch_count < 1
+      || (monitoring.watch_count as number) < 1
       || !isTimestamp(monitoring.next_run_at)
       || monitoring.blocker !== null) {
       throw new Error("The runner did not prove that nightly competitor monitoring is active.");
     }
   } else if (monitoring.status === "blocked") {
-    if (result.status !== "partial"
-      || monitoring.schedule_id !== null
+    if (monitoring.schedule_id !== null
       || monitoring.next_run_at !== null
       || typeof monitoring.blocker !== "string"
       || !monitoring.blocker.trim()) {
@@ -212,9 +275,30 @@ export function parseRunResult(value: unknown, projectName: string): RunResult {
   } else {
     throw new Error("The nightly competitor monitoring receipt has an unsupported status.");
   }
-  const shouldBePartial = hasLimitedCoverage || monitoring.status === "blocked";
+
+  validateCompetitorAdsIntelligence(result.competitor_ads);
+  if (result.competitor_ads.links.google_sheet !== googleSheet.url) {
+    throw new Error("The competitor-ad intelligence Sheet link does not match the verified deliverable.");
+  }
+  if (!isRecord(result.research_artifacts)
+    || !hasExactKeys(result.research_artifacts, Object.keys(RESEARCH_ARTIFACT_FILENAMES))) {
+    throw new Error("The five durable Research artifact receipts are incomplete.");
+  }
+  for (const key of Object.keys(RESEARCH_ARTIFACT_FILENAMES) as ResearchArtifactKey[]) {
+    const receipt = result.research_artifacts[key];
+    if (!isRecord(receipt)
+      || !hasExactKeys(receipt, ["filename", "sha256", "verified"])
+      || receipt.filename !== RESEARCH_ARTIFACT_FILENAMES[key]
+      || typeof receipt.sha256 !== "string"
+      || !/^[a-f0-9]{64}$/.test(receipt.sha256)
+      || receipt.verified !== true) {
+      throw new Error(`The ${RESEARCH_ARTIFACT_FILENAMES[key]} receipt is invalid.`);
+    }
+  }
+
+  const shouldBePartial = hasLimitedPrompt || monitoring.status === "blocked";
   if ((shouldBePartial && result.status !== "partial") || (!shouldBePartial && result.status !== "complete")) {
-    throw new Error("The run status does not match its research coverage and monitoring receipts.");
+    throw new Error("The run status does not match its prompt and monitoring receipts.");
   }
   assertNoSecretMaterial(result, "Research result");
   if (!scanForExampleLeaks(result).passed) throw new Error("The result contains prohibited structural-example material.");

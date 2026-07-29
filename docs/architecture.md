@@ -1,40 +1,38 @@
 # Architecture
 
 ```text
-One-page browser intake
-        |
-        v
-Same-origin /api/run boundary
-        |
-        v
-Configured secure runner
-        |
-        +-- canonical lead-generation-ads-discovery-intelligence skill
-        +-- public research tools
-        +-- native Google Doc and Sheet connector
-        +-- Meta Ads Intelligence adapter
-        |       +-- project-isolated watchlist and archive
-        |       +-- one idempotent nightly schedule
-        |       +-- active or blocked monitoring receipt
-        |
-        v
-Strict response validation
-        |
-        +-- Open Google Doc
-        +-- Open Google Sheet
-        +-- Download Markdown
+Authenticated browser
+  |
+  +-- Research tab
+  |     +-- four inputs
+  |     +-- owner-scoped saved sets -> D1
+  |     +-- POST /api/run -> secure runner
+  |           +-- authenticated owner -> owner-isolated Drive connection
+  |           +-- fixed five-prompt research sequence
+  |           +-- public research tools
+  |           +-- Doc, Sheet, and Markdown -> Negroni Research folder
+  |           +-- Meta Ads Intelligence nightly monitor
+  |           +-- strict result receipt
+  |
+  +-- Settings tab
+        +-- Codex OAuth --------+
+        +-- Gemini API key -----+-> server-side credential broker
+        +-- Google OAuth -------+
 ```
 
-The browser receives no runner token. Attachments are forwarded for the active request and are not persisted by the page. The app rejects noncanonical engines, extra or missing outputs, non-Google links, unverified native files, filename drift, failed parity/evidence checks, unresolved citations, secret-like material, and structural-example leakage.
+The browser receives no runner or provider token. Research sets contain only
+the four intake values and owner/timestamp metadata. Provider secrets stay in
+the credential broker and are never written to D1. The broker owns the Google
+authorization-code callback, OAuth state verification, encrypted refresh-token
+storage, refresh, and revocation handling. The app accepts only sanitized
+connection metadata and an HTTPS authorization URL.
 
-Meta Ads Intelligence stays runner-side behind a stable monitoring contract.
-The initial run resolves exact advertiser watches. The runner must reuse one
-scheduler owner, update the same isolated archive and Google Sheet, and return
-a durable receipt. An active receipt requires a non-empty schedule ID, at least
-one verified watch, and a real next-run timestamp. Without an authorized
-collection adapter, the research result is `partial` and the monitoring receipt
-is `blocked`.
+The app rejects noncanonical engines, a changed prompt source or order, extra
+or missing outputs, non-Google links, unverified native files, filename drift,
+failed parity/evidence checks, unresolved citations, secret-like material, and
+structural-example leakage.
 
-The current Sites environment has no configured secure runner, Google Workspace
-connector, or runner-side monitoring adapter. Its honest runtime state is
-`blocked`; it does not simulate research or schedules.
+Meta Ads Intelligence remains runner-side behind a stable monitoring contract.
+An active receipt requires a durable schedule ID, at least one verified watch,
+and a real next-run timestamp. Missing authorization returns `partial` research
+with a `blocked` monitoring receipt.

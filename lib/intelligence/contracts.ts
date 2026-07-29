@@ -1,14 +1,18 @@
-export const FIELD_STATES = ["answered", "unknown", "research_this", "not_applicable"] as const;
-export type FieldState = (typeof FIELD_STATES)[number];
-export type IntakeField = { state: FieldState; value: string };
+import type {
+  CompetitorAdsIntelligence,
+  ResearchArtifactReceipts,
+} from "@/lib/meta-ads/contracts";
 
-export const OPTIONAL_FIELD_IDS = [
-  "offer_service", "industry_problem", "geography", "languages", "business_model",
-  "conversion_event", "lead_buyer", "buyer_organization_types", "end_customer_audience",
-  "qualification_requirements", "disqualifiers", "competitors", "platforms_channels",
-  "economics", "compliance_restrictions", "research_depth", "urls", "additional_instructions",
+export const PROMPT_SOURCE_DOCUMENT_ID = "1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o";
+
+export const RESEARCH_PROMPTS = [
+  "market_awareness",
+  "competitor_research",
+  "customer_avatar_psychographics",
+  "master_marketing_intelligence",
+  "brand_tone_of_voice",
 ] as const;
-export type OptionalFieldId = (typeof OPTIONAL_FIELD_IDS)[number];
+export type ResearchPromptId = (typeof RESEARCH_PROMPTS)[number];
 
 export type CompetitorMonitoringRequest = {
   enabled: true;
@@ -20,18 +24,28 @@ export type CompetitorMonitoringRequest = {
 
 export type IntelligenceIntake = {
   contract: "lead-generation-intelligence-intake";
-  contract_version: "3.0";
-  project_name: string;
-  market_context: string;
-  fields: Record<OptionalFieldId, IntakeField>;
-  attachments: Array<{ name: string; size: number; type: string; last_modified: number }>;
+  contract_version: "4.0";
+  offer_or_lead_type: string;
+  industry: string;
+  country_region: string;
+  target_age_range: string;
   allowed_actions: ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"];
   research_engine: "lead-generation-ads-discovery-intelligence";
+  prompt_source: {
+    document_id: typeof PROMPT_SOURCE_DOCUMENT_ID;
+    prompt_ids: typeof RESEARCH_PROMPTS;
+  };
   competitor_monitoring: CompetitorMonitoringRequest;
 };
 
 export type RunCapability = { available: boolean; status: "ready" | "blocked"; blocker: string | null };
 type GoogleOutput = { title: string; url: string; verified: true };
+type GoogleSheetOutput = {
+  title: string;
+  status: "published";
+  url: string;
+  verified: true;
+};
 
 export type CompetitorMonitoringReceipt = {
   engine: "meta-ads-intelligence";
@@ -46,36 +60,33 @@ export type CompetitorMonitoringReceipt = {
   blocker: string | null;
 };
 
-export const RESEARCH_LANES = [
-  "client",
-  "market_awareness",
-  "b2b_lead_buyer",
-  "b2c_customer",
-  "competitors",
-  "master_synthesis",
-] as const;
-export type ResearchLane = (typeof RESEARCH_LANES)[number];
-export type ResearchCoverage = Record<ResearchLane, {
-  status: "complete" | "limited";
-  limitation: string | null;
-}>;
+export type PromptExecutionReceipt = {
+  source_document_id: typeof PROMPT_SOURCE_DOCUMENT_ID;
+  source_modified_at: string;
+  prompts: Record<ResearchPromptId, {
+    status: "complete" | "limited";
+    limitation: string | null;
+  }>;
+};
 
 export type RunResult = {
   contract: "lead-generation-intelligence-result";
-  contract_version: "3.0";
+  contract_version: "4.0";
   run_id: string;
   status: "complete" | "partial";
   research_engine: "lead-generation-ads-discovery-intelligence";
   completed_at: string;
   outputs: {
     google_doc: GoogleOutput;
-    google_sheet: GoogleOutput;
+    google_sheet: GoogleSheetOutput;
     markdown: { filename: string; content: string; mime_type: "text/markdown" };
   };
   sources: Array<{ id: string; url: string; title: string; accessed_at: string }>;
   limitations: string[];
-  research_coverage: ResearchCoverage;
+  prompt_execution: PromptExecutionReceipt;
   competitor_monitoring: CompetitorMonitoringReceipt;
+  competitor_ads: CompetitorAdsIntelligence;
+  research_artifacts: ResearchArtifactReceipts;
   validation: {
     exactly_three_outputs: true;
     google_doc_readback: true;
@@ -85,9 +96,43 @@ export type RunResult = {
     citation_integrity: true;
     secret_scan_passed: true;
     example_leak_scan_passed: true;
-    research_coverage_verified: true;
+    five_prompt_sequence_verified: true;
     competitor_monitor_receipt_verified: true;
+    competitor_ads_intelligence_verified: true;
+    research_artifacts_verified: true;
   };
 };
 
 export type RunError = { status: "blocked" | "failed"; error: string };
+
+export type ResearchProfile = {
+  id: string;
+  offer_or_lead_type: string;
+  industry: string;
+  country_region: string;
+  target_age_range: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ProfilesResponse = {
+  available: boolean;
+  records: ResearchProfile[];
+  blocker: string | null;
+};
+
+export type ProviderStatus = {
+  provider: "codex_oauth" | "gemini" | "google_drive";
+  status: "connected" | "not_connected" | "blocked";
+  blocker: string | null;
+  account_email?: string | null;
+  folder_id?: string | null;
+  folder_name?: string | null;
+  auto_store?: boolean;
+};
+
+export type SettingsResponse = {
+  available: boolean;
+  providers: ProviderStatus[];
+  blocker: string | null;
+};

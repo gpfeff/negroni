@@ -48,25 +48,33 @@ try {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(500);
-  for (const text of ["Intake", "Run status", "Nightly competitor ads", "Outputs", "No secure canonical-skill runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
+  for (const text of ["Research setup", "Lead offer or service", "Industry", "Country or region", "Target age range", "Market awareness", "Competitor research", "Customer psychology", "Master research", "Tone of voice", "Run status", "Nightly competitor ads", "Outputs", "No secure five-prompt research runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "exactly three output cards", passed: (await page.locator(".output-card").count()) === 3 });
-  checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run intelligence research" }).isDisabled() });
-  await page.getByText("Add more detail", { exact: true }).click();
-  checks.push({ name: "progressive detail opens on-page", passed: await page.getByLabel("Offer or service answer status").isVisible() });
-  await page.getByText("Add more detail", { exact: true }).click();
+  checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run research" }).isDisabled() });
   await inspect(page, "thin-client-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });
   await inspect(page, "thin-client-mobile");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Settings" }).click();
+  for (const text of ["Connections & storage", "Codex", "Gemini", "Google Drive", "Settings blocked"]) {
+    checks.push({ name: `settings visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  }
+  checks.push({ name: "Codex OAuth disabled without broker", passed: await page.getByRole("button", { name: "Connect Codex OAuth" }).isDisabled() });
+  checks.push({ name: "Google OAuth disabled without broker", passed: await page.getByRole("button", { name: "Connect Google Drive" }).isDisabled() });
+  checks.push({ name: "Gemini key uses password input", passed: await page.getByLabel("Gemini API key").getAttribute("type") === "password" });
+  await inspect(page, "settings-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await inspect(page, "settings-mobile");
   checks.push({ name: "no unexpected console errors", passed: consoleErrors.length === 0 });
   await context.close();
 } finally {
   await browser.close();
 }
 
-const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["1440x1000", "390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
+const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["research: 1440x1000", "research: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (!report.passed) process.exitCode = 1;
