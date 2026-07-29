@@ -72,14 +72,26 @@ authorization is persisted as blocked. The adapter never creates a scheduler.
 
 Settings provides:
 
-- Codex OAuth
-- Gemini API key
+- Codex CLI login
+- Claude Code login
+- Gemini API key or Google OAuth through Application Default Credentials
+- Kie.ai API key for image and video generation
 - Google Workspace OAuth with the minimum `drive.file` scope
+- light, dark, or system appearance
+- Safety or YOLO local operating mode
 
-OAuth and API-key material must be stored only by a secure server-side
-credential broker. The Gemini key is sent directly to that broker and cleared
-from the form. Negroni does not persist secret values in the browser, site
-database, repository, logs, or research payload.
+The installed edition uses each agent CLI's native login. Negroni checks
+`codex login status` or `claude auth status`; it never reads, copies, or
+re-saves their OAuth credentials. Gemini and Kie.ai keys are sent directly to
+the local credential bridge, stored under `~/.negroni` with owner-only file
+permissions, and cleared from the form. Hosted deployments use an equivalent
+server-side credential broker. Negroni does not persist secret values in the
+browser, site database, repository, logs, or research payload.
+
+Safety mode asks before every Git commit. YOLO mode may automate local drafts,
+file writes, and commits. Neither mode can bypass explicit approval for
+spending, budget changes, publishing creative, submitting forms, mutating an
+ad account, or launching traffic.
 
 Google OAuth uses the web-server authorization-code flow with offline access.
 The broker verifies OAuth state, stores refresh tokens securely, and creates or
@@ -128,3 +140,26 @@ npm run qa:visual
 
 Dependencies are runtime state and should live outside the synced Documents
 tree.
+
+## Install locally
+
+Negroni packages as a normal local web app. Install the generated package, then
+run it from any directory:
+
+```bash
+npm install --global ./release/negroni-local-0.8.0.tgz
+negroni start
+```
+
+Open `http://127.0.0.1:3000`. The launcher starts the private loopback
+credential bridge and the web interface together. Run `negroni doctor` to see
+which local agent and Google logins are ready.
+
+Build a fresh installable package with:
+
+```bash
+mkdir -p release
+npm pack --pack-destination release
+```
+
+The package is local-only until an explicit npm publishing decision is made.

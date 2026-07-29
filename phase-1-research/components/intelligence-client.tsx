@@ -15,9 +15,11 @@ import {
   type SettingsResponse,
 } from "@/lib/intelligence/contracts";
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
+import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
 
 type AppView = "home" | "research" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
+type Appearance = "light" | "dark" | "system";
 
 const PHASES = [
   {
@@ -147,8 +149,11 @@ export function IntelligenceClient() {
   const [providerStatuses, setProviderStatuses] = useState<ProviderStatus[]>([]);
   const [settingsBlocker, setSettingsBlocker] = useState<string | null>(null);
   const [geminiKey, setGeminiKey] = useState("");
+  const [kieKey, setKieKey] = useState("");
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
   const [settingsBusy, setSettingsBusy] = useState(false);
+  const [appearance, setAppearance] = useState<Appearance>("system");
+  const [operatingMode, setOperatingMode] = useState<OperatingMode>("safety");
   const [activeResearchSection, setActiveResearchSection] = useState<ResearchSection>("run");
 
   async function refreshProfiles() {
@@ -219,6 +224,29 @@ export function IntelligenceClient() {
     void loadInitialState();
     return () => { active = false; };
   }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const savedAppearance = window.localStorage.getItem("negroni.appearance");
+      const savedOperatingMode = window.localStorage.getItem("negroni.operating-mode");
+      if (savedAppearance === "light" || savedAppearance === "dark" || savedAppearance === "system") {
+        setAppearance(savedAppearance);
+      }
+      if (savedOperatingMode === "safety" || savedOperatingMode === "yolo") {
+        setOperatingMode(savedOperatingMode);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = appearance;
+    window.localStorage.setItem("negroni.appearance", appearance);
+  }, [appearance]);
+
+  useEffect(() => {
+    window.localStorage.setItem("negroni.operating-mode", operatingMode);
+  }, [operatingMode]);
 
   function updateIntake(field: "offer_or_lead_type" | "industry" | "country_region" | "target_age_range", value: string) {
     setIntake((current) => ({ ...current, [field]: value }));
@@ -335,28 +363,38 @@ export function IntelligenceClient() {
       const response = await fetch("/api/settings", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(provider === "gemini" ? { provider, api_key: geminiKey } : { provider }),
+        body: JSON.stringify(
+          provider === "gemini_api"
+            ? { provider, api_key: geminiKey }
+            : provider === "kie_ai"
+              ? { provider, api_key: kieKey }
+              : { provider },
+        ),
       });
-      const payload = await response.json() as { authorization_url?: string; error?: string };
+      const payload = await response.json() as { authorization_url?: string; connected?: boolean; message?: string; error?: string };
       if (!response.ok) throw new Error(payload.error ?? "The provider could not be connected.");
-      if (provider !== "gemini" && payload.authorization_url) {
+      if (payload.authorization_url) {
         const authorizationUrl = new URL(payload.authorization_url);
         if (authorizationUrl.protocol !== "https:") throw new Error("The OAuth authorization URL is invalid.");
         window.location.assign(authorizationUrl.toString());
         return;
       }
-      setSettingsMessage(provider === "gemini" ? "Gemini connected." : "OAuth connection started.");
+      setSettingsMessage(payload.message ?? (payload.connected ? "Connection verified." : "Connection needs one more step."));
       await refreshSettings();
     } catch (error) {
       setSettingsMessage(error instanceof Error ? error.message : "The provider could not be connected.");
     } finally {
       setGeminiKey("");
+      setKieKey("");
       setSettingsBusy(false);
     }
   }
 
-  const codexStatus = providerStatus("codex_oauth");
-  const geminiStatus = providerStatus("gemini");
+  const codexStatus = providerStatus("codex_cli");
+  const claudeStatus = providerStatus("claude_code");
+  const geminiStatus = providerStatus("gemini_api");
+  const geminiOAuthStatus = providerStatus("gemini_oauth");
+  const kieStatus = providerStatus("kie_ai");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
 
@@ -655,13 +693,66 @@ export function IntelligenceClient() {
       ) : (
         <div className="content-column settings-column" id="top">
           <section className="intro" aria-labelledby="settings-title">
-            <p className="kicker">Connections &amp; storage</p>
-            <h1 id="settings-title">Give every run a home.</h1>
-            <p>Connect Google Drive once and Negroni files each research package automatically. OAuth and API keys stay server-side—never in browser storage, project records, source, or logs.</p>
+            <p className="kicker">Your Negroni, your engines</p>
+            <h1 id="settings-title">Choose how the work gets made.</h1>
+            <p>Use Codex or Claude Code as the local operator, connect the media engines you trust, and decide how often Negroni pauses for approval. Secrets stay behind the browser.</p>
           </section>
 
-          <section className="section-card">
+          <section className="section-card settings-section">
+            <div className="settings-heading">
+              <span>01</span>
+              <div><h2>Agent operator</h2><p>Pick either one. Negroni checks the login already owned by the installed command-line tool.</p></div>
+            </div>
             <div className="settings-grid">
+              <article className="provider-card agent-card">
+                <div><span className={`provider-dot provider-${codexStatus.status}`} /><strong>Codex</strong><span className="provider-badge">Local CLI</span></div>
+                <p>Use your existing ChatGPT or API login. Negroni never reads or copies the OAuth token.</p>
+                <small>{codexStatus.status === "connected" ? codexStatus.detail ?? "Signed in" : codexStatus.blocker ?? codexStatus.detail ?? "Login not detected"}</small>
+                <button type="button" onClick={() => void connectProvider("codex_cli")} disabled={!settingsAvailable || settingsBusy}>{codexStatus.status === "connected" ? "Check Codex connection" : "Connect Codex"}</button>
+              </article>
+
+              <article className="provider-card agent-card">
+                <div><span className={`provider-dot provider-${claudeStatus.status}`} /><strong>Claude Code</strong><span className="provider-badge">Local CLI</span></div>
+                <p>Use Claude Code’s own Anthropic, Claude subscription, or enterprise login.</p>
+                <small>{claudeStatus.status === "connected" ? claudeStatus.detail ?? "Signed in" : claudeStatus.blocker ?? claudeStatus.detail ?? "Login not detected"}</small>
+                <button type="button" onClick={() => void connectProvider("claude_code")} disabled={!settingsAvailable || settingsBusy}>{claudeStatus.status === "connected" ? "Check Claude connection" : "Connect Claude Code"}</button>
+              </article>
+            </div>
+          </section>
+
+          <section className="section-card settings-section">
+            <div className="settings-heading">
+              <span>02</span>
+              <div><h2>Generation &amp; storage</h2><p>API keys go straight to the server-side vault and are cleared from this form.</p></div>
+            </div>
+            <div className="settings-grid">
+              <form className="provider-card media-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("kie_ai"); }}>
+                <div><span className={`provider-dot provider-${kieStatus.status}`} /><strong>Kie.ai</strong><span className="provider-badge">Images + video</span></div>
+                <p>The creative media engine. Negroni will check credit and create asynchronous tasks only after the relevant approval gate.</p>
+                <small>{kieStatus.status === "connected" ? kieStatus.detail ?? "Connected" : kieStatus.blocker ?? "Not connected"}</small>
+                <label htmlFor="kie-key">Kie.ai API key</label>
+                <input id="kie-key" type="password" value={kieKey} onChange={(event) => setKieKey(event.target.value)} placeholder="Paste key" autoComplete="off" disabled={!settingsAvailable} />
+                <button type="submit" disabled={!settingsAvailable || settingsBusy || kieKey.trim().length < 20}>Save Kie.ai key</button>
+              </form>
+
+              <form className="provider-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("gemini_api"); }}>
+                <div><span className={`provider-dot provider-${geminiStatus.status === "connected" || geminiOAuthStatus.status === "connected" ? "connected" : geminiStatus.status}`} /><strong>Gemini</strong><span className="provider-badge">Two ways</span></div>
+                <p>Use a Gemini API key now, or connect Google OAuth through Application Default Credentials in the installed edition.</p>
+                <small>
+                  {geminiStatus.status === "connected"
+                    ? "API key connected"
+                    : geminiOAuthStatus.status === "connected"
+                      ? "Google OAuth connected"
+                      : geminiStatus.blocker ?? geminiOAuthStatus.blocker ?? "Not connected"}
+                </small>
+                <label htmlFor="gemini-key">Gemini API key</label>
+                <input id="gemini-key" type="password" value={geminiKey} onChange={(event) => setGeminiKey(event.target.value)} placeholder="Paste key" autoComplete="off" disabled={!settingsAvailable} />
+                <div className="provider-actions">
+                  <button type="submit" disabled={!settingsAvailable || settingsBusy || geminiKey.trim().length < 20}>Save API key</button>
+                  <button type="button" onClick={() => void connectProvider("gemini_oauth")} disabled={!settingsAvailable || settingsBusy || geminiOAuthStatus.status === "blocked"}>Check Google OAuth</button>
+                </div>
+              </form>
+
               <article className="provider-card drive-card">
                 <div className="provider-title">
                   <span className={`provider-dot provider-${googleStatus.status}`} />
@@ -683,29 +774,45 @@ export function IntelligenceClient() {
                       ? "Connected, but automatic storage has not been verified."
                       : googleStatus.blocker ?? "Not connected"}
                 </small>
-                <button type="button" onClick={() => void connectProvider("google_drive")} disabled={!settingsAvailable || settingsBusy}>
+                <button type="button" onClick={() => void connectProvider("google_drive")} disabled={!settingsAvailable || settingsBusy || googleStatus.status === "blocked"}>
                   {googleStatus.status === "connected" ? "Reconnect Google Drive" : "Connect Google Drive"}
                 </button>
               </article>
-
-              <article className="provider-card">
-                <div><span className={`provider-dot provider-${codexStatus.status}`} /><strong>Codex</strong></div>
-                <p>Connect Codex through its OAuth flow. No Codex password or token is entered into Negroni.</p>
-                <small>{codexStatus.status === "connected" ? "Connected" : codexStatus.blocker ?? "Not connected"}</small>
-                <button type="button" onClick={() => void connectProvider("codex_oauth")} disabled={!settingsAvailable || settingsBusy}>{codexStatus.status === "connected" ? "Reconnect Codex" : "Connect Codex OAuth"}</button>
-              </article>
-
-              <article className="provider-card">
-                <div><span className={`provider-dot provider-${geminiStatus.status}`} /><strong>Gemini</strong></div>
-                <p>Use Gemini for approved research steps. The key is submitted once to the secure credential broker and immediately cleared here.</p>
-                <small>{geminiStatus.status === "connected" ? "Connected" : geminiStatus.blocker ?? "Not connected"}</small>
-                <label htmlFor="gemini-key">Gemini API key</label>
-                <input id="gemini-key" type="password" value={geminiKey} onChange={(event) => setGeminiKey(event.target.value)} placeholder="Enter key" autoComplete="off" disabled={!settingsAvailable} />
-                <button type="button" onClick={() => void connectProvider("gemini")} disabled={!settingsAvailable || settingsBusy || geminiKey.trim().length < 20}>Save Gemini key</button>
-              </article>
-
             </div>
-            {settingsBlocker ? <div className="settings-blocker"><strong>Settings blocked</strong><p>{settingsBlocker}</p></div> : null}
+          </section>
+
+          <section className="section-card settings-section">
+            <div className="settings-heading">
+              <span>03</span>
+              <div><h2>Look &amp; guardrails</h2><p>These preferences stay on this device. Campaign safety rules remain part of every durable action receipt.</p></div>
+            </div>
+            <div className="preference-grid">
+              <fieldset className="preference-card">
+                <legend>Appearance</legend>
+                <div className="segmented-control">
+                  {(["light", "dark", "system"] as const).map((option) => (
+                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)}>
+                      {option[0].toUpperCase() + option.slice(1)}
+                    </button>
+                  ))}
+                </div>
+                <p>System follows this computer’s light or dark setting.</p>
+              </fieldset>
+
+              <fieldset className={`preference-card mode-card mode-${operatingMode}`}>
+                <legend>Operating mode</legend>
+                <div className="segmented-control">
+                  <button className={operatingMode === "safety" ? "selected" : ""} type="button" onClick={() => setOperatingMode("safety")}>Safety</button>
+                  <button className={operatingMode === "yolo" ? "selected" : ""} type="button" onClick={() => setOperatingMode("yolo")}>YOLO</button>
+                </div>
+                <p>{operatingModeCopy(operatingMode)}</p>
+                <strong>Spending, publishing, forms, budgets, and live traffic always stop for explicit approval.</strong>
+              </fieldset>
+            </div>
+          </section>
+
+          <section className="settings-feedback" aria-live="polite">
+            {settingsBlocker ? <div className="settings-blocker"><strong>Connections need the installed Negroni bridge</strong><p>{settingsBlocker}</p></div> : null}
             {settingsMessage ? <p className="inline-message" role="status">{settingsMessage}</p> : null}
           </section>
         </div>

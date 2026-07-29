@@ -1,6 +1,13 @@
 import type { ProviderStatus, SettingsResponse } from "@/lib/intelligence/contracts";
 
-export const PROVIDERS = ["codex_oauth", "gemini", "google_drive"] as const;
+export const PROVIDERS = [
+  "codex_cli",
+  "claude_code",
+  "gemini_api",
+  "gemini_oauth",
+  "kie_ai",
+  "google_drive",
+] as const;
 export const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 export const GOOGLE_DRIVE_FOLDER_NAME = "Negroni Research";
 
@@ -21,12 +28,13 @@ function parseProviderStatus(value: unknown): ProviderStatus {
   }
   const status = value.status as ProviderStatus["status"];
   const blocker = optionalText(value.blocker, 500);
+  const detail = optionalText(value.detail, 500);
   if (status === "blocked" && !blocker) {
     throw new Error("The credential broker omitted a provider blocker.");
   }
 
   const provider = value.provider as ProviderStatus["provider"];
-  if (provider !== "google_drive") return { provider, status, blocker };
+  if (provider !== "google_drive") return { provider, status, blocker, detail };
 
   const accountEmail = optionalText(value.account_email, 320);
   const folderId = optionalText(value.folder_id, 256);

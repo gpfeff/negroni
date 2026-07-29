@@ -6,7 +6,7 @@ Repository path: `phase-1-research/`
 
 ## State
 
-Version 0.7 implements the Negroni application shell and Phase 1 interface on
+Version 0.8 implements the Negroni application shell and Phase 1 interface on
 one route:
 
 - a branded Home workspace with a focused Phase 1 tool board, factual research
@@ -26,8 +26,13 @@ one route:
 - a compact Competitor Ads Intelligence module with refresh health, watched
   competitors, active/new/changed ads, creative-family counts, coverage
   limitations, and access-controlled artifact links;
-- Settings tab for Google Drive OAuth/automatic filing, Codex OAuth, and a
-  Gemini API key.
+- Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai,
+  Google Drive, appearance, and Safety/YOLO mode;
+- an installable `@negroni/local` package with the `negroni start` and
+  `negroni doctor` commands; and
+- a loopback-only credential bridge that keeps API keys under `~/.negroni`
+  with owner-only permissions and checks native CLI authentication without
+  copying OAuth tokens.
 
 Saved sets use the site D1 binding and contain the four research values, owner
 identity, timestamps, Markdown seed revisions, review messages, and approval
@@ -64,10 +69,12 @@ The server-only Meta Ads Intelligence adapter now:
 - never installs a scheduler.
 
 Live research remains correctly **blocked** because the Sites runtime has no
-secure research runner variables. Provider connections remain correctly
-**blocked** because it has no credential-broker variables. No fake run, Google
-file, provider connection, schedule, watch count, finding, or parity state is
-present.
+secure research runner variables. Hosted provider connections remain correctly
+**blocked** because it has no credential-broker variables. The installed
+edition verifies Codex as connected on this machine; Claude Code is installed
+but logged out, and Gemini OAuth is blocked until `gcloud` is installed. No
+fake run, Google file, provider connection, schedule, watch count, finding, or
+parity state is present.
 
 The existing owner-restricted Site and project ID are preserved:
 `https://lead-intelligence-workbench.g-pfeffer.chatgpt.site`.
@@ -81,6 +88,9 @@ The existing owner-restricted Site and project ID are preserved:
 - Saved-set endpoint and D1 schema: `app/api/profiles/route.ts`, `db/`, `drizzle/`
 - Provider endpoint and safe response parsing: `app/api/settings/route.ts`,
   `lib/provider-settings.ts`
+- Local launcher and credential bridge: `bin/negroni.mjs`,
+  `scripts/local-broker.mjs`, `scripts/local-doctor.mjs`
+- Safety/YOLO boundary: `lib/operating-policy.ts`
 - Intake/result contracts: `lib/intelligence/`
 - Meta Ads adapter, profile boundary, artifact mapper, and snapshot validation:
   `lib/meta-ads/`
@@ -92,9 +102,10 @@ The existing owner-restricted Site and project ID are preserved:
 
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
-- Contract/security tests: 29/29 passed
+- Contract/security tests: 31/31 passed
 - Vinext production build: passed
-- Visual QA: passed for Home, Research, and Settings at 1440×1000 and 390×844
+- Install smoke test: global package, local app, and six-provider Settings API passed
+- Visual QA: light and dark Settings passed in a real browser at 1280×720
 - Accessibility: no serious or critical Axe violations
 - Browser runtime: no unexpected console errors or horizontal overflow
 
@@ -110,9 +121,8 @@ Configure these server-side values with their real services:
 
 The runner must invoke the implemented Meta Ads Intelligence adapter, expose
 access-controlled report URLs, and provide an authorized collection route.
-The broker must implement
-owner-scoped Codex OAuth, Gemini secret storage, and Google OAuth with
-`drive.file` and automatic filing in `Negroni Research`.
+The hosted broker must implement the six-provider contract. The local bridge
+still needs a Google OAuth client ID before Google Drive can connect.
 
 ## Remaining risks
 
@@ -123,7 +133,9 @@ owner-scoped Codex OAuth, Gemini secret storage, and Google OAuth with
   create one. The existing `pay-per-call` Hermes owner was not changed.
 - Google projection remains unverified and optional; no Google action was
   performed by this integration.
-- Broker connection flows need integration tests against the eventual service.
+- Hosted broker connection flows need integration tests against the eventual service.
+- The local Kie.ai and Gemini key vault is implemented, but no real key was
+  entered and no paid generation request was made.
 - D1 record persistence needs one production authenticated save/reload check
   after the deployed binding is provisioned.
 - Edited seed revisions do not yet regenerate the Google Doc or Markdown

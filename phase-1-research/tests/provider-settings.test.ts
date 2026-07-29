@@ -17,8 +17,11 @@ function connectedSettings(): {
     available: true,
     blocker: null,
     providers: [
-      { provider: "codex_oauth", status: "connected", blocker: null },
-      { provider: "gemini", status: "not_connected", blocker: null },
+      { provider: "codex_cli", status: "connected", blocker: null },
+      { provider: "claude_code", status: "not_connected", blocker: null },
+      { provider: "gemini_api", status: "not_connected", blocker: null },
+      { provider: "gemini_oauth", status: "not_connected", blocker: null },
+      { provider: "kie_ai", status: "not_connected", blocker: null },
       {
         provider: "google_drive",
         status: "connected",
@@ -33,7 +36,7 @@ function connectedSettings(): {
 }
 
 test("provider settings require the complete supported-provider set", () => {
-  assert.equal(parseSettingsResponse(connectedSettings()).providers.length, 3);
+  assert.equal(parseSettingsResponse(connectedSettings()).providers.length, 6);
   const incomplete = connectedSettings();
   incomplete.providers.pop();
   assert.throws(() => parseSettingsResponse(incomplete), /complete provider state/);
@@ -41,7 +44,7 @@ test("provider settings require the complete supported-provider set", () => {
 
 test("connected Google Workspace requires safe automatic filing metadata", () => {
   const missingFolder = connectedSettings();
-  missingFolder.providers[2].folder_id = "";
+  missingFolder.providers[5].folder_id = "";
   assert.throws(() => parseSettingsResponse(missingFolder), /incomplete Google Workspace/);
 
   assert.equal(GOOGLE_DRIVE_SCOPE, "https://www.googleapis.com/auth/drive.file");
@@ -54,7 +57,7 @@ test("blocked settings and providers require explicit blockers", () => {
   assert.throws(() => parseSettingsResponse(settings), /settings blocker/);
 
   settings.blocker = "Credential broker is unavailable.";
-  settings.providers[0] = { provider: "codex_oauth", status: "blocked", blocker: null };
+  settings.providers[0] = { provider: "codex_cli", status: "blocked", blocker: null };
   assert.throws(() => parseSettingsResponse(settings), /provider blocker/);
 });
 
@@ -75,7 +78,7 @@ test("workspace identity is normalized and local preview stays isolated", () => 
 
 test("sanitized provider status never forwards broker credential fields", () => {
   const settings = connectedSettings();
-  settings.providers[2].refresh_token = "must-not-cross-the-boundary";
+  settings.providers[5].refresh_token = "must-not-cross-the-boundary";
   const parsed = parseSettingsResponse(settings);
-  assert.equal("refresh_token" in parsed.providers[2], false);
+  assert.equal("refresh_token" in parsed.providers[5], false);
 });
