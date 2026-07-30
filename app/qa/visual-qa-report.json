@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-30T00:48:39.446Z",
+  "generated_at": "2026-07-30T01:00:53.505Z",
   "base_url": "http://127.0.0.1:3010",
   "viewport_states": [
     "home: 1440x1000",
@@ -76,6 +76,10 @@
     },
     {
       "name": "home enters Research",
+      "passed": true
+    },
+    {
+      "name": "Research tools sit directly beneath the Research phase",
       "passed": true
     },
     {

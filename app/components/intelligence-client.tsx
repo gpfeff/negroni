@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { createEmptyIntake } from "@/lib/intelligence/defaults";
 import { ResearchReview } from "@/components/research-review";
 import {
@@ -435,32 +435,33 @@ export function IntelligenceClient() {
           <button className={activeView === "home" ? "nav-active" : ""} type="button" onClick={() => navigate("home")}><span>⌂</span>Home</button>
           <span className="nav-label">Campaign phases</span>
           {PHASES.map((phase) => (
-            <button
-              className={phase.number === "01" && activeView === "research" ? "nav-active" : ""}
-              key={phase.number}
-              type="button"
-              disabled={phase.number !== "01"}
-              onClick={() => phase.number === "01" && navigate("research")}
-            >
-              <span>{phase.number}</span>{phase.name}{phase.number !== "01" ? <small>Planned</small> : null}
-            </button>
+            <Fragment key={phase.number}>
+              <button
+                className={phase.number === "01" && activeView === "research" ? "nav-active" : ""}
+                type="button"
+                disabled={phase.number !== "01"}
+                onClick={() => phase.number === "01" && navigate("research")}
+              >
+                <span>{phase.number}</span>{phase.name}{phase.number !== "01" ? <small>Planned</small> : null}
+              </button>
+              {phase.number === "01" && activeView === "research" ? (
+                <div className="research-subnav" aria-label="Research tools">
+                  {RESEARCH_TOOLS.map((tool) => (
+                    <button
+                      className={activeResearchSection === tool.id ? "research-subnav-active" : ""}
+                      key={tool.id}
+                      type="button"
+                      onClick={() => openResearchSection(tool.id)}
+                      aria-current={activeResearchSection === tool.id ? "page" : undefined}
+                      aria-label={tool.id === "run" ? "Open research intake" : `Open ${tool.name}`}
+                    >
+                      <span>{tool.marker}</span>{tool.name}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </Fragment>
           ))}
-          {activeView === "research" ? (
-            <div className="research-subnav" aria-label="Research tools">
-              {RESEARCH_TOOLS.map((tool) => (
-                <button
-                  className={activeResearchSection === tool.id ? "research-subnav-active" : ""}
-                  key={tool.id}
-                  type="button"
-                  onClick={() => openResearchSection(tool.id)}
-                  aria-current={activeResearchSection === tool.id ? "page" : undefined}
-                  aria-label={tool.id === "run" ? "Open research intake" : `Open ${tool.name}`}
-                >
-                  <span>{tool.marker}</span>{tool.name}
-                </button>
-              ))}
-            </div>
-          ) : null}
         </nav>
         <div className="sidebar-footer">
           <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>

@@ -66,6 +66,7 @@ try {
   checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Tell us the business. We’ll find the signal." }).isVisible() });
 
   await page.setViewportSize({ width: 1440, height: 1000 });
+  checks.push({ name: "Research tools sit directly beneath the Research phase", passed: await page.locator(".side-nav > button.nav-active + .research-subnav").count() === 1 });
   for (const text of ["Run Research", "Lead offer or service", "Industry", "Country or region", "Target age range", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "Master research", "Tone of voice", "Run status", "Nightly competitor ads", "Competitor Ads", "Outputs", "No secure five-prompt research runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
