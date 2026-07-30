@@ -11,12 +11,14 @@
     "setup": "npm --prefix app ci && npm --prefix web ci",
     "dev": "npm --prefix app run dev",
     "dev:app": "npm --prefix app run dev",
+    "dev:local": "npm --prefix app run dev:local",
     "dev:web": "npm --prefix web run dev",
     "build": "npm run build:app && npm run build:web",
     "build:app": "npm --prefix app run build",
     "build:web": "npm --prefix web run build",
     "test": "npm --prefix app test",
+    "test:plugin": "node --test tools/tests/plugin-contract.test.mjs",
     "check": "npm --prefix app run check && npm --prefix web run typecheck",
-    "validate": "npm --prefix app run validate && npm run build:web"
+    "validate": "npm run test:plugin && npm --prefix app run validate && npm run build:web"
   }
 }

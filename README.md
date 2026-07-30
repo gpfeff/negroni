@@ -19,14 +19,14 @@
   <img alt="Live actions: approval gated" src="https://img.shields.io/badge/live_actions-approval_gated-e8dfcf">
 </p>
 
-Negroni helps a person and their preferred AI harness move from market
-understanding to launched, measured, and continuously improved lead-generation
-campaigns.
+Negroni is an open-source, agent-native advertising system. Install it as a
+plugin, connect the data sources you authorize, and use a private live Site as
+the durable campaign workspace.
 
-Negroni is designed for paid social, in-app, and programmatic advertising. It
-supports image and video creative and is intended to work with Codex, Claude
-Code, or any other harness that can read the repository, invoke its tools, and
-preserve its project artifacts.
+The Codex and ChatGPT plugin is the primary distribution. The same phase skills
+and stable tool contracts are designed for Gemini and other compatible agent
+harnesses. The React application in [`app/`](app/) is the Sites workspace, not
+a separate product users must install and operate.
 
 The product is organized around five connected phases:
 
@@ -51,11 +51,12 @@ giving an agent silent authority over spend, customer data, or live accounts.
 
 ## What works today
 
-Negroni is in beta. [`app/`](app/) is the canonical product source and the
-top-level product interface currently includes:
+Negroni is in beta. The repository is now a validated Codex plugin with a
+portable onboarding skill plus one skill for each phase. [`app/`](app/) is the
+live Sites workspace and currently includes:
 
 - an interactive view of all five phases and their artifact handoffs;
-- a local-only project draft flow with explicit external-action boundaries;
+- an owner-scoped project draft flow with explicit external-action boundaries;
 - responsive desktop and mobile layouts.
 
 Phase 1 currently includes:
@@ -70,16 +71,31 @@ Phase 1 currently includes:
 - a separate local-first Meta Ads Intelligence engine linked at
   [`meta-ads-intelligence/`](meta-ads-intelligence/).
 
-The Research interface is validated, but live research remains intentionally
-blocked until a secure runner and verified Google Workspace output path are
-configured. Creative, Launch, Iteration, and Loop currently have defined
-contracts and implementation roadmaps.
+The plugin and Research interface are validated. Live research remains
+intentionally blocked until a secure runner and verified Google Workspace
+output path are configured. Creative, Launch, Iteration, and Loop currently
+have installable skills and implementation contracts, but no live account
+adapter is claimed.
 
 <p align="center">
   <img src="app/qa/screenshots/thin-client-desktop.jpg" alt="Negroni Phase 1 Research interface" width="880">
 </p>
 
-## Quick start
+## Product surfaces
+
+| Surface | Role |
+| --- | --- |
+| **Negroni plugin** | Primary install and agent workflow |
+| **Phase skills** | Portable Research, Creative, Launch, Iteration, and Loop playbooks |
+| **Negroni tools** | Live data and durable actions behind stable contracts; initial hosted tools remain blocked until their runner exists |
+| **Sites workspace** | Private campaign data, artifacts, review, and approvals |
+| **Local launcher** | Contributor development and an optional self-hosted fallback |
+
+The source is public-compatible. Credentials, provider state, customer data,
+collected media, and private campaign artifacts are not part of the plugin or
+Git repository.
+
+## Quick start for contributors
 
 Requirements: Node.js 22.13 or newer and npm 11.
 
@@ -91,6 +107,21 @@ npm run dev
 ```
 
 Open the local URL printed by the development server.
+
+### Development with the canonical local URL
+
+For live development against this checkout, run:
+
+```bash
+npm run dev:local
+```
+
+Then open [http://127.0.0.1:3000/](http://127.0.0.1:3000/). This starts the
+repository's watcher and the private credential broker together, so saved
+source changes reload at that same URL. Only one Negroni local instance can
+own ports 3000 and 47831 at a time: stop `negroni start` before switching to
+`npm run dev:local`, and use `Ctrl-C` to stop the development instance before
+switching back.
 
 To run the older five-phase interface prototype instead:
 
@@ -107,6 +138,10 @@ npm run validate
 This starts and validates the local interface. A real Research run additionally
 requires the server-side runner documented in
 [`app/README.md`](app/README.md).
+
+The local launcher is not the primary user experience. Contributors who need
+the self-hosted fallback can follow
+[local and private remote setup](docs/LOCAL-AND-REMOTE-SETUP.md).
 
 ## Workspace ownership
 

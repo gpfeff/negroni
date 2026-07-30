@@ -6,8 +6,9 @@ Repository path: `app/`
 
 ## State
 
-Version 0.9.0-beta.1 is the canonical Negroni beta application and implements
-the application shell and Phase 1 interface on one route:
+Version 0.9.0-beta.1 is the Negroni beta Sites workspace and implements the
+application shell and Phase 1 interface on one route. The repository also now
+ships a validated plugin manifest, onboarding skill, and five phase skills:
 
 - a branded Home workspace with a focused Phase 1 tool board, factual research
   readiness, runner state, phase progression, and artifact handoffs;
@@ -28,7 +29,7 @@ the application shell and Phase 1 interface on one route:
   limitations, and access-controlled artifact links;
 - Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai,
   Google Drive, appearance, and Safety/YOLO mode;
-- an installable `@negroni/local` package with the `negroni start` and
+- an optional developer `@negroni/local` package with the `negroni start` and
   `negroni doctor` commands; and
 - a loopback-only credential bridge that keeps API keys under `~/.negroni`
   with owner-only permissions and checks native CLI authentication without
@@ -85,6 +86,10 @@ parity state is present.
 The existing owner-restricted Site and project ID are preserved:
 `https://lead-intelligence-workbench.g-pfeffer.chatgpt.site`.
 
+The initial plugin is skill-backed. A hosted Negroni MCP server and its live
+provider tools are not yet implemented; the Site continues to report those
+capabilities as blocked instead of implying access.
+
 ## Artifacts
 
 - Interface: `components/intelligence-client.tsx`, `app/globals.css`
@@ -103,12 +108,14 @@ The existing owner-restricted Site and project ID are preserved:
 - Runner and monitoring contract: `docs/runner-contract.md`
 - Contract tests: `tests/`
 - Responsive QA: `qa/visual-qa-report.json`, `qa/screenshots/`
+- Plugin manifest and portable workflows: `../.codex-plugin/`, `../skills/`
 
 ## Checks
 
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
-- Contract/security tests: 31/31 passed
+- Plugin contract test: 1/1 passed
+- Application contract/security tests: 35/35 passed
 - Vinext production build: passed
 - Install smoke test: global package, local app, and six-provider Settings API passed
 - Visual QA: Home, Research, and Settings passed at 1440×1000 and 390×844

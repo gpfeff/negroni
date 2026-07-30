@@ -1,0 +1,4 @@
+interface:
+  display_name: "Negroni Creative"
+  short_description: "Turn approved research into traceable ad creative"
+  default_prompt: "Use $negroni-creative to develop campaign concepts from the approved Research package."

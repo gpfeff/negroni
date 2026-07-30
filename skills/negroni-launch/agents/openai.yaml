@@ -1,0 +1,4 @@
+interface:
+  display_name: "Negroni Launch"
+  short_description: "Prepare an approval-gated campaign launch"
+  default_prompt: "Use $negroni-launch to prepare a dry-run launch package without publishing."

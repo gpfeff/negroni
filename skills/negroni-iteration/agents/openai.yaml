@@ -1,0 +1,4 @@
+interface:
+  display_name: "Negroni Iteration"
+  short_description: "Turn campaign evidence into controlled experiments"
+  default_prompt: "Use $negroni-iteration to design the next evidence-backed campaign experiment."

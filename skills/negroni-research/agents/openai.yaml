@@ -1,0 +1,4 @@
+interface:
+  display_name: "Negroni Research"
+  short_description: "Build an evidence-backed campaign research package"
+  default_prompt: "Use $negroni-research to prepare an approved Research package for this campaign."

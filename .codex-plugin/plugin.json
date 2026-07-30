@@ -1,0 +1,29 @@
+{
+  "name": "negroni",
+  "version": "0.1.0",
+  "description": "An open-source, agent-native advertising system with five reviewable phases and a live Sites workspace.",
+  "author": {
+    "name": "Greg Pfeffer",
+    "url": "https://github.com/gpfeff"
+  },
+  "homepage": "https://github.com/gpfeff/negroni",
+  "repository": "https://github.com/gpfeff/negroni",
+  "license": "MIT",
+  "keywords": ["advertising", "lead-generation", "research", "creative", "campaigns"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Negroni",
+    "shortDescription": "Run a reviewable AI advertising workflow.",
+    "longDescription": "Move from evidence-backed research through creative, launch preparation, iteration, and continuous learning. Negroni keeps durable artifacts, honest blocked states, and explicit approval gates around spend and live account changes.",
+    "developerName": "Greg Pfeffer",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "websiteURL": "https://github.com/gpfeff/negroni",
+    "defaultPrompt": [
+      "Open or create my private Negroni workspace.",
+      "Start evidence-backed campaign research.",
+      "Show the next honest campaign action."
+    ],
+    "brandColor": "#70283C"
+  }
+}

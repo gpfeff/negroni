@@ -106,6 +106,13 @@ Negroni product and not an ad-account operator.
 - Add contract tests for citations, unknown states, provenance, and private-data
   leakage.
 
+## Competitor-monitoring provider decision
+
+Competitor monitoring is provider-neutral: prefer the authorized official Meta
+adapter when it passes a bounded live proof of the required commercial-ad
+coverage, and add a third-party collector only as an explicit fallback adapter.
+See [the recorded decision](../docs/decisions/2026-07-29-competitor-monitoring-provider-strategy.md).
+
 ## Exit criteria
 
 Research is ready for Phase 2 when a reviewer can answer:

@@ -1,6 +1,16 @@
 # Product decision
 
-The product uses one route with two compact tabs.
+Negroni is plugin-first. Users install the Negroni plugin in ChatGPT or Codex,
+work through portable phase skills, and use an owner-scoped live Site for
+campaign data, artifacts, review, and approvals. The React code in this
+directory implements that Site; it is not a separate standalone product.
+
+The plugin is the distribution layer, skills are the procedural layer, and
+stable Negroni tool contracts are the live-data/action layer. Gemini and other
+compatible agent packages should reuse the same phase skills and tool contracts
+rather than fork campaign behavior.
+
+The Site uses one route with compact workspace views.
 
 Research asks only for the lead offer or service, industry, country or region,
 and target age range. The authenticated user can save each combination as a
@@ -16,10 +26,10 @@ configured review runner, and explicitly apply or reject proposals. One
 revision is approved for Phase 2 with a content fingerprint. Later edits do not
 silently change that pointer or any ads already derived from it.
 
-Settings connects Codex OAuth, Gemini API, and Google Workspace OAuth through a
-server-side credential broker. Secret values never enter browser storage or
-the research-record database. Google uses the minimum `drive.file` scope and a
-dedicated Negroni Research folder.
+Settings reflects Codex/ChatGPT, Gemini, media-provider, and Google Workspace
+readiness through a server-side credential broker. Secret values never enter
+browser storage or the research-record database. Google uses the minimum
+`drive.file` scope and a dedicated Negroni Research folder.
 
 The same research run sends its verified Page-ID watchlist to the runner-side
 Meta Ads Intelligence adapter. Its scheduler-neutral daily operation refreshes
@@ -35,3 +45,6 @@ success state.
 The in-app seed is the canonical Phase 2 input after approval. Run-time Google
 Doc, Markdown, and competitor archive outputs are evidence snapshots; edited
 seed revisions do not claim those exports were synchronized.
+
+The local launcher and SSH path remain supported for contributors and optional
+self-hosting. They are not the default onboarding or customer experience.

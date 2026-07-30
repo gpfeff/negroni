@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start Negroni"
+  short_description: "Open or create the private Negroni workspace"
+  default_prompt: "Use $negroni-start to open or create my private Negroni campaign workspace."

@@ -12,6 +12,7 @@ const appRoot = resolve(import.meta.dirname, "..");
 const doctorPath = join(appRoot, "scripts", "local-doctor.mjs");
 const brokerPath = join(appRoot, "scripts", "local-broker.mjs");
 const launcherPath = join(appRoot, "bin", "negroni.mjs");
+const packagePath = join(appRoot, "package.json");
 const canary = "local-bridge-test-access-token";
 
 async function createCommandStubs() {
@@ -66,6 +67,11 @@ test("local launcher reserves port 3000 unless a Negroni-specific override is se
   const launcher = await readFile(launcherPath, "utf8");
   assert.match(launcher, /process\.env\.NEGRONI_APP_PORT \|\| "3000"/);
   assert.doesNotMatch(launcher, /process\.env\.PORT/);
+});
+
+test("repository local development uses the same loopback launcher", async () => {
+  const packageJson = JSON.parse(await readFile(packagePath, "utf8")) as { scripts: Record<string, string> };
+  assert.equal(packageJson.scripts["dev:local"], "node bin/negroni.mjs start");
 });
 
 test("local broker never returns command output in provider status", async () => {

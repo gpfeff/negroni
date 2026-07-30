@@ -1,6 +1,7 @@
-# Negroni application
+# Negroni Sites workspace
 
-This directory is the canonical Negroni application. The deployed application
+This directory is the live workspace used by the Negroni plugin. It is not a
+separate product users are expected to install or operate. The deployed Site
 opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
 Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
@@ -71,10 +72,10 @@ authorization is persisted as blocked. The adapter never creates a scheduler.
 
 ## Settings and secrets
 
-Settings provides:
+Settings provides the workspace-side connection and preference surface:
 
 - one home for all preferences and connection setup
-- Codex CLI login
+- Codex or ChatGPT plugin readiness
 - Claude Code login
 - Gemini API key or Google OAuth through Application Default Credentials
 - Kie.ai API key for image and video generation
@@ -82,9 +83,9 @@ Settings provides:
 - light, dark, or system appearance
 - Safety or YOLO local operating mode
 
-The sidebar stays navigation-only. Appearance, approval behavior, API-key
-fields, provider status, storage, and the local `negroni start` setup steps all
-live in Settings.
+The sidebar stays navigation-only. Appearance, approval behavior, provider
+status, and storage live in Settings. Local launcher setup remains an optional
+developer fallback and must not be presented as the default product path.
 
 The installed edition uses each agent CLI's native login. Negroni checks
 `codex login status` or `claude auth status`; it never reads, copies, or
@@ -147,25 +148,38 @@ npm run qa:visual
 Dependencies are runtime state and should live outside the synced Documents
 tree.
 
-## Install locally
+For contributor development and the optional self-hosted fallback, see
+[`docs/LOCAL-AND-REMOTE-SETUP.md`](../docs/LOCAL-AND-REMOTE-SETUP.md).
 
-Negroni packages as a normal local web app. Install the generated package, then
-run it from any directory:
+From a checkout, `npm run dev:local` starts the same loopback app-and-bridge
+pair as the installed launcher. Use it when developing the complete local
+experience; `npm run dev` remains the UI-only contributor server.
+
+## Optional local developer package
+
+The local package supports development and self-hosted diagnostics. It is not
+Negroni's primary distribution. Build it from a trusted checkout, then run it
+from any directory:
 
 ```bash
-npm install --global ./release/negroni-local-0.9.0.tgz
+package_dir="$(mktemp -d)"
+npm pack --pack-destination "$package_dir"
+npm install --global "$package_dir"/negroni-local-*.tgz
+negroni doctor
 negroni start
 ```
 
 Open `http://127.0.0.1:3000`. The launcher starts the private loopback
 credential bridge and the web interface together. Run `negroni doctor` to see
-which local agent and Google logins are ready.
-
-Build a fresh installable package with:
-
-```bash
-mkdir -p release
-npm pack --pack-destination release
-```
+which local agent and Google logins are ready; unavailable or signed-out
+providers are readiness findings, not a reason to publish credentials.
 
 The package is local-only until an explicit npm publishing decision is made.
+The launcher is a development runtime, not a production deployment service.
+
+To only build a package without installing it:
+
+```bash
+package_dir="$(mktemp -d)"
+npm pack --pack-destination "$package_dir"
+```

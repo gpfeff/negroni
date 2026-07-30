@@ -465,7 +465,7 @@ export function IntelligenceClient() {
         </nav>
         <div className="sidebar-footer">
           <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
-          <div className="connection-state"><i /> Workspace ready · Negroni v0.9 beta</div>
+          <div className="connection-state"><i /> Plugin workspace · Negroni v0.9 beta</div>
         </div>
       </aside>
 
@@ -474,13 +474,13 @@ export function IntelligenceClient() {
           <button className="campaign-switcher" type="button" onClick={() => navigate("research")}>
             <span>Campaign</span><strong>New lead-generation campaign</strong><b>⌄</b>
           </button>
-          <div className="topbar-state"><span><i /> No live spend</span><b aria-label="User account">GP</b></div>
+          <div className="topbar-state"><span><i /> Private Site · No live spend</span><b aria-label="User account">GP</b></div>
         </header>
 
       {activeView === "home" ? (
         <div className="dashboard" id="top">
           <section className="dashboard-heading" aria-labelledby="home-title">
-            <div><p className="utility-label">Negroni campaign studio</p><h1 id="home-title">What are we making?</h1><p>Pick a tool to get started. Working on <strong>{selectedProfile?.offer_or_lead_type ?? "your next lead campaign"}</strong>.</p></div>
+            <div><p className="utility-label">Negroni agent workspace</p><h1 id="home-title">What should Negroni do next?</h1><p>Work with your agent or choose a phase here. Current campaign: <strong>{selectedProfile?.offer_or_lead_type ?? "your next lead campaign"}</strong>.</p></div>
           </section>
 
           <section className="research-home-layout" aria-label="Research workspace">
@@ -514,7 +514,7 @@ export function IntelligenceClient() {
 
           <section className="dashboard-lower">
             <article className="activity-card">
-              <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Local workspace</small></div>
+              <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Live Site</small></div>
               <div className="empty-state"><span>●</span><div><strong>No runs yet</strong><p>Start Research to create the first prompt receipts and campaign artifact.</p></div></div>
             </article>
             <article className="artifacts-card">
@@ -667,9 +667,9 @@ export function IntelligenceClient() {
       ) : (
         <div className="content-column settings-column" id="top">
           <section className="intro" aria-labelledby="settings-title">
-            <p className="kicker">Your Negroni, your engines</p>
-            <h1 id="settings-title">Choose how the work gets made.</h1>
-            <p>Use Codex or Claude Code as the local operator, connect the media engines you trust, and decide how often Negroni pauses for approval. Secrets stay behind the browser.</p>
+            <p className="kicker">Your Negroni, your agents</p>
+            <h1 id="settings-title">Connect the tools behind your workspace.</h1>
+            <p>Use the Negroni plugin from ChatGPT or Codex, connect the data and media providers you authorize, and keep every live action behind an explicit approval. Secrets stay behind the workspace.</p>
           </section>
 
           <section className="section-card settings-section" id="preferences">
@@ -705,12 +705,12 @@ export function IntelligenceClient() {
           <section className="section-card settings-section" id="operators">
             <div className="settings-heading">
               <span>02</span>
-              <div><h2>Agent operator</h2><p>Pick either one. Negroni checks the login already owned by the installed command-line tool.</p></div>
+              <div><h2>Agent access</h2><p>The plugin is the primary experience. Local agent checks remain available for contributor and self-hosted fallback use.</p></div>
             </div>
             <div className="settings-grid">
               <article className="provider-card agent-card">
-                <div><span className={`provider-dot provider-${codexStatus.status}`} /><strong>Codex</strong><span className="provider-badge">Local CLI</span></div>
-                <p>Use your existing ChatGPT or API login. Negroni never reads or copies the OAuth token.</p>
+                <div><span className={`provider-dot provider-${codexStatus.status}`} /><strong>ChatGPT / Codex</strong><span className="provider-badge">Primary plugin</span></div>
+                <p>Install Negroni once and use the same five phase skills from your agent. This status checks the optional local CLI until hosted tools are connected.</p>
                 <small>{codexStatus.status === "connected" ? codexStatus.detail ?? "Signed in" : codexStatus.blocker ?? codexStatus.detail ?? "Login not detected"}</small>
                 <button type="button" onClick={() => void connectProvider("codex_cli")} disabled={!settingsAvailable || settingsBusy}>{codexStatus.status === "connected" ? "Check Codex connection" : "Connect Codex"}</button>
               </article>
@@ -788,17 +788,17 @@ export function IntelligenceClient() {
           <section className="section-card settings-section" id="local-setup">
             <div className="settings-heading">
               <span>04</span>
-              <div><h2>Local app setup</h2><p>The installed app is the secure bridge between this screen and your command-line logins or API-key vault.</p></div>
+              <div><h2>Developer fallback</h2><p>The local launcher is optional infrastructure for contributors and self-hosted testing, not the normal Negroni experience.</p></div>
             </div>
             <div className={`local-setup-card ${settingsAvailable ? "local-setup-ready" : ""}`}>
               <div className="local-setup-state">
                 <span className={`provider-dot provider-${settingsAvailable ? "connected" : "blocked"}`} />
-                <div><strong>{settingsAvailable ? "Secure bridge ready" : "Secure bridge not connected"}</strong><small>{settingsAvailable ? "Provider controls and key fields are available." : "Start the installed Negroni app to unlock provider controls."}</small></div>
+                <div><strong>{settingsAvailable ? "Local bridge ready" : "Hosted tools not connected"}</strong><small>{settingsAvailable ? "Local provider controls and key fields are available." : "Live provider actions stay blocked until the hosted broker exists; use the launcher only for local development."}</small></div>
               </div>
               <ol className="setup-steps">
-                <li><span>1</span><div><strong>Start Negroni</strong><p>Open Terminal and run <code>negroni start</code>.</p></div></li>
-                <li><span>2</span><div><strong>Return to Settings</strong><p>Your Codex or Claude login status and API-key fields will become available.</p></div></li>
-                <li><span>3</span><div><strong>Add connections here</strong><p>Keys are stored under <code>~/.negroni</code> with owner-only permissions—not in the browser or project.</p></div></li>
+                <li><span>1</span><div><strong>Use only for local development</strong><p>Run <code>negroni start</code> from a trusted checkout.</p></div></li>
+                <li><span>2</span><div><strong>Return to Settings</strong><p>Local agent status and development-only key fields become available.</p></div></li>
+                <li><span>3</span><div><strong>Keep credentials private</strong><p>Local keys stay under <code>~/.negroni</code> with owner-only permissions—not in the browser or project.</p></div></li>
               </ol>
               {settingsBlocker ? <div className="settings-blocker"><strong>Connection setup needed</strong><p>{settingsBlocker}</p></div> : null}
             </div>
