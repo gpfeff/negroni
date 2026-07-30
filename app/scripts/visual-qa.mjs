@@ -48,9 +48,11 @@ try {
   page.on("pageerror", (error) => consoleErrors.push(error.message));
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   await page.waitForTimeout(500);
-  for (const text of ["What are we making?", "Research", "Run Research", "Client", "Customer", "Competitors", "Competitor Ads", "Review & Approve", "Up next", "Campaign pipeline", "Create", "Launch", "Iterate", "Loop"]) {
+  for (const text of ["What are we making?", "Research", "Run Research", "Client", "Customer", "Competitors", "Competitor Ads", "Review & Approve", "Up next"]) {
     checks.push({ name: `home visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
+  checks.push({ name: "home omits redundant phase-summary cards", passed: await page.locator(".pipeline-card").count() === 0 });
+  checks.push({ name: "home omits floating Negroni shortcut", passed: await page.locator(".jarvis-pill").count() === 0 });
   checks.push({
     name: "sidebar keeps appearance and approval controls inside Settings",
     passed: await page.locator(".app-sidebar").getByText("Dark mode", { exact: true }).count() === 0

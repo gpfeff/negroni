@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-29T23:22:13.068Z",
-  "base_url": "http://localhost:3000",
+  "generated_at": "2026-07-30T00:48:39.446Z",
+  "base_url": "http://127.0.0.1:3010",
   "viewport_states": [
     "home: 1440x1000",
     "home: 390x844",
@@ -47,23 +47,11 @@
       "passed": true
     },
     {
-      "name": "home visible: Campaign pipeline",
+      "name": "home omits redundant phase-summary cards",
       "passed": true
     },
     {
-      "name": "home visible: Create",
-      "passed": true
-    },
-    {
-      "name": "home visible: Launch",
-      "passed": true
-    },
-    {
-      "name": "home visible: Iterate",
-      "passed": true
-    },
-    {
-      "name": "home visible: Loop",
+      "name": "home omits floating Negroni shortcut",
       "passed": true
     },
     {

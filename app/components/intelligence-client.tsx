@@ -511,18 +511,6 @@ export function IntelligenceClient() {
 
           </section>
 
-          <section className="pipeline-card" aria-labelledby="pipeline-title">
-            <div className="section-title-row"><div><p className="utility-label">Campaign pipeline</p><h2 id="pipeline-title">Five phases, one evidence trail</h2></div><small>1 ready · 4 planned</small></div>
-            <ol className="dashboard-phases" aria-label="Campaign phases" tabIndex={0}>
-              {PHASES.map((phase) => (
-                <li className={phase.number === "01" ? "dashboard-phase-ready" : ""} key={phase.number}>
-                  <div><span>{phase.number}</span><small>{phase.state}</small></div>
-                  <strong>{phase.name}</strong><p>{phase.verb}</p><code>{phase.artifact}</code>
-                </li>
-              ))}
-            </ol>
-          </section>
-
           <section className="dashboard-lower">
             <article className="activity-card">
               <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Local workspace</small></div>
@@ -851,7 +839,6 @@ export function IntelligenceClient() {
             </article>
           </div>
         </section>
-        <button className="jarvis-pill" type="button" onClick={() => navigate("settings")}><span className="brand-mark" aria-hidden="true" /> Negroni</button>
       </aside>
     </div>
   );

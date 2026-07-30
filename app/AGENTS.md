@@ -8,8 +8,9 @@ handoff. Do not duplicate or weaken the skill’s method.
 
 Keep one application route with a serious B2B SaaS shell: Home, the five-phase
 sidebar, and Settings. User-facing phase labels are Research, Create, Launch,
-Iterate, and Loop. Home shows campaign state, phase progression, agent
-readiness, artifact handoffs, and the honest next action. Research contains
+Iterate, and Loop. Keep Home sparse: show the Research action cards and the
+honest next action, while leaving phase progression in the persistent sidebar
+instead of duplicating it as a second five-card pipeline. Research contains
 saved sets, the four required inputs, five-prompt sequence, run status, monitor
 receipt, three outputs, and the interactive seed editor. Settings is the single
 home for appearance, commit approvals, supported provider connections, API
