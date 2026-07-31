@@ -698,7 +698,7 @@ html[data-theme="system"] .app-sidebar {
 .connection-state { display: flex; align-items: center; gap: 7px; padding: 9px 11px 0; color: #7d889a; font-size: 10px; }
 .connection-state i { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 3px rgb(77 183 125 / 12%); }
 
-.app-main { min-width: 0; background-color: var(--studio-bg); background-image: radial-gradient(circle, #21304a 1px, transparent 1px); background-size: 24px 24px; }
+.app-main { min-width: 0; background: var(--studio-bg); }
 .app-topbar { display: none; }
 .dashboard {
   width: min(100% - 80px, 1240px);
