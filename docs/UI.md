@@ -92,6 +92,7 @@ The top-level UI establishes these reusable patterns:
 - campaign identity and local/live state;
 - five-phase selector;
 - selected phase contract;
+- a Tools area for cross-phase operators such as Draper;
 - explicit input and output artifacts;
 - next honest action;
 - durable artifact handoff;
@@ -101,6 +102,12 @@ The top-level UI establishes these reusable patterns:
 Phase 1 should reuse these patterns rather than inventing a second Negroni
 brand. Its intake may remain focused, but it should visually connect Research
 to the larger five-phase system.
+
+Draper is not a sixth phase. It belongs under Tools as the conversational
+control plane across all five phases. Its screen must distinguish evidence,
+freshness, assumptions, limitations, proposed changes, recorded decisions, and
+completed external actions. A hosted Site must not imply that it can read a
+machine-local database or vault from browser code.
 
 ## Phase language
 
@@ -197,8 +204,10 @@ When building Phase 1 Research:
   [`../web/public/negroni-madison-hero.png`](../web/public/negroni-madison-hero.png)
 - Generated loop diagram:
   [`../web/public/negroni-five-phase-loop.png`](../web/public/negroni-five-phase-loop.png)
-- Favicon and loop mark:
-  [`../web/public/favicon.svg`](../web/public/favicon.svg)
+- Canonical Negroni icon (glass on navy; reuse for app, plugin, and favicons):
+  [`../app/public/negroni-glass-icon-v2.webp`](../app/public/negroni-glass-icon-v2.webp)
+- Web favicon derivative:
+  [`../web/public/favicon.png`](../web/public/favicon.png)
 - Foundation QA report:
   [`../web/qa/visual-qa-report.md`](../web/qa/visual-qa-report.md)
 - Pre-refresh interaction screenshots:

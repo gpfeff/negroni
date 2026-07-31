@@ -18,7 +18,8 @@
     "build:web": "npm --prefix web run build",
     "test": "npm --prefix app test",
     "test:plugin": "node --test tools/tests/plugin-contract.test.mjs",
+    "test:capture": "node --test tools/tests/meta-ad-visible-capture.test.mjs tools/tests/meta-ad-capture-extension-package.test.mjs",
     "check": "npm --prefix app run check && npm --prefix web run typecheck",
-    "validate": "npm run test:plugin && npm --prefix app run validate && npm run build:web"
+    "validate": "npm run test:plugin && npm run test:capture && npm --prefix app run validate && npm run build:web"
   }
 }

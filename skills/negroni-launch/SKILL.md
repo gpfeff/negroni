@@ -37,3 +37,7 @@ Create or update:
 5. `launch-receipt.json`
 
 Never infer platform acceptance, active delivery, or campaign performance from a successful request alone.
+
+## Learning Core contract
+
+Use Learning Core evidence to explain why a launch package or experiment was proposed, but keep recommendations, recorded decisions, and external execution separate. A Draper approval record is not authorization to publish, spend, change a budget, launch traffic, or mutate an ad account. Write only verified launch and tracking receipts back as scoped evidence.

@@ -1,0 +1,29 @@
+{
+  "contract": "negroni-competitor-fixture-project",
+  "contract_version": "1.0",
+  "project_id": "fixture-clean",
+  "profile": "fixture-clean",
+  "provider": "normalized_import",
+  "watch": {
+    "id": "example-signal",
+    "page_id": "920000000000001",
+    "advertiser_name": "Example Signal Studio"
+  },
+  "nights": [
+    {
+      "number": 1,
+      "run_id": "run_fixture_clean_night_1",
+      "observed_at": "2026-07-29T08:00:00Z",
+      "payload": "../night-1.json"
+    },
+    {
+      "number": 2,
+      "run_id": "run_fixture_clean_night_2",
+      "observed_at": "2026-07-30T08:00:00Z",
+      "payload": "../night-2.json"
+    }
+  ],
+  "fake_google": true,
+  "fake_ai_failure_night": null,
+  "fake_sheet_link_failure_night": null
+}

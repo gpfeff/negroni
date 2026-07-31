@@ -42,3 +42,7 @@ Create or update:
 5. `loop-report.md`
 
 Stop on budget, tracking, policy, data-quality, authorization, or operational guardrail failures. A configured schedule is not running until a current receipt proves it.
+
+## Draper and Learning Core
+
+Draper is Loop's conversational control plane. Retrieve current brand-scoped learnings, normalized outcomes, contradictions, retrieval receipts, and freshness through validated tools. Draper may propose the next experiment or Loop-policy diff and may record an explicitly approved local decision; it never executes that proposal. Keep the relational database authoritative, the vault generated and readable, and vector indexes disposable.

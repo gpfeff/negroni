@@ -88,3 +88,13 @@ The first complete Loop milestone is a fixture-backed cycle that identifies an
 uncertainty, refreshes Research, creates a Creative proposal, prepares a Launch
 diff, evaluates a simulated Iteration result, and appends a Learning entry
 without making any live external change.
+
+## Draper and central Learning Core
+
+Draper is the natural-language control plane over Loop state. It retrieves
+brand-scoped catalog records, outcomes, learnings, contradictions, and
+freshness through validated intents; it never accepts arbitrary SQL. It may
+prepare an experiment or Loop-policy diff and record an exact approved local
+decision, but a proposal or decision performs no external action. SQLite is
+the current authority, FTS5 is dependable retrieval, vector entries are
+rebuildable, and the vault is a human-readable projection.

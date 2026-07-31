@@ -1,7 +1,7 @@
 {
   "name": "negroni",
-  "version": "0.1.0",
-  "description": "An open-source, agent-native advertising system with five reviewable phases and a live Sites workspace.",
+  "version": "0.1.0+codex.20260730203038",
+  "description": "An open-source, agent-native advertising system with five reviewable phases, Draper, and a shared Learning Core.",
   "author": {
     "name": "Greg Pfeffer",
     "url": "https://github.com/gpfeff"
@@ -9,21 +9,34 @@
   "homepage": "https://github.com/gpfeff/negroni",
   "repository": "https://github.com/gpfeff/negroni",
   "license": "MIT",
-  "keywords": ["advertising", "lead-generation", "research", "creative", "campaigns"],
+  "keywords": [
+    "advertising",
+    "lead-generation",
+    "research",
+    "creative",
+    "campaigns",
+    "learning-core",
+    "draper"
+  ],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Negroni",
     "shortDescription": "Run a reviewable AI advertising workflow.",
-    "longDescription": "Move from evidence-backed research through creative, launch preparation, iteration, and continuous learning. Negroni keeps durable artifacts, honest blocked states, and explicit approval gates around spend and live account changes.",
+    "longDescription": "Talk to Draper across evidence-backed research, creative, launch preparation, iteration, and continuous learning. Negroni keeps an authoritative local Learning Core, readable vault projections, durable artifacts, honest blocked states, and explicit approval gates around spend and live account changes.",
     "developerName": "Greg Pfeffer",
     "category": "Productivity",
-    "capabilities": ["Interactive"],
+    "capabilities": [
+      "Interactive"
+    ],
     "websiteURL": "https://github.com/gpfeff/negroni",
     "defaultPrompt": [
       "Open or create my private Negroni workspace.",
-      "Start evidence-backed campaign research.",
-      "Show the next honest campaign action."
+      "Ask Draper how my campaign loop is doing.",
+      "Start evidence-backed campaign research."
     ],
-    "brandColor": "#70283C"
+    "brandColor": "#70283C",
+    "composerIcon": "./app/public/negroni-glass-icon-v2.webp",
+    "logo": "./app/public/negroni-glass-icon-v2.webp"
   }
 }

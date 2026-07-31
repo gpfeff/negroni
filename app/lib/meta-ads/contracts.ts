@@ -1,3 +1,5 @@
+import type { ProviderName } from "../competitor-research/contracts";
+
 export const RESEARCH_ARTIFACT_FILENAMES = {
   research_brief: "research-brief.md",
   evidence_index: "evidence-index.json",
@@ -14,6 +16,20 @@ export type ResearchArtifactReceipt = {
   verified: true;
 };
 export type ResearchArtifactReceipts = Record<ResearchArtifactKey, ResearchArtifactReceipt>;
+
+export type ProviderNeutralCollectionReceipt = {
+  contract: "negroni-competitor-collection-receipt";
+  contract_version: "1.0";
+  project_id: string;
+  run_id: string;
+  provider: ProviderName;
+  status: "complete" | "complete_zero" | "partial" | "suspect" | "blocked" | "skipped" | "failed";
+  resume_run_id: string | null;
+  google_action: "not_requested" | "published" | "blocked";
+  scheduler_action: "none";
+  external_actions: Array<"google_publish">;
+  limitations: string[];
+};
 
 export type MetaAdsEvidence = {
   library_id: string;
@@ -99,6 +115,7 @@ export type CompetitorAdsIntelligence = {
   landing_page_changes: number;
   coverage_limitations: string[];
   claims_boundary: string;
+  collection_receipt?: ProviderNeutralCollectionReceipt;
   links: {
     database: string | null;
     report_markdown: string | null;

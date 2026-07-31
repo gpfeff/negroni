@@ -1,5 +1,20 @@
 # Local tools
 
+## Meta Ad Library visible capture
+
+[`meta-ad-capture-extension/`](meta-ad-capture-extension/) is an optional,
+self-contained Chrome/Edge helper for user-triggered public Meta Ad Library
+evidence. It exports only rendered cards into a validated normalized manual
+import, always marked partial. It does not automate collection or use cookies,
+hidden Meta endpoints, signed media URLs, a paid provider, Airtable, or Google
+Sheets.
+
+Run its contract tests with:
+
+```sh
+npm run test:capture
+```
+
 ## Synced artifact routing audit
 
 `artifact-routing-audit.mjs` protects the boundary between:

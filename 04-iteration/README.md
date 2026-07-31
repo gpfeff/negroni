@@ -60,3 +60,11 @@ The correct order depends on the diagnosed bottleneck and available traffic.
 An experiment is complete when the planned evidence window has closed and the
 decision, caveats, and next action are recorded. “Not enough evidence” is a
 valid result.
+
+## Learning Core input and output
+
+Iteration reads measurements through the normalized warehouse contract and
+records attribution and freshness with each outcome. Results attach as
+supporting evidence or counterevidence to the exact learning version.
+Promotions are sequential and explicit; contradiction preserves both sides of
+the evidence rather than silently reversing a conclusion.

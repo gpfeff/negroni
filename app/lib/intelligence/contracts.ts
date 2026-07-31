@@ -1,5 +1,6 @@
 import type {
   CompetitorAdsIntelligence,
+  ProviderNeutralCollectionReceipt,
   ResearchArtifactReceipts,
 } from "@/lib/meta-ads/contracts";
 
@@ -24,7 +25,13 @@ export type CompetitorMonitoringRequest = {
 
 export type IntelligenceIntake = {
   contract: "lead-generation-intelligence-intake";
-  contract_version: "4.0";
+  contract_version: "5.0";
+  client_customer_name: string;
+  profession_job_title: string;
+  company_name: string;
+  website_or_public_profile_url: string;
+  service_or_offer_purchased: string;
+  competitor_used: string;
   offer_or_lead_type: string;
   industry: string;
   country_region: string;
@@ -92,6 +99,7 @@ export type RunResult = {
   prompt_execution: PromptExecutionReceipt;
   competitor_monitoring: CompetitorMonitoringReceipt;
   competitor_ads: CompetitorAdsIntelligence;
+  competitor_collection?: ProviderNeutralCollectionReceipt;
   research_artifacts: ResearchArtifactReceipts;
   validation: {
     exactly_three_outputs: true;
@@ -113,6 +121,12 @@ export type RunError = { status: "blocked" | "failed"; error: string };
 
 export type ResearchProfile = {
   id: string;
+  client_customer_name: string;
+  profession_job_title: string;
+  company_name: string;
+  website_or_public_profile_url: string;
+  service_or_offer_purchased: string;
+  competitor_used: string;
   offer_or_lead_type: string;
   industry: string;
   country_region: string;

@@ -9,6 +9,11 @@ and Review & Approve. A factual guidance rail shows research readiness, the
 next honest action, runner availability, and spend protection. Research is the
 first executable section; later phases remain visibly planned.
 
+Tools also includes Draper, Negroni's conversational control plane. The Site
+explains its scope and safety boundary but does not expose a machine-local
+SQLite database or private vault to browser code. Actual Draper queries run
+through the installed plugin's validated MCP and stable CLI contracts.
+
 A focused Negroni interface for saving a reusable research set, running the
 five approved research prompts in order, and producing five durable Research
 artifacts:
@@ -27,11 +32,13 @@ authoritative.
 The Research tab asks only:
 
 - Lead offer or service
-- Industry
-- Country or region
-- Target age range
+- Client/customer name, profession or job title, and company
+- Public website or profile URL
+- Service or offer purchased and a competitor they use
+- Industry/niche and location or market served
+- Lead offer or service and target age range for the campaign research scope
 
-Those four inputs feed three visible research streams: Client, Customer, and
+The required profile and research-scope inputs feed three visible research streams: Client, Customer, and
 Competitors. Competitor Ads remains one public-evidence source inside the
 Competitors stream rather than a substitute for the full research method.
 
@@ -127,6 +134,30 @@ Without the runner, research is visibly blocked.
 Without the credential broker, Settings is visibly blocked. The app never
 falls back to fixtures or invents Google IDs, output URLs, research findings,
 or monitoring state.
+
+The repository includes a deployable local runner boundary at
+`bin/research-runner.ts`. It authenticates a server bearer token plus opaque
+owner identity, accepts only the strict customer-profile and research-scope intake, fetches the approved
+prompt source server-side, checkpoints the exact five-prompt sequence, calls
+the stable competitor boundary, and writes immutable five-artifact receipts.
+Its default provider set is intentionally blocked, so starting this process
+does not create a live research capability. Deployment and provider wiring are
+described in [`docs/research-runner-deployment.md`](docs/research-runner-deployment.md).
+
+The installed plugin also provides a local, provider-neutral MCP. It wraps the
+stable CLI for dry-run-default competitor execution and resume, plus sanitized
+capability, Learning Core, Draper, decision, and artifact contracts. It does
+not expose a generic command or SQL tool, raw stdout/stderr, credentials,
+runtime paths, account mutation, publishing, or scheduler activation.
+
+## Draper and Learning Core
+
+The local Learning Core keeps the relational catalog and learning history in
+authoritative SQLite, full-text retrieval in FTS5, optional rebuildable vector
+entries, SHA-256 content-addressed media references, and an
+Obsidian-compatible generated Markdown vault. The first warehouse adapter and
+complete Draper flow are sanitized fixtures only. See
+[`docs/draper-learning-core.md`](docs/draper-learning-core.md).
 
 The connector follows Google's narrow-scope and server-side token guidance:
 [Drive scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)

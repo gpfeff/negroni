@@ -1,7 +1,9 @@
 import type {
   CompetitorAdsIntelligence,
   MetaAdsProjectSnapshot,
+  ProviderNeutralCollectionReceipt,
 } from "./contracts";
+import { PROVIDER_NAMES } from "../competitor-research/contracts";
 import { validateProfileId } from "./profile-id";
 
 const REFRESH_STATES = new Set([
@@ -38,6 +40,37 @@ function assertSnapshotProfile(expected: string, actual: string): void {
   if (validateProfileId(actual) !== validateProfileId(expected)) {
     throw new Error("Meta Ads Intelligence returned data from a different project profile.");
   }
+}
+
+export function validateProviderNeutralCollectionReceipt(value: unknown): ProviderNeutralCollectionReceipt {
+  if (!isRecord(value)
+    || value.contract !== "negroni-competitor-collection-receipt"
+    || value.contract_version !== "1.0"
+    || typeof value.project_id !== "string"
+    || !value.project_id.trim()
+    || typeof value.run_id !== "string"
+    || !value.run_id.trim()
+    || !PROVIDER_NAMES.includes(value.provider as never)
+    || !["complete", "complete_zero", "partial", "suspect", "blocked", "skipped", "failed"].includes(value.status as string)
+    || (value.resume_run_id !== null && (typeof value.resume_run_id !== "string" || !value.resume_run_id.trim()))
+    || !["not_requested", "published", "blocked"].includes(value.google_action as string)
+    || value.scheduler_action !== "none"
+    || !Array.isArray(value.external_actions)
+    || value.external_actions.some((action) => action !== "google_publish")
+    || !Array.isArray(value.limitations)
+    || value.limitations.some((limitation) => typeof limitation !== "string" || !limitation.trim())) {
+    throw new Error("The provider-neutral competitor collection receipt is invalid.");
+  }
+  if (value.status === "partial" && value.resume_run_id === null) {
+    throw new Error("Partial competitor collection receipts require a durable resume run ID.");
+  }
+  if (value.google_action === "published" && !(value.external_actions as unknown[]).includes("google_publish")) {
+    throw new Error("Published Google collection receipts must record the approved external action.");
+  }
+  if (value.google_action !== "published" && (value.external_actions as unknown[]).length) {
+    throw new Error("Blocked or unrequested Google publication cannot claim an external action.");
+  }
+  return value as unknown as ProviderNeutralCollectionReceipt;
 }
 
 export function parseMetaAdsSnapshot(value: unknown, expectedProfile: string): MetaAdsProjectSnapshot {
@@ -95,7 +128,9 @@ export function parseMetaAdsSnapshot(value: unknown, expectedProfile: string): M
 export function toCompetitorAdsIntelligence(
   snapshot: MetaAdsProjectSnapshot,
   links: CompetitorAdsIntelligence["links"],
+  collectionReceipt?: ProviderNeutralCollectionReceipt,
 ): CompetitorAdsIntelligence {
+  if (collectionReceipt) validateProviderNeutralCollectionReceipt(collectionReceipt);
   return {
     engine: "meta-ads-intelligence",
     profile: snapshot.profile,
@@ -111,6 +146,7 @@ export function toCompetitorAdsIntelligence(
     landing_page_changes: snapshot.delta.landing_page_changes,
     coverage_limitations: [...snapshot.limitations],
     claims_boundary: snapshot.claims_boundary,
+    ...(collectionReceipt ? { collection_receipt: collectionReceipt } : {}),
     links: {
       database: secureUrl(links.database),
       report_markdown: secureUrl(links.report_markdown),
@@ -143,6 +179,7 @@ export function validateCompetitorAdsIntelligence(value: unknown): CompetitorAds
     throw new Error("The competitor-ad intelligence summary is invalid.");
   }
   validateProfileId(value.profile);
+  if (value.collection_receipt !== undefined) validateProviderNeutralCollectionReceipt(value.collection_receipt);
   const links = value.links as Record<string, unknown>;
   if (Object.keys(links).sort().join(",") !== "database,google_sheet,report_csv,report_markdown"
     || Object.values(links).some((link) => {

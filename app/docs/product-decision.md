@@ -12,8 +12,10 @@ rather than fork campaign behavior.
 
 The Site uses one route with compact workspace views.
 
-Research asks only for the lead offer or service, industry, country or region,
-and target age range. The authenticated user can save each combination as a
+Research first asks for client/customer name, profession or job title, company,
+public website or profile URL, service or offer purchased, competitor used,
+industry/niche, and location or market served. It then asks for the lead offer
+or service and target age range needed to scope the research. The authenticated user can save each combination as a
 durable research set. The secure runner executes the approved five-prompt
 sequence and creates five durable Research artifacts. The page retains exactly
 three outward actions: one Google Doc, one matching Markdown report, and one

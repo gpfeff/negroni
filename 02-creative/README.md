@@ -6,7 +6,9 @@ how it fits the channel, and what must be reviewed before launch.
 
 ## Inputs
 
-- approved `creative-brief.json`;
+- an approved immutable `creative-brief.json` revision and matching SHA-256;
+- its validated `negroni-research-creative-handoff` pointer, evidence IDs,
+  unknowns, approval timestamp, and originality rule;
 - client brand assets and usage rules;
 - channel, placement, format, duration, and safe-area requirements;
 - required disclosures and prohibited claims;
@@ -38,10 +40,16 @@ how it fits the channel, and what must be reviewed before launch.
 - Platform crops and encodes derive from a master asset where practical.
 - Accessibility, disclosures, and safe-area checks are release requirements.
 - Competitor evidence may inspire a pattern, never a copied execution.
+- Before Creative starts, recompute the exact brief SHA-256 and fail closed if
+  the approval status, Research revision ID/SHA-256, brief SHA-256, evidence
+  IDs, or approval timestamp is missing or changed.
+- Create new copy, composition, footage, identity, and proof. A public
+  durability signal never authorizes competitor asset, copy, claim, or identity
+  reuse.
 - Synthetic people, testimonials, demonstrations, and claims must be visibly
   reviewed for deception and policy risk.
 
-## Initial build plan
+## Initial production build plan
 
 - Define the creative manifest and asset-provenance schemas.
 - Support one image workflow and one short-form vertical video workflow.
@@ -55,3 +63,12 @@ how it fits the channel, and what must be reviewed before launch.
 Creative is ready for Launch when every asset is approved, correctly formatted,
 traceable to a hypothesis, paired with channel copy, and free of unresolved
 validation blockers.
+
+## Learning Core input and output
+
+Creative retrieves the selected brand's current learning versions and keeps
+candidate, supported, trusted, contradicted, and superseded states visible. A
+creative concept references the exact evidence and hypothesis it tests. Asset
+bytes stay in private content-addressed storage; the catalog retains SHA-256
+references and provenance. Creative output never promotes a learning or
+authorizes publication.

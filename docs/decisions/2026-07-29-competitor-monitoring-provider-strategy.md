@@ -1,6 +1,6 @@
 # Competitor monitoring provider strategy
 
-**Status:** recorded product decision
+**Status:** active; amended 2026-07-30 after official coverage review
 **Date:** 2026-07-29
 
 ## Decision
@@ -15,6 +15,18 @@ Apify is therefore optional. Automated monitoring still requires a verified
 collection source. If no official or third-party source is authorized and
 working, Negroni supports only normalized manual imports and must report
 monitoring as blocked rather than imply automatic discovery.
+
+The current milestone does not select a third-party collector. Foreplay,
+Firecrawl, BrowserOS collection, and Cloudflare scraping are excluded from the
+planned nightly route. If official coverage is unavailable for the intended
+country and ad category, monitoring stays blocked or uses reviewed normalized
+manual imports.
+
+For reviewed one-off public UI evidence, Negroni bundles the user-triggered
+`tools/meta-ad-capture-extension`. It exports only cards already rendered in a
+Meta Ad Library page, requests no cookie or hidden-network access, and always
+reports partial coverage. It is a manual-import aid, not the nightly route and
+not a substitute for an authorized unattended collector.
 
 ## Product behavior
 
@@ -38,9 +50,11 @@ and must never be presented as a zero-result scan.
 - Keep credentials and runtime state outside the repository and synced
   Documents workspace.
 
-## Next proof before implementation
+## Next proof before live implementation
 
-Run one isolated, read-only official-adapter proof against a test profile. It
-must verify authorization, Page-ID query behavior, fields returned, pagination
-and coverage signals, delta correctness, and stale/blocked UI handling. Only
-then decide whether a fallback provider is necessary.
+Run one isolated, read-only official-adapter proof against 2–3 real,
+owner-approved Page IDs in the intended countries. It must verify
+authorization, Page-ID query behavior, fields returned, pagination and coverage
+signals, delta correctness, and stale/blocked UI handling. The endpoint accepts
+up to 10 Page IDs per query, so expand immediately to 10 only after that proof
+passes. No credential or provider call is authorized by this decision record.

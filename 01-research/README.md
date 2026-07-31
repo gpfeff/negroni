@@ -45,6 +45,35 @@ budget. Research should establish:
 
 The goal is to reverse-engineer patterns and opportunities, not copy ads.
 
+### Cases, claims, or jobs
+
+Lead-generation research must define what the client actually wants to receive:
+
+- included and excluded case, claim, or job types;
+- triggering facts, timing, severity, jurisdiction, and value drivers;
+- qualification questions, disqualifiers, duplicates, and routing facts;
+- the difference between a raw inquiry, qualified lead, payable event, retained
+  customer or case, and successful outcome.
+
+For legal or other regulated work, use authoritative jurisdiction-specific
+sources, preserve uncertainty, and do not turn research into advice or an
+eligibility promise.
+
+### Required active-Meta competitor coverage
+
+A full Research package requires at least 10 distinct competitors whose ads are
+verified active in the requested country at research time through Meta Ad
+Library or an authorized provider. Each counted competitor needs a stable
+advertiser/Page identity, evidence URL or provider record, observed-active
+timestamp, and bounded creative observations. Websites, Facebook Pages,
+historical examples, agency claims, inactive ads, duplicates, and unverified
+candidates do not count.
+
+If live collection is unavailable, unsupported, throttled, or produces fewer
+than 10 verified active advertisers, Research remains `partial` or `blocked`
+with the exact shortfall and recovery action. General competitor research never
+silently substitutes for this requirement.
+
 ## Inputs
 
 - client intake;
@@ -66,9 +95,15 @@ The initial Research contract will produce:
 
 These names define the implemented runner-side artifact contract. Phase 1
 validates one SHA-256 receipt for each file before accepting a result.
+`creative-brief.json` remains approval-pending until a person approves that
+exact immutable revision and SHA-256. It is the only competitor-research input
+Creative may consume; the collection receipt is not a sixth Research artifact.
 
-The interface saves reusable combinations of lead offer or service, industry,
-country or region, and target age range. It keeps three outward actions: the
+The interface first saves a required customer profile: client/customer name,
+profession or job title, company, public website or profile URL, service or
+offer purchased, competitor used, industry/niche, and location or market
+served. It then adds the lead offer or service and target age range needed to
+scope the research. It keeps three outward actions: the
 master Google Doc, matching Markdown, and competitor archive. The archive opens
 a restricted Google Sheet when configured, otherwise an access-controlled
 local report. SQLite remains authoritative.
@@ -77,7 +112,7 @@ local report. SQLite remains authoritative.
 
 ### Research intake and deliverables
 
-[`../app/`](../app/) owns the four-field intake,
+[`../app/`](../app/) owns the required customer-profile intake and research scope,
 owner-scoped saved research sets, provider settings, run status, strict
 response validation, and output links for general lead-generation research.
 
@@ -89,36 +124,108 @@ without claiming access to spend or conversion data. Negroni calls its stable
 CLI through a server-only adapter and maps the resulting evidence into all five
 Research artifacts without duplicating the engine's schema or lifecycle logic.
 
+The provider-neutral nightly boundary is:
+
+```text
+negroni research competitors run --project <research-set-id> --mode nightly --json
+```
+
+The repository includes a sanitized two-night normalized-import fixture that
+proves stable identities, append-only present/eligible-absence observations,
+content versions, conservative lifecycle, duplicate-media reuse, one creative
+family, `public-winner-signal-v2`, immutable receipt revisions, fake Google
+readback, partial failure, and resume. It performs no network or external
+mutation. Official collection, live Google publishing, and scheduling remain
+blocked pending separate authorization and proof.
+
+Experimental third-party adapter source is preserved for review, but it is not
+part of the public CLI, MCP, or current collection plan. The approved direction
+is the official Meta route only, beginning with a bounded read-only proof
+against 2–3 real Page IDs in the intended countries. If that proof passes, one
+request can scale to the 10-competitor gate; if it fails, coverage remains
+blocked and normalized manual import is the only fallback in this milestone.
+
+### User-triggered Meta UI evidence
+
+[`../tools/meta-ad-capture-extension/`](../tools/meta-ad-capture-extension/)
+provides a self-contained Chrome/Edge helper for that manual fallback. A person
+opens Meta Ad Library, selects the country and Active filter, scrolls the public
+results, and explicitly exports the cards still rendered in the page. The
+extension does not automate scrolling, call hidden endpoints, retain browser
+state, copy cookies, or export signed media URLs. It has no paid provider,
+Google Sheet, Airtable, server, login, or machine-specific dependency.
+
+Every export is schema-version 2 normalized input with direct Library-ID
+evidence links, visible advertiser identity when available, and an observed
+timestamp. It is permanently marked `partial`,
+`pagination_complete: false`, and `coverage_complete: false`. Manual import
+cannot change lifecycle, survivor, or winner evidence and does not waive the
+10-active-advertiser gate. The bundled offline validator rejects completeness
+claims, duplicate/invalid IDs, media URLs, non-Meta source pages, and common
+credential/session parameters.
+
+The plugin exposes a small MCP wrapper around this boundary. It supports
+capability inspection, a dry-run-default competitor invocation, partial-run
+resume, and immutable canonical-artifact verification. The MCP returns only
+sanitized receipts and cannot publish, spend, change an account, or activate a
+schedule.
+
 It is one source inside the competitor branch of Research, not the whole
 Negroni product and not an ad-account operator.
 
-## Initial build plan
+## Implemented contract and follow-on work
 
-- Define shared research-set, client, customer, competitor, evidence, and
-  source identifiers.
-- Preserve the five implemented Research artifact receipts.
-- Keep the implemented Meta Ads Intelligence adapter storage-neutral without
-  weakening profile isolation or evidence rules.
+- Shared versioned IDs, null-plus-reason fields, lifecycle gates, projection
+  state machines, and five artifact receipts are implemented.
+- Keep the Meta Ads Intelligence adapter storage-neutral without weakening
+  profile isolation or evidence rules.
 - Require one idempotent scheduler owner and an active-or-blocked monitoring
   receipt; never infer that a requested schedule is running.
+- Deploy the locally verified owner-scoped runner only after its server-side
+  providers and secret store are configured and the exact deployment diff is
+  approved.
 - Add additional public-research adapters behind the same evidence contract.
-- Create one sanitized end-to-end fixture that produces a Creative-ready brief.
-- Add contract tests for citations, unknown states, provenance, and private-data
-  leakage.
+- Add each new live provider only with its own authorization, sanitized fixture,
+  bounded coverage proof, and capability receipt.
 
 ## Competitor-monitoring provider decision
 
-Competitor monitoring is provider-neutral: prefer the authorized official Meta
-adapter when it passes a bounded live proof of the required commercial-ad
-coverage, and add a third-party collector only as an explicit fallback adapter.
-See [the recorded decision](../docs/decisions/2026-07-29-competitor-monitoring-provider-strategy.md).
+Competitor monitoring is provider-neutral internally, while the selected live
+plan uses only the official Meta Ad Library route. See the
+[provider strategy](../docs/decisions/2026-07-29-competitor-monitoring-provider-strategy.md).
+
+The reviewed Meta Graph API v26.0 Ads Archive boundary can return political and
+issue ads globally and commercial ads that reached an EU country. It does not
+return ordinary commercial ads that reached no EU location. Accordingly, US
+commercial competitor collection is currently `unsupported` through that
+official route; eligible EU or political collection remains `blocked` until
+owner authorization and a bounded live Page-ID proof pass. Do not substitute
+Foreplay, Firecrawl, BrowserOS collection, or a Cloudflare scraper. The bundled
+user-triggered capture helper is a reviewed manual-import aid, not an automated
+collector or proof of complete country coverage.
 
 ## Exit criteria
 
 Research is ready for Phase 2 when a reviewer can answer:
+
+- who the paying client or buyer is and what it accepts;
+- exactly which customer segments are targeted and what evidence describes
+  their situations, motivations, objections, and language;
+- which claims, cases, or jobs qualify or do not qualify and what intake must
+  establish;
+- which 10 or more distinct competitors were verified with active Meta ads in
+  the requested country at research time;
 
 - What are we selling, to whom, and under what constraints?
 - Which customer problems and messages have evidence?
 - What are competitors doing, and what remains unknown?
 - Which creative opportunities are original, testable, and approved?
 - Can every material claim be traced to a source or labeled as a hypothesis?
+
+## Learning Core handoff
+
+Research writes owner-, workspace-, and brand-scoped evidence and observations.
+It may create a candidate learning with explicit provenance, confidence,
+applicability, limitations, and freshness. It cannot promote its own model
+output to supported or trusted knowledge. The relational database is
+authoritative; the private Markdown note is a generated projection.

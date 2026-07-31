@@ -1,6 +1,6 @@
 # Negroni application — Status
 
-Updated: 2026-07-29
+Updated: 2026-07-30
 
 Repository path: `app/`
 
@@ -19,14 +19,21 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
 - interactive, versioned Markdown seeds with direct editing, permanent notes,
   recoverable revision history, optional AI proposals, and explicit Phase 2
   approval;
-- four required inputs: lead offer or service, industry, country or region,
-  and target age range;
+- required customer profile: client/customer name, profession/job title, company,
+  public website/profile URL, service/offer purchased, competitor used,
+  industry/niche, and location/market served; plus lead offer/service and
+  target age range for research scope;
 - the fixed five-prompt sequence from the supplied Google Doc;
 - run status, prompt limitations, nightly competitor-monitor receipt, and
   exactly three output actions;
 - a compact Competitor Ads Intelligence module with refresh health, watched
   competitors, active/new/changed ads, creative-family counts, coverage
   limitations, and access-controlled artifact links;
+- Draper under Tools as the conversational control plane over an owner-,
+  workspace-, and brand-scoped Learning Core;
+- an authoritative local SQLite catalog, immutable learning versions, FTS5,
+  rebuildable non-authoritative vectors, content-addressed media, and guarded
+  Obsidian-compatible Markdown projections;
 - Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai,
   Google Drive, appearance, and Safety/YOLO mode;
 - an optional developer `@negroni/local` package with the `negroni start` and
@@ -66,6 +73,9 @@ The server-only Meta Ads Intelligence adapter now:
 - rejects cross-profile snapshots and local-path browser links;
 - reuses the engine CLI rather than its SQLite schema;
 - supports normalized imports and the authorized official API adapter;
+- preserves experimental third-party adapter source for review without exposing
+  it through the public CLI or MCP; the selected live plan is official Meta
+  only;
 - persists missing inputs as `skipped` and missing official API authorization
   as `blocked`;
 - rebuilds families, writes local Markdown/CSV reports, and returns a
@@ -86,9 +96,12 @@ parity state is present.
 The existing owner-restricted Site and project ID are preserved:
 `https://lead-intelligence-workbench.g-pfeffer.chatgpt.site`.
 
-The initial plugin is skill-backed. A hosted Negroni MCP server and its live
-provider tools are not yet implemented; the Site continues to report those
-capabilities as blocked instead of implying access.
+The general plugin is skill-backed and exposes seven local, fail-closed MCP
+tools. Three cover Learning Core status, bounded Draper queries, and exact
+local decision records; four cover capability and competitor-research
+boundaries. These are local plugin tools, not a hosted provider deployment.
+The Site keeps private machine-local databases and vault notes out of the
+browser and continues to report unavailable hosted capabilities as blocked.
 
 ## Artifacts
 
@@ -105,6 +118,10 @@ capabilities as blocked instead of implying access.
 - Intake/result contracts: `lib/intelligence/`
 - Meta Ads adapter, profile boundary, artifact mapper, and snapshot validation:
   `lib/meta-ads/`
+- Draper, Learning Core contracts, SQLite storage, FTS5, vectors, vault, media,
+  warehouse fixture, migration, and fixture: `lib/learning-core/`,
+  `bin/draper.ts`, `migrations/learning-core/`, `fixtures/learning-core/`
+- Cache-portable MCP boundary: `bin/negroni-mcp.mjs`
 - Runner and monitoring contract: `docs/runner-contract.md`
 - Contract tests: `tests/`
 - Responsive QA: `qa/visual-qa-report.json`, `qa/screenshots/`
@@ -114,14 +131,13 @@ capabilities as blocked instead of implying access.
 
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
-- Plugin contract test: 1/1 passed
-- Application contract/security tests: 35/35 passed
+- Plugin contract tests: 3/3 passed
+- Application contract/security tests: 105/105 passed
 - Vinext production build: passed
 - Install smoke test: global package, local app, and six-provider Settings API passed
-- Visual QA: Home, Research, and Settings passed at 1440×1000 and 390×844
-- Accessibility: zero serious or critical Axe violations across all six states
-- Browser runtime: no console errors or horizontal overflow
-- Accessibility: no serious or critical Axe violations
+- Visual QA: Home, Research, Draper, and Settings passed at desktop and mobile
+  sizes, 108/108 checks
+- Accessibility: zero serious or critical Axe violations across all eight states
 - Browser runtime: no unexpected console errors or horizontal overflow
 
 ## Blockers
@@ -144,10 +160,17 @@ still needs a Google OAuth client ID before Google Drive can connect.
 - A real five-prompt run cannot be verified before the runner exists.
 - Live official Meta API collection cannot be verified before profile
   authorization and credentials exist.
+- No Foreplay, Firecrawl, BrowserOS collection, or Cloudflare scraper is
+  selected for competitor collection.
 - No Negroni scheduler owner is configured; the adapter intentionally did not
   create one. The existing `pay-per-call` Hermes owner was not changed.
 - Google projection remains unverified and optional; no Google action was
   performed by this integration.
+- Learning Core warehouse measurements and Draper's end-to-end answer are
+  fixture-only. PostgreSQL, live warehouse ingestion, continuous learning,
+  hosted persistence, and ad-account mutation are not implemented.
+- The Learning Core currently uses Node's experimental built-in SQLite API;
+  the storage contract isolates that implementation for a later adapter.
 - Hosted broker connection flows need integration tests against the eventual service.
 - The local Kie.ai and Gemini key vault is implemented, but no real key was
   entered and no paid generation request was made.

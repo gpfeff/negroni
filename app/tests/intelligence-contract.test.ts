@@ -25,6 +25,12 @@ function completePromptReceipts(): RunResult["prompt_execution"]["prompts"] {
 
 function validIntake(): IntelligenceIntake {
   const intake = createEmptyIntake("America/Los_Angeles");
+  intake.client_customer_name = "Jordan Lee";
+  intake.profession_job_title = "Operations director";
+  intake.company_name = "Regional Repair Co.";
+  intake.website_or_public_profile_url = "https://regional-repair.example";
+  intake.service_or_offer_purchased = "Emergency repair membership";
+  intake.competitor_used = "Local repair marketplace";
   intake.offer_or_lead_type = "Regional repair leads";
   intake.industry = "Home services";
   intake.country_region = "United States";
@@ -128,12 +134,18 @@ function validResult(researchName = RESEARCH_NAME): RunResult {
   };
 }
 
-test("the intake requires exactly four substantive research inputs", () => {
+test("the intake requires the customer profile before research scope", () => {
   const intake = createEmptyIntake();
   assert.deepEqual(validateIntake(intake), [
+    "Enter the client or customer name.",
+    "Enter the profession or job title.",
+    "Enter the company name.",
+    "Enter an HTTPS website or public profile URL.",
+    "Describe the service or offer purchased.",
+    "Enter a competitor the customer uses.",
     "Describe the lead offer or service.",
-    "Enter the industry.",
-    "Enter the country or region.",
+    "Enter the industry or niche.",
+    "Enter the location or market served.",
     "Enter a target age range such as 30–60.",
   ]);
   assert.deepEqual(validateIntake(validIntake()), []);

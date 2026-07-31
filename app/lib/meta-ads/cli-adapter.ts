@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
-import type { MetaAdsProjectSnapshot } from "./contracts";
+import type { MetaAdsProjectSnapshot, ProviderNeutralCollectionReceipt } from "./contracts";
 import { projectProfileId, runtimeHome } from "./profile";
 import { parseMetaAdsSnapshot } from "./validation";
 
@@ -28,6 +28,7 @@ export type DailyRefreshReceipt = {
   snapshot: MetaAdsProjectSnapshot;
   google_action: "not_requested" | "published" | "blocked";
   scheduler_action: "none";
+  provider_receipt: ProviderNeutralCollectionReceipt;
 };
 
 function defaultCliPath(): string {
@@ -164,12 +165,27 @@ export class MetaAdsCliAdapter {
       ["snapshot", "--nightly-run-id", nightly.nightly_run_id],
     );
     const snapshot = parseMetaAdsSnapshot(rawSnapshot, profile);
+    const limitations = [...snapshot.limitations];
+    const providerReceipt: ProviderNeutralCollectionReceipt = {
+      contract: "negroni-competitor-collection-receipt",
+      contract_version: "1.0",
+      project_id: request.project_id,
+      run_id: nightly.nightly_run_id,
+      provider: request.collector,
+      status: snapshot.refresh.status === "never_run" ? "failed" : snapshot.refresh.status,
+      resume_run_id: snapshot.refresh.status === "partial" ? nightly.nightly_run_id : null,
+      google_action: googleAction,
+      scheduler_action: "none",
+      external_actions: googleAction === "published" ? ["google_publish"] : [],
+      limitations,
+    };
     return {
       profile,
       state: snapshot.refresh.status,
       snapshot,
       google_action: googleAction,
       scheduler_action: "none",
+      provider_receipt: providerReceipt,
     };
   }
 }

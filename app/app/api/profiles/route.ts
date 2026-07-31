@@ -15,7 +15,9 @@ export async function GET(request: Request): Promise<Response> {
   }
   await ensureResearchSchema(database);
   const rows = await database.prepare(`
-    SELECT id, offer_or_lead_type, industry, country_region, target_age_range, created_at, updated_at
+    SELECT id, client_customer_name, profession_job_title, company_name, website_or_public_profile_url,
+      service_or_offer_purchased, competitor_used, offer_or_lead_type, industry, country_region,
+      target_age_range, created_at, updated_at
     FROM research_profiles
     WHERE owner_email = ?
     ORDER BY updated_at DESC
@@ -38,6 +40,12 @@ export async function POST(request: Request): Promise<Response> {
   await ensureResearchSchema(database);
   const now = new Date().toISOString();
   const values = [
+    body.intake.client_customer_name.trim(),
+    body.intake.profession_job_title.trim(),
+    body.intake.company_name.trim(),
+    body.intake.website_or_public_profile_url.trim(),
+    body.intake.service_or_offer_purchased.trim(),
+    body.intake.competitor_used.trim(),
     body.intake.offer_or_lead_type.trim(),
     body.intake.industry.trim(),
     body.intake.country_region.trim(),
@@ -53,7 +61,9 @@ export async function POST(request: Request): Promise<Response> {
     }
     await database.prepare(`
       UPDATE research_profiles
-      SET offer_or_lead_type = ?, industry = ?, country_region = ?, target_age_range = ?, updated_at = ?
+      SET client_customer_name = ?, profession_job_title = ?, company_name = ?, website_or_public_profile_url = ?,
+        service_or_offer_purchased = ?, competitor_used = ?, offer_or_lead_type = ?, industry = ?,
+        country_region = ?, target_age_range = ?, updated_at = ?
       WHERE id = ? AND owner_email = ?
     `).bind(
       ...values,
@@ -64,7 +74,9 @@ export async function POST(request: Request): Promise<Response> {
   } else {
     const duplicate = await database.prepare(`
       SELECT id FROM research_profiles
-      WHERE owner_email = ? AND offer_or_lead_type = ? AND industry = ? AND country_region = ? AND target_age_range = ?
+      WHERE owner_email = ? AND client_customer_name = ? AND profession_job_title = ? AND company_name = ?
+        AND website_or_public_profile_url = ? AND service_or_offer_purchased = ? AND competitor_used = ?
+        AND offer_or_lead_type = ? AND industry = ? AND country_region = ? AND target_age_range = ?
       LIMIT 1
     `).bind(owner, ...values).all<{ id: string }>();
     id = duplicate.results?.[0]?.id ?? crypto.randomUUID();
@@ -74,8 +86,10 @@ export async function POST(request: Request): Promise<Response> {
     } else {
       await database.prepare(`
         INSERT INTO research_profiles (
-          id, owner_email, offer_or_lead_type, industry, country_region, target_age_range, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          id, owner_email, client_customer_name, profession_job_title, company_name, website_or_public_profile_url,
+          service_or_offer_purchased, competitor_used, offer_or_lead_type, industry, country_region, target_age_range,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).bind(id, owner, ...values, now, now).run();
     }
   }

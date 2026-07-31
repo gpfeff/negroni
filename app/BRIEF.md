@@ -8,7 +8,7 @@ outward actions, and maintain one receipt-backed competitor-ad refresh.
 
 ## Required flow
 
-1. Ask for lead offer or service, industry, country or region, and target age range.
+1. Ask first for client/customer name, profession or job title, company, public website or profile URL, service or offer purchased, competitor used, industry/niche, and location or market served. Then collect lead offer or service and target age range as research scope. Do not request contact details, credentials, or other sensitive personal information.
 2. Let the authenticated user save, reopen, update, and delete research sets.
 3. Run the five prompts from the approved Google Doc in fixed order.
 4. Mark every prompt complete or limited with an explicit receipt.

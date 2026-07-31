@@ -1,7 +1,7 @@
 # PHASE 1: RESEARCH
 
 Keep the shared `lead-generation-ads-discovery-intelligence` skill canonical.
-The app owns the four-field intake, saved research sets, provider connection
+The app owns the required customer-profile intake and research-scope questions, saved research sets, provider connection
 status, run and nightly-monitor status, strict response validation, three
 output links, versioned research-seed review, and the explicit Phase 2
 handoff. Do not duplicate or weaken the skill’s method.
@@ -11,7 +11,7 @@ sidebar, and Settings. User-facing phase labels are Research, Create, Launch,
 Iterate, and Loop. Keep Home sparse: show the Research action cards and the
 honest next action, while leaving phase progression in the persistent sidebar
 instead of duplicating it as a second five-card pipeline. Research contains
-saved sets, the four required inputs, five-prompt sequence, run status, monitor
+saved sets, the required customer profile and research-scope inputs, five-prompt sequence, run status, monitor
 receipt, three outputs, and the interactive seed editor. Settings is the single
 home for appearance, commit approvals, supported provider connections, API
 keys, storage, and local setup. Do not duplicate settings in the sidebar or add

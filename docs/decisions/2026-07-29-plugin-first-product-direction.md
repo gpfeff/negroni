@@ -47,6 +47,10 @@ preserve missing or revoked access as blocked.
 
 The repository now includes a validated plugin manifest, onboarding skill, and
 one skill for each phase. The existing Sites project and D1 binding are
-preserved. A hosted Negroni MCP server and live provider tools are follow-on
-work; until they exist and are authorized, the Site must continue to report
-live research and provider operations as blocked.
+preserved.
+
+Amendment, 2026-07-30: a cache-portable local Negroni MCP with seven validated
+tools is implemented. A separately deployed secure runner, any hosted MCP
+surface, Google filing, and live provider tools remain follow-on work; until
+each is authorized and verified, the Site must continue to report the
+corresponding live operation as blocked.

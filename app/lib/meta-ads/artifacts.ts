@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import {
   RESEARCH_ARTIFACT_FILENAMES,
   type MetaAdsProjectSnapshot,
+  type ProviderNeutralCollectionReceipt,
   type ResearchArtifactBundle,
   type ResearchArtifactKey,
   type ResearchArtifactReceipts,
@@ -15,6 +16,7 @@ function metaEvidenceId(libraryId: string): string {
 export function mapMetaEvidenceIntoArtifacts(
   existing: ResearchArtifactBundle,
   snapshot: MetaAdsProjectSnapshot,
+  collectionReceipt?: ProviderNeutralCollectionReceipt,
 ): ResearchArtifactBundle {
   const evidence = snapshot.evidence.map((item) => ({
     id: metaEvidenceId(item.library_id),
@@ -98,6 +100,7 @@ export function mapMetaEvidenceIntoArtifacts(
         google: snapshot.google,
         limitations: snapshot.limitations,
         evidence_count: evidence.length,
+        ...(collectionReceipt ? { provider_neutral_receipt: collectionReceipt } : {}),
       },
     },
   };

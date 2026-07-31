@@ -52,8 +52,9 @@ giving an agent silent authority over spend, customer data, or live accounts.
 ## What works today
 
 Negroni is in beta. The repository is now a validated Codex plugin with a
-portable onboarding skill plus one skill for each phase. [`app/`](app/) is the
-live Sites workspace and currently includes:
+portable onboarding skill, one skill for each phase, and Draper as the
+conversational control plane. [`app/`](app/) is the live Sites workspace and
+currently includes:
 
 - an interactive view of all five phases and their artifact handoffs;
 - an owner-scoped project draft flow with explicit external-action boundaries;
@@ -70,12 +71,24 @@ Phase 1 currently includes:
   compact competitor-ad results module;
 - a separate local-first Meta Ads Intelligence engine linked at
   [`meta-ads-intelligence/`](meta-ads-intelligence/).
+- a provider-neutral competitor-research CLI with sanitized two-night fixtures,
+  isolated SQLite, immutable receipts, fake Sheets/Drive projections,
+  deterministic recovery, and an approval-locked Creative handoff;
+- a cache-portable Negroni MCP with seven fail-closed tools for capability and
+  Learning Core status, Draper queries and local decisions, competitor runs,
+  resume, and immutable artifact inspection;
+- a fixture-backed central Learning Core with an authoritative SQLite catalog,
+  FTS5, rebuildable vectors, SHA-256 media references, immutable learning
+  versions, and a generated private Markdown vault; and
+- an owner-scoped local research-runner boundary with strict five-prompt
+  execution, resumable checkpoints, and immutable five-artifact receipts.
 
-The plugin and Research interface are validated. Live research remains
-intentionally blocked until a secure runner and verified Google Workspace
-output path are configured. Creative, Launch, Iteration, and Loop currently
-have installable skills and implementation contracts, but no live account
-adapter is claimed.
+The plugin, Research interface, MCP, and local runner contract are validated.
+The runner is not deployed and its default providers fail closed. Live
+research remains blocked until an owner-controlled runner, research provider,
+and verified Google Workspace output path are configured. Creative, Launch,
+Iteration, and Loop currently have installable skills and implementation
+contracts, but no live account adapter is claimed.
 
 <p align="center">
   <img src="app/qa/screenshots/thin-client-desktop.jpg" alt="Negroni Phase 1 Research interface" width="880">
@@ -87,7 +100,8 @@ adapter is claimed.
 | --- | --- |
 | **Negroni plugin** | Primary install and agent workflow |
 | **Phase skills** | Portable Research, Creative, Launch, Iteration, and Loop playbooks |
-| **Negroni tools** | Live data and durable actions behind stable contracts; initial hosted tools remain blocked until their runner exists |
+| **Draper** | Conversational control plane over brand-scoped evidence, learnings, freshness, and reviewable proposals |
+| **Negroni tools** | Seven installed local MCP tools wrap Draper, the Learning Core, and the stable competitor boundary; hosted provider actions remain blocked until deployment and authorization |
 | **Sites workspace** | Private campaign data, artifacts, review, and approvals |
 | **Local launcher** | Contributor development and an optional self-hosted fallback |
 
@@ -134,6 +148,51 @@ Run the top-level UI build and full Phase 1 validation suite:
 ```bash
 npm run validate
 ```
+
+The stable competitor-research boundary is:
+
+```bash
+negroni research competitors run --project <research-set-id> --mode nightly --json
+```
+
+It also accepts `--dry-run`, `--resume-run <run-id>`,
+`--provider <configured-provider>`, and a bounded `--deadline-seconds`. Exit 0
+means complete/complete-zero; 3 means partial/suspect; 4 blocked/skipped; 5 a
+persisted local failure; and 64 invalid CLI/configuration. The checked-in
+vertical slice is sanitized and offline. It does not prove a live Meta, Google,
+BrowserOS, paid collector, or scheduler capability.
+
+The reviewed official Meta Graph API v26.0 boundary accepts up to 10 Page IDs
+per Ads Archive request. Ordinary ads that reached no EU location are not
+returned unless they are political or issue ads, so Negroni treats coverage—not
+the number 10—as the live capability gate and requires a 2–3 Page-ID proof
+before enabling an official adapter.
+
+The installed plugin also exposes these bounded MCP tools:
+
+- `capability_status`;
+- `learning_core_status`;
+- `draper_query`;
+- `draper_record_decision`;
+- `competitor_research` (dry-run by default);
+- `resume_competitor_research`; and
+- `inspect_research_artifact`.
+
+They return sanitized receipts rather than raw process output or private paths,
+and none can publish, spend, launch traffic, mutate an ad account, or install a
+scheduler.
+
+The local Draper rehearsal is:
+
+```bash
+negroni draper fixture rehearse --json
+```
+
+It uses only the sanitized fixture warehouse. The relational database remains
+authoritative, the Obsidian-compatible vault is generated, and vector entries
+can be rebuilt. See
+[`app/docs/draper-learning-core.md`](app/docs/draper-learning-core.md) and the
+[`Draper/Learning Core architecture decision`](docs/decisions/2026-07-30-draper-learning-core-architecture.md).
 
 This starts and validates the local interface. A real Research run additionally
 requires the server-side runner documented in

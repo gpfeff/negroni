@@ -3,7 +3,13 @@ import { PROMPT_SOURCE_DOCUMENT_ID, RESEARCH_PROMPTS, type IntelligenceIntake } 
 export function createEmptyIntake(timezone = "UTC"): IntelligenceIntake {
   return {
     contract: "lead-generation-intelligence-intake",
-    contract_version: "4.0",
+    contract_version: "5.0",
+    client_customer_name: "",
+    profession_job_title: "",
+    company_name: "",
+    website_or_public_profile_url: "",
+    service_or_offer_purchased: "",
+    competitor_used: "",
     offer_or_lead_type: "",
     industry: "",
     country_region: "",

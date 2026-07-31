@@ -15,9 +15,10 @@ import {
   type SettingsResponse,
 } from "@/lib/intelligence/contracts";
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
+import { deriveHomeNextAction } from "@/lib/intelligence/next-action";
 import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
 
-type AppView = "home" | "research" | "settings";
+type AppView = "home" | "research" | "draper" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
 type Appearance = "light" | "dark" | "system";
 
@@ -83,7 +84,7 @@ const RESEARCH_TOOLS: ReadonlyArray<{
     id: "run",
     eyebrow: "Start here",
     name: "Run Research",
-    description: "Give Negroni four facts. The research skill builds the first evidence-backed draft.",
+    description: "Start with the customer profile, then define the research scope for an evidence-backed draft.",
     marker: "GO",
   },
   {
@@ -200,7 +201,7 @@ export function IntelligenceClient() {
       if (!active) return;
       const searchParams = new URLSearchParams(window.location.search);
       const requestedView = searchParams.get("view");
-      if (requestedView === "research" || requestedView === "settings") setActiveView(requestedView);
+      if (requestedView === "research" || requestedView === "draper" || requestedView === "settings") setActiveView(requestedView);
       const requestedTool = searchParams.get("tool");
       if (RESEARCH_TOOLS.some((tool) => tool.id === requestedTool)) {
         setActiveResearchSection(requestedTool as ResearchSection);
@@ -248,7 +249,17 @@ export function IntelligenceClient() {
     window.localStorage.setItem("negroni.operating-mode", operatingMode);
   }, [operatingMode]);
 
-  function updateIntake(field: "offer_or_lead_type" | "industry" | "country_region" | "target_age_range", value: string) {
+  function updateIntake(field:
+    | "client_customer_name"
+    | "profession_job_title"
+    | "company_name"
+    | "website_or_public_profile_url"
+    | "service_or_offer_purchased"
+    | "competitor_used"
+    | "offer_or_lead_type"
+    | "industry"
+    | "country_region"
+    | "target_age_range", value: string) {
     setIntake((current) => ({ ...current, [field]: value }));
   }
 
@@ -259,6 +270,12 @@ export function IntelligenceClient() {
     if (!profile) return;
     setIntake((current) => ({
       ...current,
+      client_customer_name: profile.client_customer_name,
+      profession_job_title: profile.profession_job_title,
+      company_name: profile.company_name,
+      website_or_public_profile_url: profile.website_or_public_profile_url,
+      service_or_offer_purchased: profile.service_or_offer_purchased,
+      competitor_used: profile.competitor_used,
       offer_or_lead_type: profile.offer_or_lead_type,
       industry: profile.industry,
       country_region: profile.country_region,
@@ -397,6 +414,12 @@ export function IntelligenceClient() {
   const kieStatus = providerStatus("kie_ai");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
+  const nextAction = deriveHomeNextAction({
+    checking,
+    capability,
+    hasProfile: selectedProfile !== null,
+    resultStatus: result?.status ?? null,
+  });
 
   function navigate(view: AppView) {
     setActiveView(view);
@@ -421,6 +444,30 @@ export function IntelligenceClient() {
             : `research-${section}`;
       document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, activeView === "research" ? 0 : 50);
+  }
+
+  function followHomeNextAction() {
+    switch (nextAction.action?.destination) {
+      case "settings":
+        navigate("settings");
+        break;
+      case "research":
+        openResearchSection("run");
+        break;
+      case "run":
+        openResearchSection("run");
+        void runResearch();
+        break;
+      case "status":
+        openResearchSection("run");
+        window.setTimeout(() => document.getElementById("run-status")?.scrollIntoView({ behavior: "smooth", block: "start" }), 75);
+        break;
+      case "review":
+        openResearchSection("review");
+        break;
+      default:
+        break;
+    }
   }
 
   return (
@@ -462,6 +509,8 @@ export function IntelligenceClient() {
               ) : null}
             </Fragment>
           ))}
+          <span className="nav-label">Tools</span>
+          <button className={activeView === "draper" ? "nav-active" : ""} type="button" onClick={() => navigate("draper")} aria-label="Draper"><span>DR</span>Draper</button>
         </nav>
         <div className="sidebar-footer">
           <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
@@ -484,6 +533,12 @@ export function IntelligenceClient() {
           </section>
 
           <section className="research-home-layout" aria-label="Research workspace">
+            <article className={`home-next-action home-next-${nextAction.tone}`} data-testid="next-action-panel" aria-live="polite">
+              <span className="next-action-status">{nextAction.eyebrow}</span>
+              <h2>{nextAction.title}</h2>
+              <p>{nextAction.description}</p>
+              {nextAction.action ? <button type="button" onClick={followHomeNextAction}>{nextAction.action.label}<span aria-hidden="true">→</span></button> : null}
+            </article>
             <div className="research-tool-board">
               <div className="research-board-heading">
                 <div><span>01</span><i /><h2>Research</h2></div>
@@ -528,7 +583,7 @@ export function IntelligenceClient() {
           <section className="intro" aria-labelledby="page-title">
             <p className="kicker">Phase 01 · Find the signal</p>
             <h1 id="page-title">Tell us the business. We’ll find the signal.</h1>
-            <p>Four inputs start one governed research skill. You get editable client, customer, and competitor intelligence—not a black-box answer.</p>
+            <p>Start with a required customer profile, then set the research scope. You get editable client, customer, and competitor intelligence—not a black-box answer.</p>
           </section>
 
           <section className="section-card" id="intake" aria-labelledby="intake-title">
@@ -542,7 +597,7 @@ export function IntelligenceClient() {
               <select id="saved-profile" value={selectedProfileId} onChange={(event) => chooseProfile(event.target.value)} disabled={!profiles.available}>
                 <option value="">{profiles.available ? "New research set" : "Saved records unavailable"}</option>
                 {profiles.records.map((profile: ResearchProfile) => (
-                  <option key={profile.id} value={profile.id}>{profile.offer_or_lead_type} · {profile.country_region}</option>
+                  <option key={profile.id} value={profile.id}>{profile.company_name} · {profile.country_region}</option>
                 ))}
               </select>
               <button type="button" onClick={newProfile}>New</button>
@@ -554,22 +609,54 @@ export function IntelligenceClient() {
             {profileMessage ? <p className="inline-message" role="status">{profileMessage}</p> : null}
 
             <div className="intake-grid">
+              <div className="intake-group-title input-wide">
+                <h3>Required customer profile</h3>
+                <p id="profile-privacy">Use business context or a public profile only. Do not enter contact details, credentials, or other sensitive personal information.</p>
+              </div>
+              <div className="input-group">
+                <label htmlFor="client-customer-name">Client or customer name <strong>Required</strong></label>
+                <input id="client-customer-name" value={intake.client_customer_name} onChange={(event) => updateIntake("client_customer_name", event.target.value)} placeholder="Jordan Lee" autoComplete="off" aria-describedby="profile-privacy" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="profession-job-title">Profession or job title <strong>Required</strong></label>
+                <input id="profession-job-title" value={intake.profession_job_title} onChange={(event) => updateIntake("profession_job_title", event.target.value)} placeholder="Operations director" autoComplete="organization-title" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="company-name">Company name <strong>Required</strong></label>
+                <input id="company-name" value={intake.company_name} onChange={(event) => updateIntake("company_name", event.target.value)} placeholder="Regional Repair Co." autoComplete="organization" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="public-profile-url">Website or public profile URL <strong>Required</strong></label>
+                <input id="public-profile-url" type="url" value={intake.website_or_public_profile_url} onChange={(event) => updateIntake("website_or_public_profile_url", event.target.value)} placeholder="https://example.com" autoComplete="url" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="service-purchased">Service or offer purchased <strong>Required</strong></label>
+                <input id="service-purchased" value={intake.service_or_offer_purchased} onChange={(event) => updateIntake("service_or_offer_purchased", event.target.value)} placeholder="Emergency repair membership" autoComplete="off" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="competitor-used">Competitor they use <strong>Required</strong></label>
+                <input id="competitor-used" value={intake.competitor_used} onChange={(event) => updateIntake("competitor_used", event.target.value)} placeholder="Local repair marketplace" autoComplete="off" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="industry">Industry / niche <strong>Required</strong></label>
+                <input id="industry" value={intake.industry} onChange={(event) => updateIntake("industry", event.target.value)} placeholder="Finance" autoComplete="organization-title" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="country-region">Location or market served <strong>Required</strong></label>
+                <input id="country-region" value={intake.country_region} onChange={(event) => updateIntake("country_region", event.target.value)} placeholder="United States" autoComplete="country-name" required />
+              </div>
+              <div className="intake-group-title input-wide">
+                <h3>Research scope</h3>
+                <p>These questions keep the customer profile grounded in the campaign and market you want to study.</p>
+              </div>
               <div className="input-group input-wide">
                 <label htmlFor="offer-type">Lead offer or service <strong>Required</strong></label>
-                <textarea id="offer-type" rows={3} value={intake.offer_or_lead_type} onChange={(event) => updateIntake("offer_or_lead_type", event.target.value)} placeholder="Example: Business loans for small businesses—or business-loan leads for lenders" />
+                <textarea id="offer-type" rows={3} value={intake.offer_or_lead_type} onChange={(event) => updateIntake("offer_or_lead_type", event.target.value)} placeholder="Example: Business loans for small businesses—or business-loan leads for lenders" required />
                 <small>Describe what the customer receives, or the lead product a buyer receives.</small>
               </div>
               <div className="input-group">
-                <label htmlFor="industry">Industry <strong>Required</strong></label>
-                <input id="industry" value={intake.industry} onChange={(event) => updateIntake("industry", event.target.value)} placeholder="Finance" autoComplete="organization-title" />
-              </div>
-              <div className="input-group">
-                <label htmlFor="country-region">Country or region <strong>Required</strong></label>
-                <input id="country-region" value={intake.country_region} onChange={(event) => updateIntake("country_region", event.target.value)} placeholder="United States" autoComplete="country-name" />
-              </div>
-              <div className="input-group">
                 <label htmlFor="target-age">Target age range <strong>Required</strong></label>
-                <input id="target-age" value={intake.target_age_range} onChange={(event) => updateIntake("target_age_range", event.target.value)} placeholder="30–60" inputMode="numeric" />
+                <input id="target-age" value={intake.target_age_range} onChange={(event) => updateIntake("target_age_range", event.target.value)} placeholder="30–60" inputMode="numeric" required />
               </div>
             </div>
 
@@ -600,7 +687,7 @@ export function IntelligenceClient() {
             <div className="section-heading"><span>2</span><div><h2 id="status-title">Run status</h2><p>All five prompt receipts, limitations, and monitoring state remain visible.</p></div></div>
             <div className={`status-panel ${result?.status === "complete" ? "status-complete" : result?.status === "partial" ? "status-partial" : runError || (!checking && !capability.available) ? "status-blocked" : ""}`} aria-live="polite">
               <div><span className="status-dot" /><strong>{running ? "Researching" : result?.status === "complete" ? "Complete" : result?.status === "partial" ? "Complete with limitations" : runError || (!checking && !capability.available) ? "Blocked" : "Not started"}</strong></div>
-              <p>{running ? "Running the five-prompt research sequence and creating the three deliverables." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the four research inputs when you are ready."}</p>
+              <p>{running ? "Running the five-prompt research sequence and creating the three deliverables." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the customer profile and research scope when you are ready."}</p>
             </div>
             <div className="monitoring-receipt">
               <strong>Nightly competitor ads</strong>
@@ -663,6 +750,55 @@ export function IntelligenceClient() {
           </section>
 
           <ResearchReview key={selectedProfileId || "no-profile"} profile={selectedProfile} runResult={result} />
+        </div>
+      ) : activeView === "draper" ? (
+        <div className="content-column draper-column" id="top">
+          <section className="intro draper-intro" aria-labelledby="draper-title">
+            <p className="kicker">Tools · Conversational control plane</p>
+            <h1 id="draper-title">Ask Draper what the evidence says.</h1>
+            <p>Draper turns natural-language questions into validated, brand-scoped Negroni tools. Every answer keeps evidence, freshness, assumptions, limitations, and proposed changes visible.</p>
+          </section>
+
+          <section className="draper-workspace" aria-label="Draper workspace">
+            <article className="draper-conversation">
+              <div className="draper-agent-heading"><span>DR</span><div><strong>Draper</strong><small>Negroni conversational agent</small></div><b>Local plugin</b></div>
+              <div className="draper-message">
+                <p>Ask me to inspect a brand, find ads, compare creative, analyze normalized performance, explain the current Loop, retrieve learnings, find stale data, or prepare a reviewable experiment.</p>
+                <small>I use validated intents—not arbitrary SQL—and I cannot publish, spend, launch traffic, change budgets, or mutate an ad account.</small>
+              </div>
+              <div className="draper-examples" aria-label="Example Draper questions">
+                <span>Try asking your Negroni agent</span>
+                <code>How is this brand&apos;s loop doing?</code>
+                <code>What evidence supports our next creative test?</code>
+                <code>What is stale, blocked, or missing?</code>
+              </div>
+              <div className="draper-browser-boundary">
+                <strong>Continue in the installed Negroni plugin</strong>
+                <p>This Site does not expose your machine-local database or private vault to the browser. Draper runs through the installed plugin&apos;s local tools.</p>
+              </div>
+            </article>
+
+            <aside className="draper-evidence-panel" aria-label="Learning Core boundaries">
+              <p className="utility-label">Learning Core</p>
+              <h2>One truth, two ways to read it.</h2>
+              <dl>
+                <div><dt>Authority</dt><dd>Local relational database</dd></div>
+                <div><dt>Readable layer</dt><dd>Generated Markdown vault</dd></div>
+                <div><dt>Retrieval</dt><dd>FTS5 + rebuildable vectors</dd></div>
+                <div><dt>Warehouse</dt><dd>Fixture adapter in this milestone</dd></div>
+              </dl>
+              <div className="draper-state-chain" aria-label="Learning lifecycle">
+                <span>Observation</span><i>→</i><span>Candidate</span><i>→</i><span>Supported</span><i>→</i><span>Trusted</span>
+              </div>
+              <p className="draper-terminal-states">Contradicted and superseded records remain visible. Model output never promotes itself.</p>
+            </aside>
+          </section>
+
+          <section className="draper-contract-grid" aria-label="Draper operating contracts">
+            <article><span>01</span><div><strong>Data plane</strong><p>Brands, offers, audiences, campaigns, ads, assets, experiments, and normalized outcomes.</p></div></article>
+            <article><span>02</span><div><strong>Knowledge plane</strong><p>Versioned learnings, evidence, counterevidence, retrieval receipts, and readable projections.</p></div></article>
+            <article><span>03</span><div><strong>Control plane</strong><p>Plain-language answers and proposed diffs, with decisions separate from external execution.</p></div></article>
+          </section>
         </div>
       ) : (
         <div className="content-column settings-column" id="top">
@@ -811,36 +947,6 @@ export function IntelligenceClient() {
       )}
 
       </main>
-      <aside className="app-right-rail" aria-label="Up next">
-        <section className="weekly-goal">
-          <div><span>This week</span><button type="button" disabled title="Goal editing is planned">Edit goal</button></div>
-          <strong><b>0</b> / 20 ads</strong>
-          <progress max={20} value={0}>0 of 20 ads</progress>
-          <p>Build the research foundation, then ship the first campaign assets.</p>
-          <small>Resets in 5 days</small>
-        </section>
-        <section className="up-next">
-          <h2>Up next</h2>
-          <div className="next-rail-list">
-            <article className="next-rail-primary">
-              <span>Do this next</span>
-              <strong>{selectedProfile ? "Continue customer research" : "Run customer research"}</strong>
-              <p>Mine what your customers actually say—it fuels every ad you make.</p>
-              <button type="button" onClick={() => openResearchSection("run")}>Start →</button>
-            </article>
-            <article>
-              <strong>Complete the client brief</strong>
-              <p>Capture the offer, economics, proof, and campaign boundaries.</p>
-              <button type="button" onClick={() => openResearchSection("client")}>Start →</button>
-            </article>
-            <article>
-              <strong>Spy on competitor ads</strong>
-              <p>See what is already winning in your niche.</p>
-              <button type="button" onClick={() => openResearchSection("competitor-ads")}>Start →</button>
-            </article>
-          </div>
-        </section>
-      </aside>
     </div>
   );
 }

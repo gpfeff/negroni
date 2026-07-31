@@ -14,6 +14,7 @@ Treat Negroni as an agent-native system with a live Site, not as a standalone ap
 3. Identify the authenticated user and each requested connected source before reading data. Mark a missing, revoked, or mismatched connection as `blocked` or `not checked`.
 4. Read the current campaign, phase artifacts, approval state, and last valid receipt.
 5. Present the current phase, what is ready, what is blocked, and one next honest action.
+6. When the user wants a plain-language answer across phases, open Draper under Tools and use the brand-scoped Learning Core rather than asking the user to inspect databases or artifacts.
 
 ## Data boundary
 
@@ -27,3 +28,7 @@ Treat Negroni as an agent-native system with a live Site, not as a standalone ap
 Draft, research, and validate without external mutation. Require explicit approval for the exact diff before publishing creative, submitting forms, changing budgets, mutating an ad account, or launching traffic.
 
 If a live tool, Site capability, or connection is unavailable, preserve that blocker and continue only with work that can be completed honestly.
+
+## Learning Core readiness
+
+Treat `learning_core_status` as local capability evidence, not proof of a live warehouse or ad-account connection. SQLite is authoritative for the local milestone, the private Markdown vault is a generated projection, and vector indexes are rebuildable. Fixture-only status must remain explicit.

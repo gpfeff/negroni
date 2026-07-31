@@ -34,3 +34,7 @@ Create or update:
 5. `next-test-queue.json`
 
 Do not optimize cheap leads at the expense of qualification, compliance, capacity, or customer harm. Experiment design never bypasses Launch approval.
+
+## Learning Core contract
+
+Normalize each experiment outcome through the warehouse adapter, attach its freshness and attribution model, and record supporting evidence or counterevidence against the exact learning version. Promotions remain sequential and explicit. Never turn one model summary, one unsupported claim, or one incomplete attribution window into trusted knowledge.

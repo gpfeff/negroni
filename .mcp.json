@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "negroni": {
+      "command": "node",
+      "args": [
+        "./app/bin/negroni-mcp.mjs"
+      ],
+      "cwd": ".",
+      "startup_timeout_sec": 15,
+      "tool_timeout_sec": 330,
+      "required": false
+    }
+  }
+}
