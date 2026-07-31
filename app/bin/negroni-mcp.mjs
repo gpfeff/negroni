@@ -493,7 +493,7 @@ async function callTool(name, args) {
 
 const write = (value) => process.stdout.write(`${JSON.stringify(value)}\n`);
 const readline = createInterface({ input: process.stdin, terminal: false });
-let queue = Promise.resolve();
+const pendingCalls = new Set();
 
 readline.on("line", (line) => {
   let message;
@@ -536,7 +536,7 @@ readline.on("line", (line) => {
     write({ jsonrpc: "2.0", id: message.id, error: { code: -32601, message: "Method not supported." } });
     return;
   }
-  queue = queue.then(async () => {
+  const pending = (async () => {
     try {
       const result = await callTool(message.params?.name, message.params?.arguments);
       write({
@@ -554,9 +554,12 @@ readline.on("line", (line) => {
         },
       });
     }
-  });
+  })();
+  pendingCalls.add(pending);
+  pending.finally(() => pendingCalls.delete(pending));
 });
 
-readline.on("close", () => {
-  queue.finally(() => process.exit(0));
+readline.on("close", async () => {
+  await Promise.allSettled([...pendingCalls]);
+  process.exit(0);
 });

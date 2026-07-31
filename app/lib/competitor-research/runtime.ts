@@ -6,6 +6,7 @@ import {
   open,
   readFile,
   rename,
+  stat,
   unlink,
 } from "node:fs/promises";
 import { homedir } from "node:os";
@@ -893,14 +894,13 @@ async function execute(options: CliOptions, control: RunControl = {}): Promise<R
     });
     return { exitCode: 4, receipt };
   }
-  const config = await loadFixtureProject(options, roots.runtime_root);
-  const provider = options.provider ?? config.provider;
-  const nextRunId = options.resumeRun ?? config.nights[0].run_id;
   if (options.dryRun) {
+    const provider = options.provider ?? "normalized_import";
+    const runId = options.resumeRun ?? stableNamespacedId("run", options.project, "dry-run").id;
     const receipt = await standaloneReceipt({
       artifactRoot: roots.artifact_root,
-      projectId: config.project_id,
-      runId: `${nextRunId}_dry_run`,
+      projectId: options.project,
+      runId: `${runId}_dry_run`,
       provider,
       status: "complete",
       dryRun: true,
@@ -908,18 +908,42 @@ async function execute(options: CliOptions, control: RunControl = {}): Promise<R
     });
     return { exitCode: 0, receipt };
   }
+  const config = await loadFixtureProject(options, roots.runtime_root);
+  const provider = options.provider ?? config.provider;
+  const nextRunId = options.resumeRun ?? config.nights[0].run_id;
 
   const projectRuntime = resolve(roots.runtime_root, "competitor-research/projects", config.project_id);
   const statePath = resolve(projectRuntime, "state.json");
   const lockPath = resolve(projectRuntime, ".nightly.lock");
   await mkdir(projectRuntime, { recursive: true, mode: 0o700 });
   let lockHandle;
+  let recoveredStaleLock = false;
   try {
     lockHandle = await open(lockPath, "wx", 0o600);
     await lockHandle.writeFile(`${process.pid}\n`, "utf8");
     await lockHandle.sync();
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+    let stale = false;
+    try {
+      const [contents, metadata] = await Promise.all([readFile(lockPath, "utf8"), stat(lockPath)]);
+      const pid = Number(contents.trim());
+      stale = !Number.isInteger(pid) || pid <= 0 || Date.now() - metadata.mtimeMs > 1_200_000;
+      if (!stale) {
+        try { process.kill(pid, 0); } catch (probeError) {
+          stale = (probeError as NodeJS.ErrnoException).code === "ESRCH";
+        }
+      }
+    } catch (readError) {
+      if ((readError as NodeJS.ErrnoException).code !== "ENOENT") stale = true;
+    }
+    if (stale) {
+      await unlink(lockPath).catch(() => undefined);
+      lockHandle = await open(lockPath, "wx", 0o600);
+      await lockHandle.writeFile(`${process.pid}\n`, "utf8");
+      await lockHandle.sync();
+      recoveredStaleLock = true;
+    } else {
     const receipt = await standaloneReceipt({
       artifactRoot: roots.artifact_root,
       projectId: config.project_id,
@@ -929,6 +953,7 @@ async function execute(options: CliOptions, control: RunControl = {}): Promise<R
       limitations: ["A per-profile nightly lock reported an overlapping eligible run; no second engine or projection mutation started."],
     });
     return { exitCode: 4, receipt };
+    }
   }
 
   let state: RuntimeState | null = null;
@@ -1014,7 +1039,9 @@ async function execute(options: CliOptions, control: RunControl = {}): Promise<R
     const projection = projectFakeGoogle({ state, config, night, ads, signals, engine: run.engine, resume });
     const enrichment = await runEnrichment({ state, config, night, ads, resume });
     throwIfInterrupted(control.signal);
-    const limitations: string[] = [];
+    const limitations: string[] = recoveredStaleLock
+      ? ["Recovered a stale profile lock from a previous interrupted run."]
+      : [];
     if (projection.simulatedFailure) {
       limitations.push("A simulated fake Sheet link failure left one durable outbox item at drive_uploaded; no external Google action occurred.");
     }
@@ -1094,7 +1121,7 @@ async function execute(options: CliOptions, control: RunControl = {}): Promise<R
     state.latest_receipt_path = receiptPath;
     if (status === "complete" && !state.completed_nights.includes(night.number)) {
       state.completed_nights.push(night.number);
-      state.completed_nights.sort();
+      state.completed_nights.sort((a, b) => a - b);
     }
     await atomicWriteJson(statePath, state);
     await atomicWriteJson(resolve(projectRuntime, "runs", night.run_id, "checkpoint.json"), {

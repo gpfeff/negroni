@@ -6,6 +6,8 @@ import { fileURLToPath } from "node:url";
 import { backup, DatabaseSync } from "node:sqlite";
 import { assertNoSecretMaterial } from "../contracts/secrets-core.mjs";
 
+const LIMITATIONS_SEPARATOR = " | ";
+
 import {
   assertConfidence,
   assertScope,
@@ -467,7 +469,7 @@ export class LearningCoreStore implements LearningCoreStorage, VectorRepository 
     this.#database.prepare(`
       INSERT INTO learning_fts(owner_id, workspace_id, brand_id, learning_id, version, statement, applicability, limitations)
       VALUES (?, ?, ?, ?, 1, ?, ?, ?)
-    `).run(scope.owner_id, scope.workspace_id, scope.brand_id, learningId, statement, applicability, limitations.join(" "));
+    `).run(scope.owner_id, scope.workspace_id, scope.brand_id, learningId, statement, applicability, limitations.join(LIMITATIONS_SEPARATOR));
   }
 
   getBrand(scope: LearningScope): { id: string; name: string; description: string } | null {
@@ -690,7 +692,7 @@ export class LearningCoreStore implements LearningCoreStorage, VectorRepository 
         INSERT INTO learning_fts(owner_id, workspace_id, brand_id, learning_id, version, statement, applicability, limitations)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(scope.owner_id, scope.workspace_id, scope.brand_id, current.learning_id, nextVersion,
-        statement, applicability, limitations.join(" | "));
+        statement, applicability, limitations.join(LIMITATIONS_SEPARATOR));
       this.#database.exec("COMMIT");
     } catch (error) {
       this.#database.exec("ROLLBACK");
@@ -774,7 +776,7 @@ export class LearningCoreStore implements LearningCoreStorage, VectorRepository 
         statement: stringValue(row, "statement"),
         confidence: numberValue(row, "confidence"),
         applicability: stringValue(row, "applicability"),
-        limitations: stringValue(row, "limitations").split(" | ").filter(Boolean),
+        limitations: stringValue(row, "limitations").split(LIMITATIONS_SEPARATOR).filter(Boolean),
         score: 1 / (1 + Math.abs(numberValue(row, "rank"))),
       });
     }
@@ -790,6 +792,14 @@ export class LearningCoreStore implements LearningCoreStorage, VectorRepository 
     `).run(owner, workspace, brand, receiptId,
       createHash("sha256").update(normalizedQuery).digest("hex"), tokenBudget, estimatedTokens,
       truncated ? 1 : 0, JSON.stringify(matches.map((match) => match.learning_id)), freshness, now);
+    this.#database.prepare(`
+      DELETE FROM retrieval_receipts
+      WHERE owner_id = ? AND workspace_id = ? AND brand_id = ? AND id NOT IN (
+        SELECT id FROM retrieval_receipts
+        WHERE owner_id = ? AND workspace_id = ? AND brand_id = ?
+        ORDER BY created_at DESC, id DESC LIMIT 1000
+      )
+    `).run(owner, workspace, brand, owner, workspace, brand);
     return {
       owner_id: owner,
       workspace_id: workspace,

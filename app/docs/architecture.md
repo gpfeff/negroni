@@ -120,6 +120,16 @@ an outbox state machine (`pending` → `drive_uploaded` → `sheet_linked` →
 `complete`) with stable keys and readback hashes. The checked-in proof uses
 fakes only and records zero external actions.
 
+Engine-backed runtime tests require the optional sibling
+`meta-ads-intelligence` checkout and skip explicitly when it is unavailable.
+
+## Hosted identity trust boundary
+
+The `oai-authenticated-user-email` header is trusted only on hostnames beneath
+`NEGRONI_TRUSTED_INGRESS_SUFFIX` (default `.chatgpt.site`) or during localhost
+preview. The Worker must not expose a `workers.dev` route or any direct ingress
+that can bypass the authenticated ChatGPT hosting proxy.
+
 ## Local runner versus hosted capability
 
 `bin/research-runner.ts` is the smallest locally verified HTTP boundary. It
@@ -127,7 +137,9 @@ requires a server bearer token, hashes the opaque owner key for isolation,
 permits only `GET /health` and `POST /v1/research-runs`, and stores private
 checkpoints separately from durable non-secret artifacts. Completed prompts
 are not rerun after a partial attempt, and identical requests replay the same
-final receipt. The default prompt, research, Google, and official collection
+final receipt. Each owner-scoped run uses a recoverable state lock; overlapping
+requests fail explicitly with HTTP 409 instead of colliding on immutable
+receipts. The default prompt, research, Google, and official collection
 providers are blocked; no hosted runner is claimed.
 
 Meta Graph API v26.0 capability is evaluated before any adapter is enabled.

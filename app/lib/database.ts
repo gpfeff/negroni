@@ -20,6 +20,7 @@ export type Database = {
   prepare(sql: string): D1Statement;
   batch(statements: D1Statement[]): Promise<D1RunResult[]>;
 };
+const schemaPromises = new WeakMap<Database, Promise<void>>();
 
 const RESEARCH_PROFILE_CONTEXT_COLUMNS = [
   ["client_customer_name", "TEXT NOT NULL DEFAULT ''"],
@@ -42,6 +43,17 @@ export async function getDatabase(): Promise<Database | null> {
 }
 
 export async function ensureResearchSchema(database: Database): Promise<void> {
+  const existing = schemaPromises.get(database);
+  if (existing) return existing;
+  const pending = ensureResearchSchemaOnce(database).catch((error) => {
+    schemaPromises.delete(database);
+    throw error;
+  });
+  schemaPromises.set(database, pending);
+  await pending;
+}
+
+async function ensureResearchSchemaOnce(database: Database): Promise<void> {
   await database.batch([
     database.prepare(CREATE_RESEARCH_PROFILES),
     database.prepare(CREATE_RESEARCH_PROFILES_OWNER_INDEX),

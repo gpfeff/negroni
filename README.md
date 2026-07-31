@@ -69,8 +69,8 @@ Phase 1 currently includes:
 - a server-only Meta Ads Intelligence adapter with project-isolated profiles,
   deterministic daily deltas, five durable Research artifact receipts, and a
   compact competitor-ad results module;
-- a separate local-first Meta Ads Intelligence engine linked at
-  [`meta-ads-intelligence/`](meta-ads-intelligence/).
+- a separate local-first Meta Ads Intelligence engine provided as a local
+  companion checkout at `meta-ads-intelligence/` (not included in this repository).
 - a provider-neutral competitor-research CLI with sanitized two-night fixtures,
   isolated SQLite, immutable receipts, fake Sheets/Drive projections,
   deterministic recovery, and an approval-locked Creative handoff;
@@ -111,7 +111,7 @@ Git repository.
 
 ## Quick start for contributors
 
-Requirements: Node.js 22.13 or newer and npm 11.
+Requirements: Node.js 22.16 or newer and npm 11.
 
 ```bash
 git clone https://github.com/gpfeff/negroni.git
@@ -161,6 +161,8 @@ means complete/complete-zero; 3 means partial/suspect; 4 blocked/skipped; 5 a
 persisted local failure; and 64 invalid CLI/configuration. The checked-in
 vertical slice is sanitized and offline. It does not prove a live Meta, Google,
 BrowserOS, paid collector, or scheduler capability.
+Engine-backed tests require the local companion `meta-ads-intelligence` checkout
+and are reported as skipped when it is absent; engine-independent tests always run.
 
 The reviewed official Meta Graph API v26.0 boundary accepts up to 10 Page IDs
 per Ads Archive request. Ordinary ads that reached no EU location are not
@@ -267,7 +269,7 @@ Current Phase 1 implementations:
 
 - [`app/`](app/) — canonical Negroni application, with Research currently
   executable and the later phases visibly planned.
-- [`meta-ads-intelligence/`](meta-ads-intelligence/) — local-first intelligence
+- `meta-ads-intelligence/` — optional local companion checkout for intelligence
   from public Meta Ad Library observations. SQLite, media, lifecycle, human
   overrides, local reports, and optional cloud projection remain engine-owned.
 

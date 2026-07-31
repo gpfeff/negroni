@@ -5,7 +5,7 @@
   "license": "MIT",
   "description": "An open-source, agent-native advertising system for lead generation.",
   "engines": {
-    "node": ">=22.13.0"
+    "node": ">=22.16.0"
   },
   "scripts": {
     "setup": "npm --prefix app ci && npm --prefix web ci",

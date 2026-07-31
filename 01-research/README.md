@@ -1,6 +1,6 @@
 # Phase 1: Research
 
-Research creates the evidence base for every downstream decision. Its job is to
+Research creates the evidence base for every downstream decision. Its vertical-agnostic sequence is Market Awareness, Competitor Research, Psychographic Avatar Research, Master Research (4a), and Brand Tone (4b), all run with Gemini Deep Research. Its job is to
 replace a vague request for “more leads” with a usable account of the business,
 the buyer, the market, and the opportunities worth testing.
 
@@ -93,6 +93,8 @@ The initial Research contract will produce:
 4. `creative-brief.json` — approved inputs for Phase 2;
 5. `research-receipt.json` — scope, tools, limitations, and completion state.
 
+The approved brand revision has exactly two user-facing representations: a polished Google Doc for humans and content-equivalent Markdown stored against the brand for Draper, the Learning Core, and Creative. Both share revision, model, submitted-prompt, citation, limitation, timestamp, and SHA-256 metadata. Competitor database creation and ongoing monitoring are separate explicit opt-ins, not default deliverables.
+
 These names define the implemented runner-side artifact contract. Phase 1
 validates one SHA-256 receipt for each file before accepting a result.
 `creative-brief.json` remains approval-pending until a person approves that
@@ -101,12 +103,9 @@ Creative may consume; the collection receipt is not a sixth Research artifact.
 
 The interface first saves a required customer profile: client/customer name,
 profession or job title, company, public website or profile URL, service or
-offer purchased, competitor used, industry/niche, and location or market
+offer purchased, known competitors when available, industry/niche, and location or market
 served. It then adds the lead offer or service and target age range needed to
-scope the research. It keeps three outward actions: the
-master Google Doc, matching Markdown, and competitor archive. The archive opens
-a restricted Google Sheet when configured, otherwise an access-controlled
-local report. SQLite remains authoritative.
+scope the research. It generates a prefilled final prompt that the user can accept or edit. The two final representations are the master Google Doc and matching brand-scoped Markdown. An explicitly requested competitor database uses authoritative SQLite and may have a restricted Sheet or local review projection.
 
 ## Current modules
 

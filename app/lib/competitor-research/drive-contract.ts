@@ -99,11 +99,16 @@ export class FakeDriveProjection {
     object_created: false;
   }> = [];
 
-  constructor(projectId: string, state?: { media?: DriveMediaRecord[]; manifests?: DriveManifestRecord[] }) {
+  constructor(projectId: string, state?: {
+    media?: DriveMediaRecord[];
+    manifests?: DriveManifestRecord[];
+    missing?: Array<{ ad_record_id: string; source_url: string; state: MediaState; reason: string; object_created: false }>;
+  }) {
     if (!projectId.trim()) throw new Error("A fake Drive projection requires a project ID.");
     this.projectId = projectId;
     for (const record of state?.media ?? []) this.mediaByHash.set(record.sha256, structuredClone(record));
     for (const record of state?.manifests ?? []) this.manifestByPath.set(record.path, structuredClone(record));
+    this.missingMedia.push(...structuredClone(state?.missing ?? []));
   }
 
   putMedia(input: { sha256: string; mime_type: string; byte_size: number }) {

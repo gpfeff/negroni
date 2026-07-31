@@ -5,11 +5,16 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { spawn, spawnSync } from "node:child_process";
+import { existsSync } from "node:fs";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(appRoot, "..");
 const fixtureRoot = resolve(appRoot, "tests/fixtures/competitor-research");
 const cli = resolve(appRoot, "bin/negroni.mjs");
+const enginePresent = existsSync(resolve(repositoryRoot, "meta-ads-intelligence/mai_core.py"));
+const engineTest = (name: string, fn: () => Promise<void>) => test(name, {
+  skip: enginePresent ? false : "meta-ads-intelligence engine not present; engine-backed slice skipped",
+}, fn);
 
 type CliResult = {
   code: number;
@@ -76,7 +81,7 @@ async function roots(label: string) {
   return { base, runtime: resolve(base, "runtime"), artifacts: resolve(base, "artifacts") };
 }
 
-test("the stable CLI processes two fixture nights and then returns an idempotent receipt", async () => {
+engineTest("the stable CLI processes two fixture nights and then returns an idempotent receipt", async () => {
   const isolated = await roots("competitor-clean");
   const first = runCli(isolated, "fixture-clean");
   assert.equal(first.code, 0, first.stderr);
@@ -116,7 +121,7 @@ test("the stable CLI processes two fixture nights and then returns an idempotent
   assert.equal(repeat.receipt.idempotent_replay, true);
 });
 
-test("a fake Google failure preserves a partial receipt and resumes without duplicates", async () => {
+engineTest("a fake Google failure preserves a partial receipt and resumes without duplicates", async () => {
   const isolated = await roots("competitor-recovery");
   assert.equal(runCli(isolated, "fixture-recovery").code, 0);
   const partial = runCli(isolated, "fixture-recovery");
@@ -147,7 +152,7 @@ test("overlap and unavailable live providers fail honestly without engine or ext
   const isolated = await roots("competitor-blocked");
   const projectRuntime = resolve(isolated.runtime, "competitor-research/projects/fixture-clean");
   await mkdir(projectRuntime, { recursive: true });
-  await writeFile(resolve(projectRuntime, ".nightly.lock"), "held by fixture test\n", { flag: "wx" });
+  await writeFile(resolve(projectRuntime, ".nightly.lock"), `${process.pid}\n`, { flag: "wx" });
   const overlap = runCli(isolated, "fixture-clean");
   assert.equal(overlap.code, 4, overlap.stderr);
   assert.equal(overlap.receipt.status, "skipped");
@@ -165,6 +170,17 @@ test("overlap and unavailable live providers fail honestly without engine or ext
   assert.equal(foreplay.receipt.status, "failed");
   assert.equal(foreplay.receipt.error_code, "invalid_cli");
   assert.match(foreplay.receipt.error ?? "", /not configured or supported/i);
+});
+
+engineTest("a dead profile lock is recovered with an explicit limitation", async () => {
+  const isolated = await roots("competitor-stale-lock");
+  const projectRuntime = resolve(isolated.runtime, "competitor-research/projects/fixture-clean");
+  await mkdir(projectRuntime, { recursive: true });
+  await writeFile(resolve(projectRuntime, ".nightly.lock"), "99999999\n", { flag: "wx" });
+  const recovered = runCli(isolated, "fixture-clean");
+  assert.equal(recovered.code, 3, recovered.stderr);
+  assert.match(recovered.receipt.limitations.join(" "), /Recovered a stale profile lock/);
+  await assert.rejects(lstat(resolve(projectRuntime, ".nightly.lock")), /ENOENT/);
 });
 
 test("an engine failure persists a bounded durable receipt and releases the profile lock", async () => {
@@ -188,7 +204,7 @@ test("an engine failure persists a bounded durable receipt and releases the prof
   assert.equal(checkpoint.external_actions.length, 0);
 });
 
-test("SIGTERM persists a resumable partial receipt, releases the lock, and resumes without duplicates", async () => {
+engineTest("SIGTERM persists a resumable partial receipt, releases the lock, and resumes without duplicates", async () => {
   const isolated = await roots("competitor-sigterm");
   const runningReceipt = resolve(
     isolated.artifacts,
@@ -253,7 +269,7 @@ test("SIGTERM persists a resumable partial receipt, releases the lock, and resum
   assert.equal(resumed.receipt.engine.counts.media_objects, 1);
 });
 
-test("runtime SQLite and media never leak into Git or durable artifact roots", async () => {
+engineTest("runtime SQLite and media never leak into Git or durable artifact roots", async () => {
   const isolated = await roots("competitor-routing");
   assert.equal(runCli(isolated, "fixture-clean").code, 0);
   async function findPrivate(root: string): Promise<string[]> {

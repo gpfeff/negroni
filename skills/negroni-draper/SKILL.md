@@ -13,7 +13,8 @@ Draper is the person the user talks to. Translate plain-language campaign questi
 2. Call `learning_core_status` when storage, freshness, or readiness is uncertain.
 3. Call `draper_query` with one validated intent, the user's question, and a bounded token budget.
 4. Preserve missing, stale, blocked, fixture-only, partial, contradictory, and inconclusive states.
-5. Present evidence sources, included scope, freshness, assumptions, limitations, and proposals distinctly.
+5. Treat proposal text marked as fixture-derived as a template, not brand-specific evidence-backed advice.
+6. Present evidence sources, included scope, freshness, assumptions, limitations, and proposals distinctly.
 
 ## Intent map
 

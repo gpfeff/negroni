@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { timingSafeEqual } from "node:crypto";
 import { createServer } from "node:http";
 import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
@@ -16,6 +17,13 @@ const geminiInteractionsBaseUrl = new URL(process.env.NEGRONI_GEMINI_INTERACTION
 const GEMINI_MAX_AGENT = "deep-research-max-preview-04-2026";
 
 if (!brokerToken) throw new Error("CREDENTIAL_BROKER_TOKEN is required.");
+
+function tokenMatches(expected, header) {
+  if (!header?.startsWith("Bearer ")) return false;
+  const left = Buffer.from(expected);
+  const right = Buffer.from(header.slice("Bearer ".length));
+  return left.length === right.length && timingSafeEqual(left, right);
+}
 
 async function commandStatus(command, args, isConnected, connectedDetail) {
   try {
@@ -134,7 +142,7 @@ function json(response, status = 200) {
 }
 
 async function handle(request) {
-  if (request.headers.get("authorization") !== `Bearer ${brokerToken}`) {
+  if (!tokenMatches(brokerToken, request.headers.get("authorization"))) {
     return json({ error: "Unauthorized" }, 401);
   }
   const url = new URL(request.url);

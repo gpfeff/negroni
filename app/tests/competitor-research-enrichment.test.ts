@@ -110,3 +110,19 @@ test("budget exhaustion and two malformed fake responses remain explicit failure
   assert.match(exhausted.error ?? "", /budget/i);
   assert.equal(session.receipt().status, "partial");
 });
+
+test("each enrichment retry remains inside the run budget", async () => {
+  let calls = 0;
+  const session = new EnrichmentSession({
+    budget_usd: 0.05,
+    provider: { async classify() { calls += 1; return { creative_format: "invalid" }; } },
+  });
+  const result = await session.classify({
+    entity_id: "ad_fixture_budget", source_text: "Synthetic record.", input_sha256: "c".repeat(64),
+    schema_version: "1.0", prompt_version: "1.0", model: "fake-model", estimated_cost_usd: 0.03,
+  });
+  assert.equal(result.status, "budget_exhausted");
+  assert.equal(result.attempts, 1);
+  assert.equal(calls, 1);
+  assert.ok(session.receipt().spent_usd <= session.receipt().budget_usd);
+});

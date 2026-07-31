@@ -85,6 +85,10 @@ The server-only Meta Ads Intelligence adapter now:
   `research-receipt.json`;
 - never installs a scheduler.
 
+The checked-in tests remain sanitized and offline. Engine-backed runtime tests
+require the sibling `meta-ads-intelligence` checkout and are explicitly skipped
+when it is absent; all engine-independent contract tests still run.
+
 The local Research runner now also has a provider-neutral sequence seam and a
 brokered Gemini Deep Research Max adapter. One approved run uses one Max
 interaction for all five required prompts, validates section coverage and URL

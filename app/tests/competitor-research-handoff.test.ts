@@ -24,6 +24,10 @@ const creativeBrief = {
   }],
 };
 
+test("stable JSON omits undefined object values like JSON.stringify", () => {
+  assert.equal(stableJson({ kept: 1, omitted: undefined }), '{"kept":1}');
+});
+
 test("Creative accepts only an explicitly approved immutable brief fingerprint", () => {
   const serialized = `${stableJson(creativeBrief)}\n`;
   const fingerprint = createHash("sha256").update(serialized).digest("hex");

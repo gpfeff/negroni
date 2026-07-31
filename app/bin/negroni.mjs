@@ -54,6 +54,7 @@ if (command === "research" && process.argv[3] === "competitors" && process.argv[
       cwd: packageRoot,
       env: childEnvironment,
       stdio: "inherit",
+      shell: process.platform === "win32",
     });
     const stop = () => {
       app.kill("SIGTERM");

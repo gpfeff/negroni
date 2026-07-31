@@ -139,7 +139,9 @@ test("ingestion and retrieval are idempotent, media-deduplicated, and owner/bran
     assert.ok(isolated.media.every((item) => item.deduplicated));
     assert.equal(store.getBrand(input.scope)?.name, "Desert Ember HVAC");
     assert.equal(store.getBrand(wrongOwner)?.name, "Desert Ember HVAC");
-    assert.equal(store.searchLearnings(input.scope, "qualified CPL", 800).matches.length, 1);
+    const scopedMatches = store.searchLearnings(input.scope, "qualified CPL", 800).matches;
+    assert.equal(scopedMatches.length, 1);
+    assert.equal(scopedMatches[0]?.limitations.length, 3);
     assert.equal(store.searchLearnings(wrongOwner, "qualified CPL", 800).matches.length, 1);
   } finally {
     store.close();
@@ -348,6 +350,9 @@ test("every Draper capability is a bounded intent with evidence and no completed
       assert.ok(response.evidence.length > 0);
       assert.ok(response.assumptions.length > 0);
       assert.deepEqual(response.completed_actions, []);
+      if (["explain_loop_state", "propose_experiment", "prepare_change_diff"].includes(item.intent)) {
+        assert.ok(response.limitations.includes("Proposal text is a fixture-derived template; it was not derived from this brand's recorded evidence."));
+      }
       assert.deepEqual(response.external_actions, []);
     }
   } finally {

@@ -123,6 +123,8 @@ test("different-content logical collisions and missing media are preserved expli
   });
   assert.equal(missing.object_created, false);
   assert.equal(drive.objects().length, 0);
+  const restored = new FakeDriveProjection("fixture-project", drive.exportState());
+  assert.deepEqual(restored.missing(), drive.missing());
 });
 
 test("same hash with conflicting metadata is quarantined instead of overwritten", () => {

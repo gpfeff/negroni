@@ -136,13 +136,15 @@ function validResult(researchName = RESEARCH_NAME): RunResult {
 
 test("the intake requires the customer profile before research scope", () => {
   const intake = createEmptyIntake();
+  assert.equal(intake.create_competitor_database, false);
+  assert.equal(intake.competitor_monitoring.enabled, false);
+  assert.match(intake.approved_prompt, /1\).*Market Awareness[\s\S]*4A\).*Master Research[\s\S]*4B\).*Brand Tone/i);
   assert.deepEqual(validateIntake(intake), [
     "Enter the client or customer name.",
     "Enter the profession or job title.",
     "Enter the company name.",
     "Enter an HTTPS website or public profile URL.",
     "Describe the service or offer purchased.",
-    "Enter a competitor the customer uses.",
     "Describe the lead offer or service.",
     "Enter the industry or niche.",
     "Enter the location or market served.",

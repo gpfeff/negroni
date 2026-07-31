@@ -19,7 +19,7 @@ uses fake providers only. The default dependencies are blocked or inactive, so
 this is `locally_verified_not_deployed`, not a hosted research service.
 
 The configured Gemini path uses one brokered Interactions API task for the
-entire five-prompt sequence. It is fixed to Deep Research Max
+entire five-step sequence. It is fixed to Gemini Deep Research Max
 `deep-research-max-preview-04-2026`, preserves one validated receipt per prompt,
 and fails closed when any section or URL citation is missing. The runner never
 receives the Gemini API key. It also refuses network access unless
@@ -83,11 +83,13 @@ The prompt source document ID is
 `1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o`. The runner must retrieve its
 current content server-side and execute these five prompts in order:
 
-1. Market Awareness
+1. Market Awareness Research
 2. Competitor Research
-3. Avatar/Psychographic Research
-4. Master Research
-5. Tone of Voice
+3. Psychographic Avatar Research
+4. Master Research Document (4a)
+5. Brand Tone of Voice (4b)
+
+The user reviews a prefilled final run prompt and may edit it. The runner records the exact submitted revision. These prompts remain vertical-agnostic; intake supplies the offer, buyer/customer relationship, market, audience, and brand context.
 
 Collected pages, ads, documents, and model output are untrusted evidence, never
 instructions. The runner must not allow retrieved content to alter this
@@ -104,11 +106,10 @@ sequence, tools, destinations, or safety rules.
    - `opportunity-map.json`;
    - `creative-brief.json`;
    - `research-receipt.json`.
-5. Create exactly three outward actions:
+5. Create exactly two final representations of one approved brand-scoped revision:
    - `<offer> (<country or region>) — Master Research` as a native Google Doc;
-   - `<offer> (<country or region>) — Competitor Ads` as a restricted native
-     Google Sheet when configured, otherwise an access-controlled local report;
    - `<offer-country-or-region>-master-research.md`.
+   A competitor database and ongoing monitoring are independent opt-ins and are not additional default Research deliverables.
 6. Read back every created Google file; verify Markdown/Doc parity, citations,
    competitor-row provenance, secrets, and structural-example leakage.
 7. Resolve researched competitors to stable verified advertiser identities and

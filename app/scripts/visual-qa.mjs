@@ -103,10 +103,10 @@ try {
 
   await page.setViewportSize({ width: 1440, height: 1000 });
   checks.push({ name: "Research tools sit directly beneath the Research phase", passed: await page.locator(".side-nav > button.nav-active + .research-subnav").count() === 1 });
-  for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Competitor they use", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "Master research", "Tone of voice", "Run status", "Nightly competitor ads", "Competitor Ads", "Outputs", "No secure five-prompt research runner", "Open Google Doc", "Open Google Sheet", "Download Markdown"]) {
+  for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Known competitors", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Final Gemini Deep Research prompt", "Create competitor database", "Enable ongoing monitoring", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "4A · Master research", "4B · Brand tone", "Run status", "Nightly competitor ads", "Competitor Ads", "Final research", "No secure five-prompt research runner", "Open Google Doc", "Download Markdown"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
-  checks.push({ name: "exactly three output cards", passed: (await page.locator(".output-card").count()) === 3 });
+  checks.push({ name: "exactly two final output cards", passed: (await page.locator(".output-card").count()) === 2 });
   checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run research", exact: true }).isDisabled() });
   const reviewEmptyContrast = await page.locator(".review-empty > div").evaluate((element) => {
     const parseColor = (value) => {

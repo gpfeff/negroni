@@ -1,7 +1,7 @@
 {
   "name": "negroni",
-  "version": "0.1.0+codex.20260730203038",
-  "description": "An open-source, agent-native advertising system with five reviewable phases, Draper, and a shared Learning Core.",
+  "version": "0.1.0+codex.20260731012659",
+  "description": "An open-source advertising system with five reviewable phases, five-step Gemini Deep Research, Draper, and a shared Learning Core.",
   "author": {
     "name": "Greg Pfeffer",
     "url": "https://github.com/gpfeff"
@@ -23,7 +23,7 @@
   "interface": {
     "displayName": "Negroni",
     "shortDescription": "Run a reviewable AI advertising workflow.",
-    "longDescription": "Talk to Draper across evidence-backed research, creative, launch preparation, iteration, and continuous learning. Negroni keeps an authoritative local Learning Core, readable vault projections, durable artifacts, honest blocked states, and explicit approval gates around spend and live account changes.",
+    "longDescription": "Run vertical-agnostic lead-generation research through five ordered Gemini Deep Research prompts, review the final prompt, and preserve a polished Google Doc plus brand-scoped Markdown for Creative. Talk to Draper across research, creative, launch preparation, iteration, and continuous learning with honest blocked states and explicit approval gates.",
     "developerName": "Greg Pfeffer",
     "category": "Productivity",
     "capabilities": [
@@ -33,7 +33,7 @@
     "defaultPrompt": [
       "Open or create my private Negroni workspace.",
       "Ask Draper how my campaign loop is doing.",
-      "Start evidence-backed campaign research."
+      "Start editable Gemini Deep Research for my lead offer."
     ],
     "brandColor": "#70283C",
     "composerIcon": "./app/public/negroni-glass-icon-v2.webp",

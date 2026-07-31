@@ -390,6 +390,35 @@ test("one owner gets an idempotent five-prompt result and exactly five immutable
   }
 });
 
+test("overlapping identical runs fail clearly without duplicate provider execution", async () => {
+  const fake = fakeDependencies();
+  const original = fake.dependencies.research_engine.executePrompt!;
+  let release!: () => void;
+  const gate = new Promise<void>((resolveGate) => { release = resolveGate; });
+  fake.dependencies.research_engine.executePrompt = async (input) => {
+    if (fake.promptCalls.length === 0) await gate;
+    return original(input);
+  };
+  const app = await harness("overlap-lock", fake.dependencies);
+  try {
+    const first = app.handler(request("/v1/research-runs", {
+      method: "POST", token: SERVICE_TOKEN, owner: "owner-a", body: validIntake(),
+    }));
+    await new Promise((resolveWait) => setTimeout(resolveWait, 25));
+    const second = await app.handler(request("/v1/research-runs", {
+      method: "POST", token: SERVICE_TOKEN, owner: "owner-a", body: validIntake(),
+    }));
+    assert.equal(second.status, 409, await second.clone().text());
+    assert.match(await second.text(), /already in progress/i);
+    release();
+    assert.equal((await first).status, 200);
+    assert.equal(fake.promptCalls.length, 5);
+  } finally {
+    release();
+    await rm(app.base, { recursive: true, force: true });
+  }
+});
+
 test("a sequence provider executes one research task for all five prompts", async () => {
   const fake = fakeDependencies({ sequence: true });
   const app = await harness("single-sequence", fake.dependencies);

@@ -15,7 +15,7 @@ advertising safer and more reproducible.
 
 ## Local setup
 
-Requirements: Node.js 22.13 or newer and npm 11.
+Requirements: Node.js 22.16 or newer and npm 11.
 
 ```bash
 npm run setup

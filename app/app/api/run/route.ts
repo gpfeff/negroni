@@ -37,17 +37,23 @@ export async function POST(request: Request): Promise<Response> {
     }
     assertNoSecretMaterial(intake, "Research intake");
 
-    const runnerResponse = await fetch(config.url, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${config.token}`,
-        "content-type": "application/json",
-        "x-negroni-owner": owner,
-      },
-      body: JSON.stringify(intake),
-      signal: AbortSignal.timeout(15 * 60 * 1000),
-    });
-    const payload = await runnerResponse.json();
+    let runnerResponse: Response;
+    let payload: unknown;
+    try {
+      runnerResponse = await fetch(config.url, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${config.token}`,
+          "content-type": "application/json",
+          "x-negroni-owner": owner,
+        },
+        body: JSON.stringify(intake),
+        signal: AbortSignal.timeout(15 * 60 * 1000),
+      });
+      payload = await runnerResponse.json();
+    } catch {
+      throw new Error("The secure research runner could not be reached.");
+    }
     if (!runnerResponse.ok) throw new Error("The secure research runner could not complete the request.");
     const researchName = buildResearchName(intake.offer_or_lead_type, intake.country_region);
     return Response.json(parseRunResult(payload, researchName), { headers: { "cache-control": "no-store" } });

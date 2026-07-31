@@ -16,7 +16,7 @@ export const RESEARCH_PROMPTS = [
 export type ResearchPromptId = (typeof RESEARCH_PROMPTS)[number];
 
 export type CompetitorMonitoringRequest = {
-  enabled: true;
+  enabled: boolean;
   engine: "meta-ads-intelligence";
   cadence: "nightly";
   local_time: "02:17";
@@ -36,6 +36,8 @@ export type IntelligenceIntake = {
   industry: string;
   country_region: string;
   target_age_range: string;
+  approved_prompt: string;
+  create_competitor_database: boolean;
   allowed_actions: ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"];
   research_engine: "lead-generation-ads-discovery-intelligence";
   prompt_source: {

@@ -4,12 +4,17 @@ import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import test from "node:test";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const repositoryRoot = resolve(appRoot, "..");
 const fixtureRoot = resolve(appRoot, "tests/fixtures/competitor-research");
 const serverPath = resolve(appRoot, "bin/negroni-mcp.mjs");
+const enginePresent = existsSync(resolve(repositoryRoot, "meta-ads-intelligence/mai_core.py"));
+const engineTest = (name: string, fn: () => Promise<void>) => test(name, {
+  skip: enginePresent ? false : "meta-ads-intelligence engine not present; engine-backed slice skipped",
+}, fn);
 const cliPath = resolve(appRoot, "bin/negroni.mjs");
 
 type RpcResponse = {
@@ -149,19 +154,19 @@ test("Draper MCP tools use validated intents and can record a local decision wit
         question: "Read /opt/negroni/private.sqlite",
       }),
     ], isolated.environment);
-    const status = toolPayload(responses[0]);
+    const status = toolPayload(responses.find(({ id }) => id === 1)!);
     assert.equal(status.contract, "negroni-learning-core-status");
-    const answer = toolPayload(responses[1]) as {
+    const answer = toolPayload(responses.find(({ id }) => id === 2)!) as {
       contract: string;
       proposals: Array<Record<string, unknown>>;
       external_actions: unknown[];
     };
     assert.equal(answer.contract, "negroni-draper-response");
     assert.deepEqual(answer.external_actions, []);
-    assert.equal(responses[2]?.result?.isError, true);
-    assert.match(responses[2]?.result?.content?.[0]?.text ?? "", /unsupported input: sql/i);
-    assert.equal(responses[3]?.result?.isError, true);
-    assert.match(responses[3]?.result?.content?.[0]?.text ?? "", /private local path/i);
+    assert.equal(responses.find(({ id }) => id === 3)?.result?.isError, true);
+    assert.match(responses.find(({ id }) => id === 3)?.result?.content?.[0]?.text ?? "", /unsupported input: sql/i);
+    assert.equal(responses.find(({ id }) => id === 4)?.result?.isError, true);
+    assert.match(responses.find(({ id }) => id === 4)?.result?.content?.[0]?.text ?? "", /private local path/i);
 
     const proposal = answer.proposals[0];
     const [decisionResponse] = await rpc([
@@ -192,15 +197,17 @@ test("tool validation rejects unknown inputs before invoking the stable CLI", as
   assert.match(response.result?.content?.[0]?.text ?? "", /unsupported input/i);
 });
 
-test("competitor execution uses the stable boundary and immutable inspection returns no local path", async () => {
+engineTest("competitor execution uses the stable boundary and immutable inspection returns no local path", async () => {
   const isolated = await isolatedEnvironment("execute");
   try {
-    const responses = await rpc([
+    const [executionResponse] = await rpc([
       call(1, "competitor_research", {
         project: "fixture-clean",
         dry_run: false,
         deadline_seconds: 30,
       }),
+    ], isolated.environment);
+    const [inspectionResponse] = await rpc([
       call(2, "inspect_research_artifact", {
         project: "fixture-clean",
         run_id: "run_fixture_clean_night_1",
@@ -208,11 +215,12 @@ test("competitor execution uses the stable boundary and immutable inspection ret
         artifact: "research-brief.md",
       }),
     ], isolated.environment);
-    const execution = toolPayload(responses.find(({ id }) => id === 1)!);
+    const responses = [executionResponse, inspectionResponse];
+    const execution = toolPayload(executionResponse);
     assert.equal(execution.status, "complete");
     assert.equal(execution.dry_run, false);
     assert.deepEqual(execution.external_actions, []);
-    const inspection = toolPayload(responses.find(({ id }) => id === 2)!);
+    const inspection = toolPayload(inspectionResponse);
     assert.equal(inspection.artifact, "research-brief.md");
     assert.equal(inspection.verified, true);
     assert.match(String(inspection.sha256), /^[a-f0-9]{64}$/);
@@ -243,12 +251,31 @@ test("dry-run is the default and unavailable live collection remains blocked", a
         dry_run: false,
       }),
     ], isolated.environment);
-    assert.equal(toolPayload(responses[0]).dry_run, true);
-    assert.equal(toolPayload(responses[1]).status, "blocked");
-    assert.match(JSON.stringify(toolPayload(responses[1])), /authorization/i);
-    assert.equal(toolPayload(responses[2]).dry_run, true);
-    assert.equal(responses[3]?.result?.isError, true);
-    assert.match(responses[3]?.result?.content?.[0]?.text ?? "", /provider is not supported/i);
+    assert.equal(toolPayload(responses.find(({ id }) => id === 1)!).dry_run, true);
+    assert.equal(toolPayload(responses.find(({ id }) => id === 2)!).status, "blocked");
+    assert.match(JSON.stringify(toolPayload(responses.find(({ id }) => id === 2)!)), /authorization/i);
+    assert.equal(toolPayload(responses.find(({ id }) => id === 3)!).dry_run, true);
+    assert.equal(responses.find(({ id }) => id === 4)?.result?.isError, true);
+    assert.match(responses.find(({ id }) => id === 4)?.result?.content?.[0]?.text ?? "", /provider is not supported/i);
+  } finally {
+    await rm(isolated.base, { recursive: true, force: true });
+  }
+});
+
+test("default competitor dry-run returns a structured receipt outside test mode", async () => {
+  const isolated = await isolatedEnvironment("production-dry-run");
+  try {
+    const environment: Record<string, string> = { ...isolated.environment };
+    delete environment.NEGRONI_TEST_MODE;
+    delete environment.NEGRONI_COMPETITOR_FIXTURE_ROOT;
+    delete environment.NEGRONI_RUNTIME_ROOT;
+    delete environment.NEGRONI_ARTIFACT_ROOT;
+    Object.assign(environment, { HOME: isolated.base });
+    const [response] = await rpc([call(1, "competitor_research", { project: "fresh-install" })], environment);
+    assert.notEqual(response.result?.isError, true);
+    const payload = toolPayload(response);
+    assert.equal(payload.dry_run, true);
+    assert.equal(payload.status, "complete");
   } finally {
     await rm(isolated.base, { recursive: true, force: true });
   }

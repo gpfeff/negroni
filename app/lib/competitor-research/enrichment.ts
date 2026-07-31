@@ -163,13 +163,17 @@ export class EnrichmentSession {
     if (!this.provider) {
       return { status: "off", cache_key: cacheKey, classification: null, error: "AI enrichment is off (zero-cost mode).", attempts: 0, cost_usd: 0 };
     }
-    if (this.spentUsd + input.estimated_cost_usd > this.budgetUsd) {
-      this.exhausted += 1;
-      return { status: "budget_exhausted", cache_key: cacheKey, classification: null, error: "The per-run AI enrichment budget is exhausted.", attempts: 0, cost_usd: 0 };
-    }
     const request = buildEnrichmentRequest(input);
     let lastError = "AI classification failed schema validation.";
     for (let attempt = 1; attempt <= 2; attempt += 1) {
+      if (this.spentUsd + input.estimated_cost_usd > this.budgetUsd) {
+        this.exhausted += 1;
+        return {
+          status: "budget_exhausted", cache_key: cacheKey, classification: null,
+          error: "The per-run AI enrichment budget is exhausted.", attempts: attempt - 1,
+          cost_usd: Number((input.estimated_cost_usd * (attempt - 1)).toFixed(6)),
+        };
+      }
       this.spentUsd = Number((this.spentUsd + input.estimated_cost_usd).toFixed(6));
       try {
         const classification = validateEnrichmentClassification(await this.provider.classify(request), input.source_text);

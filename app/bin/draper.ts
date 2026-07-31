@@ -51,6 +51,9 @@ function safeError(error: unknown): string {
 }
 
 async function main(): Promise<void> {
+  if (!process.argv.slice(2).includes("--json")) {
+    throw new Error("--json is required for the stable command contract.");
+  }
   const [group, action] = process.argv.slice(2).filter((argument) => argument !== "--json");
   if (group === "fixture" && action === "rehearse") {
     const result = await runFixtureDraperRehearsal({ runtimeRoot: runtimeRoot(), now: now() });

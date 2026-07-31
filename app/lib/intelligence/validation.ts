@@ -16,8 +16,10 @@ export const RUNNER_BLOCKER = "No secure five-prompt research runner and verifie
 const ALLOWED_ACTIONS = ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"] as const;
 const INTAKE_KEYS = [
   "allowed_actions",
+  "approved_prompt",
   "client_customer_name",
   "company_name",
+  "create_competitor_database",
   "competitor_monitoring",
   "competitor_used",
   "contract",
@@ -134,8 +136,8 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
   if (typeof intake.service_or_offer_purchased !== "string" || intake.service_or_offer_purchased.trim().length < 3 || intake.service_or_offer_purchased.length > 240) {
     errors.push("Describe the service or offer purchased.");
   }
-  if (typeof intake.competitor_used !== "string" || intake.competitor_used.trim().length < 2 || intake.competitor_used.length > 160) {
-    errors.push("Enter a competitor the customer uses.");
+  if (typeof intake.competitor_used !== "string" || intake.competitor_used.length > 500) {
+    errors.push("Known competitors must be 500 characters or fewer.");
   }
   if (typeof intake.offer_or_lead_type !== "string" || intake.offer_or_lead_type.trim().length < 3 || intake.offer_or_lead_type.length > 240) {
     errors.push("Describe the lead offer or service.");
@@ -149,6 +151,12 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
   if (!validAgeRange(intake.target_age_range)) {
     errors.push("Enter a target age range such as 30–60.");
   }
+  if (typeof intake.approved_prompt !== "string" || intake.approved_prompt.trim().length < 200 || intake.approved_prompt.length > 20_000) {
+    errors.push("Review the final Gemini Deep Research prompt before running.");
+  }
+  if (typeof intake.create_competitor_database !== "boolean") {
+    errors.push("The competitor database choice is invalid.");
+  }
   const promptSource = intake.prompt_source;
   if (!isRecord(promptSource)
     || !hasExactKeys(promptSource, ["document_id", "prompt_ids"])
@@ -160,7 +168,7 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
   }
   const monitoring = intake.competitor_monitoring;
   if (!isRecord(monitoring)
-    || monitoring.enabled !== true
+    || typeof monitoring.enabled !== "boolean"
     || monitoring.engine !== "meta-ads-intelligence"
     || monitoring.cadence !== "nightly"
     || monitoring.local_time !== "02:17"

@@ -19,9 +19,9 @@ npm run test:capture
 
 `artifact-routing-audit.mjs` protects the boundary between:
 
-- synced durable artifacts: `/Users/greg-mac-mini/Documents/tools-negroni`
-- authoritative source: `/Users/greg-mac-mini/Developer/negroni`
-- private machine-local runtime state: `/Users/greg-mac-mini/.local/share/negroni`
+- synced durable artifacts: `~/Documents/tools-negroni`
+- authoritative source: the repository containing this script
+- private machine-local runtime state: `~/.local/share/negroni`
 
 Run a read-only audit first:
 

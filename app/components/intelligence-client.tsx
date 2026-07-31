@@ -69,8 +69,8 @@ const PROMPT_LABELS: Record<(typeof RESEARCH_PROMPTS)[number], string> = {
   market_awareness: "Market awareness",
   competitor_research: "Competitor research",
   customer_avatar_psychographics: "Customer psychology",
-  master_marketing_intelligence: "Master research",
-  brand_tone_of_voice: "Tone of voice",
+  master_marketing_intelligence: "4A · Master research",
+  brand_tone_of_voice: "4B · Brand tone",
 };
 
 const RESEARCH_TOOLS: ReadonlyArray<{
@@ -259,7 +259,8 @@ export function IntelligenceClient() {
     | "offer_or_lead_type"
     | "industry"
     | "country_region"
-    | "target_age_range", value: string) {
+    | "target_age_range"
+    | "approved_prompt", value: string) {
     setIntake((current) => ({ ...current, [field]: value }));
   }
 
@@ -634,8 +635,8 @@ export function IntelligenceClient() {
                 <input id="service-purchased" value={intake.service_or_offer_purchased} onChange={(event) => updateIntake("service_or_offer_purchased", event.target.value)} placeholder="Emergency repair membership" autoComplete="off" required />
               </div>
               <div className="input-group">
-                <label htmlFor="competitor-used">Competitor they use <strong>Required</strong></label>
-                <input id="competitor-used" value={intake.competitor_used} onChange={(event) => updateIntake("competitor_used", event.target.value)} placeholder="Local repair marketplace" autoComplete="off" required />
+                <label htmlFor="competitor-used">Known competitors <span>Optional</span></label>
+                <input id="competitor-used" value={intake.competitor_used} onChange={(event) => updateIntake("competitor_used", event.target.value)} placeholder="Names or URLs, if known" autoComplete="off" />
               </div>
               <div className="input-group">
                 <label htmlFor="industry">Industry / niche <strong>Required</strong></label>
@@ -661,7 +662,23 @@ export function IntelligenceClient() {
             </div>
 
             <div className="prompt-sequence" aria-label="Five research prompts">
-              {RESEARCH_PROMPTS.map((prompt, index) => <span key={prompt}><b>{index + 1}</b>{PROMPT_LABELS[prompt]}</span>)}
+              {RESEARCH_PROMPTS.map((prompt, index) => <span key={prompt}><b>{index < 3 ? index + 1 : index === 3 ? "4A" : "4B"}</b>{PROMPT_LABELS[prompt]}</span>)}
+            </div>
+
+            <div className="input-grid research-run-options">
+              <div className="input-group input-wide">
+                <label htmlFor="approved-prompt">Final Gemini Deep Research prompt <strong>Review before running</strong></label>
+                <textarea id="approved-prompt" rows={12} value={intake.approved_prompt} onChange={(event) => updateIntake("approved_prompt", event.target.value)} required />
+                <small>Use the prefilled prompt as-is or edit it. The exact submitted version is persisted and bound to the run receipt.</small>
+              </div>
+              <label className="research-choice">
+                <input type="checkbox" checked={intake.create_competitor_database} onChange={(event) => setIntake((current) => ({ ...current, create_competitor_database: event.target.checked }))} />
+                <span><strong>Create competitor database</strong><small>Save structured competitor evidence for later review.</small></span>
+              </label>
+              <label className="research-choice">
+                <input type="checkbox" checked={intake.competitor_monitoring.enabled} onChange={(event) => setIntake((current) => ({ ...current, competitor_monitoring: { ...current.competitor_monitoring, enabled: event.target.checked } }))} />
+                <span><strong>Enable ongoing monitoring</strong><small>Separate opt-in; no schedule is claimed until verified.</small></span>
+              </label>
             </div>
 
             <div className="three-c-grid" aria-label="The three research streams">
@@ -679,7 +696,7 @@ export function IntelligenceClient() {
             {errors.length ? <div className="validation-box" role="alert"><strong>Check the research setup</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div> : null}
             <div className="run-row">
               <button className="run-button" type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available}>{running ? "Running five research prompts…" : checking ? "Checking research access…" : "Run research"}</button>
-              <p>Public research, three requested files, and one nightly competitor monitor. No outreach, forms, purchases, campaigns, or account changes.</p>
+              <p>Gemini Deep Research creates a polished Google Doc and matching brand Markdown. Competitor storage and monitoring run only when selected.</p>
             </div>
           </section>
 
@@ -687,7 +704,7 @@ export function IntelligenceClient() {
             <div className="section-heading"><span>2</span><div><h2 id="status-title">Run status</h2><p>All five prompt receipts, limitations, and monitoring state remain visible.</p></div></div>
             <div className={`status-panel ${result?.status === "complete" ? "status-complete" : result?.status === "partial" ? "status-partial" : runError || (!checking && !capability.available) ? "status-blocked" : ""}`} aria-live="polite">
               <div><span className="status-dot" /><strong>{running ? "Researching" : result?.status === "complete" ? "Complete" : result?.status === "partial" ? "Complete with limitations" : runError || (!checking && !capability.available) ? "Blocked" : "Not started"}</strong></div>
-              <p>{running ? "Running the five-prompt research sequence and creating the three deliverables." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the customer profile and research scope when you are ready."}</p>
+              <p>{running ? "Running 1 → 2 → 3 → 4A → 4B and creating the two final representations." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the questions and review the final prompt when you are ready."}</p>
             </div>
             <div className="monitoring-receipt">
               <strong>Nightly competitor ads</strong>
@@ -734,17 +751,9 @@ export function IntelligenceClient() {
           </section>
 
           <section className="section-card" id="outputs" aria-labelledby="outputs-title">
-            <div className="section-heading"><span>3</span><div><h2 id="outputs-title">Outputs</h2><p>The master Google Doc, matching Markdown, and competitor-ad Google Sheet.</p></div></div>
+            <div className="section-heading"><span>3</span><div><h2 id="outputs-title">Final research</h2><p>One approved brand revision in two synchronized formats.</p></div></div>
             <div className="output-grid">
               <a className={result ? "output-card" : "output-card output-disabled"} href={result?.outputs.google_doc.url ?? undefined} target="_blank" rel="noreferrer" aria-disabled={!result} onClick={(event) => { if (!result) event.preventDefault(); }}><span className="output-icon">D</span><div><strong>Open Google Doc</strong><small>{result?.outputs.google_doc.title ?? "Master research report"}</small></div><span aria-hidden="true">↗</span></a>
-              <a
-                className={result && (result.outputs.google_sheet.status === "published" || result.competitor_ads.links.report_markdown) ? "output-card" : "output-card output-disabled"}
-                href={result?.outputs.google_sheet.status === "published" ? result.outputs.google_sheet.url : result?.competitor_ads.links.report_markdown ?? undefined}
-                target="_blank"
-                rel="noreferrer"
-                aria-disabled={!result || (result.outputs.google_sheet.status !== "published" && !result.competitor_ads.links.report_markdown)}
-                onClick={(event) => { if (!result || (result.outputs.google_sheet.status !== "published" && !result.competitor_ads.links.report_markdown)) event.preventDefault(); }}
-              ><span className="output-icon sheet-icon">S</span><div><strong>{result?.outputs.google_sheet.status === "not_configured" ? "Open local competitor report" : "Open Google Sheet"}</strong><small>{result?.outputs.google_sheet.status === "not_configured" ? result.outputs.google_sheet.message : result?.outputs.google_sheet.title ?? "Competitor-ad archive · refreshed nightly"}</small></div><span aria-hidden="true">↗</span></a>
               <button className={result ? "output-card" : "output-card output-disabled"} type="button" disabled={!result} onClick={() => result && downloadMarkdown(result)}><span className="output-icon markdown-icon">M</span><div><strong>Download Markdown</strong><small>{result?.outputs.markdown.filename ?? "Portable master research report"}</small></div><span aria-hidden="true">↓</span></button>
             </div>
           </section>

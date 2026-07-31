@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
 
-test("the Research UI asks all eight required customer-profile questions before research scope", async () => {
+test("the Research UI asks required profile questions and keeps competitors optional", async () => {
   const source = await readFile(resolve(process.cwd(), "components/intelligence-client.tsx"), "utf8");
   const profileStart = source.indexOf("<h3>Required customer profile</h3>");
   const scopeStart = source.indexOf("<h3>Research scope</h3>", profileStart);
@@ -13,7 +13,6 @@ test("the Research UI asks all eight required customer-profile questions before 
     "Company name",
     "Website or public profile URL",
     "Service or offer purchased",
-    "Competitor they use",
     "Industry / niche",
     "Location or market served",
   ];
@@ -24,4 +23,10 @@ test("the Research UI asks all eight required customer-profile questions before 
   for (const label of requiredLabels) {
     assert.ok(profileSection.includes(`>${label} <strong>Required</strong></label>`), `missing required UI question: ${label}`);
   }
+  assert.match(profileSection, /Known competitors <span>Optional<\/span>/);
+  assert.match(source, /Final Gemini Deep Research prompt/);
+  assert.match(source, /Create competitor database/);
+  assert.match(source, /Enable ongoing monitoring/);
+  assert.match(source, /4A · Master research/);
+  assert.match(source, /4B · Brand tone/);
 });

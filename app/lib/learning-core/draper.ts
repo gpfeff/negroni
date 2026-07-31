@@ -141,6 +141,10 @@ export class DraperService {
         break;
     }
 
+    if (proposals.length > 0 && ["propose_experiment", "explain_loop_state", "prepare_change_diff"].includes(input.intent)) {
+      limitations.push("Proposal text is a fixture-derived template; it was not derived from this brand's recorded evidence.");
+    }
+
     const response: DraperResponse = {
       contract: "negroni-draper-response",
       contract_version: "1.0",
