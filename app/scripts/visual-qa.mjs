@@ -135,12 +135,13 @@ try {
   await inspect(page, "brands-mobile");
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Settings" }).click();
-  for (const text of ["Connect the tools behind your workspace.", "Appearance & approvals", "Commit approvals", "Codex", "Claude Code", "API keys & storage", "Kie.ai API key", "Gemini API key", "Google Drive", "Developer fallback", "Connection setup needed"]) {
+  for (const text of ["Connect the tools behind your workspace.", "Appearance & approvals", "Commit approvals", "Codex", "Claude Code", "API keys & storage", "Kie.ai API key", "Gemini API key", "Apify API token", "Google Drive", "Developer fallback", "Connection setup needed"]) {
     checks.push({ name: `settings visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "Codex connection disabled without broker", passed: await page.getByRole("button", { name: "Connect Codex" }).isDisabled() });
   checks.push({ name: "Google OAuth disabled without broker", passed: await page.getByRole("button", { name: "Connect Google Drive" }).isDisabled() });
   checks.push({ name: "Gemini key uses password input", passed: await page.getByLabel("Gemini API key").getAttribute("type") === "password" });
+  checks.push({ name: "Apify token uses password input", passed: await page.getByLabel("Apify API token").getAttribute("type") === "password" });
   await inspect(page, "settings-desktop");
   await page.setViewportSize({ width: 390, height: 844 });
   await inspect(page, "settings-mobile");

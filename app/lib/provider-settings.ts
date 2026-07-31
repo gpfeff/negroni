@@ -6,6 +6,7 @@ export const PROVIDERS = [
   "gemini_api",
   "gemini_oauth",
   "kie_ai",
+  "apify",
   "google_drive",
 ] as const;
 export const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";

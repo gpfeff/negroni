@@ -36,6 +36,7 @@ export async function GET(request: Request): Promise<Response> {
       { provider: "gemini_api", status: "blocked", blocker: SETTINGS_BLOCKER },
       { provider: "gemini_oauth", status: "blocked", blocker: SETTINGS_BLOCKER },
       { provider: "kie_ai", status: "blocked", blocker: SETTINGS_BLOCKER },
+      { provider: "apify", status: "blocked", blocker: SETTINGS_BLOCKER },
       { provider: "google_drive", status: "blocked", blocker: SETTINGS_BLOCKER, auto_store: false },
     ];
     return Response.json({ available: false, providers, blocker: SETTINGS_BLOCKER }, { headers: { "cache-control": "no-store" } });
@@ -67,10 +68,13 @@ export async function POST(request: Request): Promise<Response> {
   if (body.provider === "kie_ai" && (typeof body.api_key !== "string" || body.api_key.trim().length < 20)) {
     return Response.json({ error: "Enter a valid Kie.ai API key." }, { status: 400 });
   }
+  if (body.provider === "apify" && (typeof body.api_key !== "string" || body.api_key.trim().length < 20 || body.api_key.trim().length > 512)) {
+    return Response.json({ error: "Enter a valid Apify API token." }, { status: 400 });
+  }
   const returnToUrl = new URL("/", request.url);
   returnToUrl.searchParams.set("view", "settings");
   returnToUrl.searchParams.set("provider", body.provider ?? "");
-  const brokerBody = body.provider === "gemini_api" || body.provider === "kie_ai"
+  const brokerBody = body.provider === "gemini_api" || body.provider === "kie_ai" || body.provider === "apify"
     ? { provider: body.provider, api_key: body.api_key }
     : body.provider === "google_drive"
       ? {
@@ -93,7 +97,7 @@ export async function POST(request: Request): Promise<Response> {
   });
   const payload = await response.json() as { authorization_url?: unknown; connected?: unknown; message?: unknown };
   if (!response.ok) return Response.json({ error: "The provider connection could not be completed." }, { status: 502 });
-  if (body.provider === "gemini_api" || body.provider === "kie_ai"
+  if (body.provider === "gemini_api" || body.provider === "kie_ai" || body.provider === "apify"
     || typeof payload.connected === "boolean" || typeof payload.message === "string") {
     return Response.json(
       { connected: payload.connected === true, message: typeof payload.message === "string" ? payload.message : undefined },

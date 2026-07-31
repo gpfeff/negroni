@@ -144,7 +144,7 @@ export type ProfilesResponse = {
 };
 
 export type ProviderStatus = {
-  provider: "codex_cli" | "claude_code" | "gemini_api" | "gemini_oauth" | "kie_ai" | "google_drive";
+  provider: "codex_cli" | "claude_code" | "gemini_api" | "gemini_oauth" | "kie_ai" | "apify" | "google_drive";
   status: "connected" | "not_connected" | "blocked";
   blocker: string | null;
   detail?: string | null;

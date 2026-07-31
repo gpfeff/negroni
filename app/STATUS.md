@@ -35,7 +35,7 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
 - an authoritative local SQLite catalog, immutable learning versions, FTS5,
   rebuildable non-authoritative vectors, content-addressed media, and guarded
   Obsidian-compatible Markdown projections;
-- Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai,
+- Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai, Apify,
   Google Drive, appearance, and Safety/YOLO mode;
 - an optional developer `@negroni/local` package with the `negroni start` and
   `negroni doctor` commands; and
@@ -153,7 +153,7 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - Plugin contract tests: 4/4 passed
 - Application contract/security tests: 122/122 passed
 - Vinext production build: passed
-- Install smoke test: global package, local app, and six-provider Settings API passed
+- Install smoke test: global package, local app, and seven-provider Settings API passed
 - Visual QA: Home, Research, Library, Brands, and Settings passed at desktop
   and mobile sizes, 121/121 checks
 - Accessibility: zero serious or critical Axe violations across all tested states
@@ -171,7 +171,7 @@ Configure these server-side values with their real services:
 
 The runner must invoke the implemented Meta Ads Intelligence adapter, expose
 access-controlled report URLs, and provide an authorized collection route.
-The hosted broker must implement the six-provider contract, including an
+The hosted broker must implement the seven-provider contract, including Apify and an
 encrypted Gemini `SecretStore` plus non-generative Google verifier. The local
 bridge still needs a Google OAuth client ID before Google Drive can connect.
 

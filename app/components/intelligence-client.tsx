@@ -151,6 +151,7 @@ export function IntelligenceClient() {
   const [geminiKey, setGeminiKey] = useState("");
   const [geminiConnection, setGeminiConnection] = useState<GeminiConnection>({ status: "checking", last_verified_at: null, fingerprint: null, last_four: null });
   const [kieKey, setKieKey] = useState("");
+  const [apifyKey, setApifyKey] = useState("");
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
   const [settingsBusy, setSettingsBusy] = useState(false);
   const [appearance, setAppearance] = useState<Appearance>("dark");
@@ -418,6 +419,8 @@ export function IntelligenceClient() {
             ? { provider, api_key: geminiKey }
             : provider === "kie_ai"
               ? { provider, api_key: kieKey }
+              : provider === "apify"
+                ? { provider, api_key: apifyKey }
               : { provider },
         ),
       });
@@ -436,6 +439,7 @@ export function IntelligenceClient() {
     } finally {
       setGeminiKey("");
       setKieKey("");
+      setApifyKey("");
       setSettingsBusy(false);
     }
   }
@@ -480,6 +484,7 @@ export function IntelligenceClient() {
   const claudeStatus = providerStatus("claude_code");
   const geminiApiReady = geminiConnection.status === "connected";
   const kieStatus = providerStatus("kie_ai");
+  const apifyStatus = providerStatus("apify");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
   const activeBrand = selectedProfile ?? profiles.records[0] ?? null;
@@ -961,6 +966,15 @@ export function IntelligenceClient() {
                 <label htmlFor="kie-key">Kie.ai API key</label>
                 <input id="kie-key" type="password" value={kieKey} onChange={(event) => setKieKey(event.target.value)} placeholder="Paste key" autoComplete="off" disabled={!settingsAvailable} />
                 <button type="submit" disabled={!settingsAvailable || settingsBusy || kieKey.trim().length < 20}>Save Kie.ai key</button>
+              </form>
+
+              <form className="provider-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("apify"); }}>
+                <div><span className={`provider-dot provider-${apifyStatus.status}`} /><strong>Apify</strong><span className="provider-badge">Web data</span></div>
+                <p>Authorized public-web actors and datasets for research collection. Adding a token does not run an actor or spend platform credits.</p>
+                <small>{apifyStatus.status === "connected" ? apifyStatus.detail ?? "Connected" : apifyStatus.blocker ?? "Not connected"}</small>
+                <label htmlFor="apify-key">Apify API token</label>
+                <input id="apify-key" type="password" value={apifyKey} onChange={(event) => setApifyKey(event.target.value)} placeholder="Paste token" autoComplete="off" disabled={!settingsAvailable} />
+                <button type="submit" disabled={!settingsAvailable || settingsBusy || apifyKey.trim().length < 20 || apifyKey.trim().length > 512}>Save Apify token</button>
               </form>
 
               <form className="provider-card" id="gemini-connection" onSubmit={(event) => { event.preventDefault(); void saveGemini(); }}>

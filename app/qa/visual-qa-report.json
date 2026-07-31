@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-31T07:39:30.560Z",
+  "generated_at": "2026-07-31T08:40:48.008Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
@@ -439,6 +439,10 @@
       "passed": true
     },
     {
+      "name": "settings visible: Apify API token",
+      "passed": true
+    },
+    {
       "name": "settings visible: Google Drive",
       "passed": true
     },
@@ -460,6 +464,10 @@
     },
     {
       "name": "Gemini key uses password input",
+      "passed": true
+    },
+    {
+      "name": "Apify token uses password input",
       "passed": true
     },
     {

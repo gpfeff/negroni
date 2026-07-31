@@ -7,7 +7,7 @@ import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
-const PROVIDERS = ["codex_cli", "claude_code", "gemini_api", "gemini_oauth", "kie_ai", "google_drive"];
+const PROVIDERS = ["codex_cli", "claude_code", "gemini_api", "gemini_oauth", "kie_ai", "apify", "google_drive"];
 const credentialsPath = process.env.NEGRONI_CREDENTIALS_PATH
   || join(homedir(), ".negroni", "credentials.json");
 const brokerToken = process.env.CREDENTIAL_BROKER_TOKEN;
@@ -91,6 +91,12 @@ async function providerStatuses() {
       detail: credentials.kie_ai?.api_key ? "API key stored locally" : null,
     },
     {
+      provider: "apify",
+      status: credentials.apify?.api_key ? "connected" : "not_connected",
+      blocker: null,
+      detail: credentials.apify?.api_key ? "API token stored locally" : null,
+    },
+    {
       provider: "google_drive",
       status: "blocked",
       blocker: "Google Drive OAuth needs a Google client ID in the local bridge.",
@@ -152,8 +158,8 @@ async function handle(request) {
   if (request.method === "POST" && url.pathname === "/v1/providers/connect") {
     const body = await request.json();
     if (!PROVIDERS.includes(body.provider)) return json({ error: "Unsupported provider" }, 400);
-    if (body.provider === "gemini_api" || body.provider === "kie_ai") {
-      if (typeof body.api_key !== "string" || body.api_key.trim().length < 20) {
+    if (body.provider === "gemini_api" || body.provider === "kie_ai" || body.provider === "apify") {
+      if (typeof body.api_key !== "string" || body.api_key.trim().length < 20 || body.api_key.trim().length > 512) {
         return json({ error: "A valid API key is required." }, 400);
       }
       await storeCredential(body.provider, body.api_key.trim());

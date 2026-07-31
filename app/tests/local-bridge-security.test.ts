@@ -105,6 +105,35 @@ test("local broker never returns command output in provider status", async () =>
   }
 });
 
+test("local broker stores an Apify token without returning it to the browser", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "negroni-apify-broker-"));
+  const port = await unusedPort();
+  const token = "local-bridge-test-token";
+  const apiKey = "apify_api_test_token_never_returned";
+  const credentialsPath = join(directory, "credentials.json");
+  const broker = spawn(process.execPath, [brokerPath], {
+    env: { ...process.env, NEGRONI_BROKER_PORT: String(port), CREDENTIAL_BROKER_TOKEN: token, NEGRONI_CREDENTIALS_PATH: credentialsPath },
+  });
+  try {
+    await waitForStatus(port, token);
+    const save = await fetch(`http://127.0.0.1:${port}/v1/providers/connect`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({ provider: "apify", api_key: apiKey }),
+    });
+    assert.equal(save.status, 200);
+    assert.equal((await save.text()).includes(apiKey), false);
+    const status = await waitForStatus(port, token);
+    const body = await status.text();
+    assert.equal(body.includes(apiKey), false);
+    assert.match(body, /"provider":"apify","status":"connected"/);
+  } finally {
+    broker.kill("SIGTERM");
+    await new Promise<void>((resolvePromise) => broker.once("exit", () => resolvePromise()));
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
 test("local broker keeps the Gemini key server-side and fixes the standard Deep Research agent", async () => {
   const directory = await mkdtemp(join(tmpdir(), "negroni-gemini-broker-"));
   const brokerPort = await unusedPort();
