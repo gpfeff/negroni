@@ -39,36 +39,6 @@ export class InMemorySecretStore implements SecretStore {
   async testOnlyValue(owner: string) { return this.#values.get(`${owner}:gemini`)?.value ?? null; }
 }
 
-export class EnvironmentSecretStore implements SecretStore {
-  constructor(private readonly value: string, private readonly verifier: GeminiKeyVerifier) {}
-  async metadata(owner: string, name: "gemini"): Promise<StoredMetadata | null> {
-    void owner; void name;
-    if (!this.value) return null;
-    const result = await this.verifier.verify(this.value);
-    if (!result.valid || !result.verified_at) throw new Error("Gemini verification failed.");
-    return {
-      last_verified_at: result.verified_at,
-      fingerprint: createHash("sha256").update(this.value).digest("hex").slice(0, 12),
-      last_four: this.value.slice(-4),
-    };
-  }
-  async create(owner: string, name: "gemini", value: string, metadata: StoredMetadata): Promise<boolean> { void owner; void name; void value; void metadata; throw new Error("Manage Gemini through Sites secret settings."); }
-  async replace(owner: string, name: "gemini", value: string, metadata: StoredMetadata): Promise<boolean> { void owner; void name; void value; void metadata; throw new Error("Manage Gemini through Sites secret settings."); }
-  async delete(owner: string, name: "gemini"): Promise<boolean> { void owner; void name; throw new Error("Manage Gemini through Sites secret settings."); }
-}
-
-export class GoogleModelsKeyVerifier implements GeminiKeyVerifier {
-  constructor(private readonly request: typeof fetch = fetch, private readonly now = () => new Date().toISOString()) {}
-  async verify(key: string) {
-    const response = await this.request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1", {
-      method: "GET",
-      headers: { "x-goog-api-key": key },
-      signal: AbortSignal.timeout(10_000),
-    });
-    return { valid: response.ok, verified_at: response.ok ? this.now() : null };
-  }
-}
-
 const CONNECTION_ERROR = "Gemini connection could not be completed. No credential change was made.";
 
 export function createGeminiConnectionService(store: SecretStore, verifier: GeminiKeyVerifier) {

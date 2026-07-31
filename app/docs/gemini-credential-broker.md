@@ -14,13 +14,15 @@ and require an exact same-origin `Origin` header for mutations.
 
 ## Secret storage and verification
 
-`SecretStore` is the server-only storage contract. The repository includes an
+`SecretStore` is the server-only storage contract. Status reads safe broker
+metadata and never fetches the complete credential. The repository includes an
 in-memory adapter solely for automated tests and explicit non-production local
-preview (`NEGRONI_LOCAL_FAKE_SECRET_BROKER=1`). Production reads
-`GEMINI_API_KEY` only from Sites' encrypted runtime-secret facility. That
-adapter is intentionally read-only: replacement and disconnect occur through
-owner-only Sites secret settings because the running app cannot mutate its own
-secret bindings. There is no database or plaintext-file fallback.
+preview (`NEGRONI_LOCAL_FAKE_SECRET_BROKER=1`). Production uses the existing
+`CREDENTIAL_BROKER_URL` and `CREDENTIAL_BROKER_TOKEN` boundary and fails closed
+when either value is absent. The broker must expose owner-scoped
+`/v1/secrets/gemini` metadata, create, replace, and delete operations backed by
+1Password or an equivalently encrypted secret service. There is no database,
+Sites Gemini-key environment variable, or plaintext-file fallback.
 
 The production adapter verifies with Google's non-generative `models.list`
 capability request. Verification errors must be mapped to the
@@ -30,19 +32,24 @@ SHA-256 fingerprint, and final four characters.
 
 ## Paid-run boundary
 
-Saving or checking a key cannot invoke the research engine. The UI creates an
-exact random `run_<24 hex>` ID and displays the fixed Standard model
-`deep-research-preview-04-2026`, five-prompt scope, and the honest cost state.
-`POST /api/research/runs/:runId/approve` records the exact owner/run pair.
-`POST /api/research/runs/:runId/start` consumes that approval only when the same
-owner is connected. Max model requests are rejected.
+Saving or checking a key cannot invoke the research engine. The server creates
+an exact random `run_<24 hex>` ID and authors and records the fixed
+Standard model `deep-research-preview-04-2026`, five-prompt scope, honest cost
+state, owner, approval time, and ten-minute expiry in D1.
+`POST /api/research/runs/:runId/start` atomically claims that exact approval
+only once and only when the same owner is connected. Missing, expired, reused,
+and cross-owner approvals fail closed. Client-supplied model or scope values
+are not authoritative, and Max or arbitrary models cannot enter the approval.
 
 ## Hosted blocker, deployment, and rollback
 
-The hosted adapter uses Sites' encrypted server-secret facility. The remaining
-provisioning step is to set `GEMINI_API_KEY` as a secret in the owner-only Sites
-configuration and deploy that environment revision. Until then status reports
-`connection_error` and mutation routes fail closed.
+The hosted Sites runtime currently has no deployed 1Password-backed broker
+binding, so connection status intentionally reports `connection_error` and
+save/disconnect return 503. The repository-side hosted adapter and
+non-generative Google models-list verifier are implemented, but deployment
+requires provisioning the owner-scoped broker contract and binding its scoped
+service identity, then live owner-only/anonymous verification and a private
+deployment. Those external mutations remain approval-gated.
 
 Rollback is code-only: restore the previous Sites release and revoke the new
 broker service binding. Do not delete or rotate a stored Gemini credential as

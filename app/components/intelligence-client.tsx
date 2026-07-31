@@ -367,16 +367,20 @@ export function IntelligenceClient() {
     }
 
     if (!proposedRunId) {
-      const bytes = crypto.getRandomValues(new Uint8Array(12));
-      setProposedRunId(`run_${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`);
+      const proposal = await fetch("/api/research/runs", { method: "POST" });
+      const payload = await proposal.json() as { run_id?: string; error?: string };
+      if (!proposal.ok || !payload.run_id) {
+        setRunError(payload.error ?? "Paid-run review could not be created.");
+        return;
+      }
+      setProposedRunId(payload.run_id);
       return;
     }
     if (profiles.available) await saveProfile();
     setRunning(true);
     try {
       const approval = await fetch(`/api/research/runs/${proposedRunId}/approve`, {
-        method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ model: "deep-research-preview-04-2026", scope: "Five-step Research sequence (1 → 2 → 3 → 4a → 4b)", estimated_cost: "Provider pricing applies; exact cost is not available locally" }),
+        method: "POST",
       });
       if (!approval.ok) throw new Error((await approval.json() as { error?: string }).error ?? "Run approval failed.");
       const response = await fetch(`/api/research/runs/${proposedRunId}/start`, {
@@ -740,7 +744,7 @@ export function IntelligenceClient() {
               <span aria-hidden="true">{geminiApiReady ? "✓" : geminiConnection.status === "checking" ? "…" : "○"}</span>
               <strong>{geminiApiReady ? "Gemini API ready · Connected" : geminiConnection.status === "checking" ? "Checking Gemini" : geminiConnection.status === "connection_error" ? "Gemini Connection error" : "Gemini Not connected"}</strong>
               <small>{geminiApiReady ? `API key saved in Settings. Last verified ${geminiConnection.last_verified_at ? new Date(geminiConnection.last_verified_at).toLocaleString() : "recently"}.` : geminiConnection.error ?? "Connect Gemini before starting research."}</small>
-              {!geminiApiReady && geminiConnection.status !== "checking" ? <button type="button" onClick={() => { navigate("settings"); window.setTimeout(() => document.getElementById("gemini-connection")?.scrollIntoView(), 0); }}>Connect Gemini</button> : null}
+              {!geminiApiReady && geminiConnection.status !== "checking" ? <button type="button" onClick={() => { navigate("settings"); window.setTimeout(() => document.getElementById("gemini-key")?.focus(), 0); }}>Connect Gemini</button> : null}
             </div>
 
             <div className="input-grid research-run-options">
