@@ -214,6 +214,11 @@ input[type="file"]::file-selector-button { margin-right: 12px; padding: 8px 12px
 .input-group { display: grid; align-content: start; gap: 8px; }
 .input-group.input-wide { grid-column: 1 / -1; }
 .research-run-options { margin-top: 18px; }
+.gemini-readiness { display: flex; align-items: center; gap: 9px; width: fit-content; margin-top: 14px; padding: 7px 11px; border: 1px solid var(--line); border-radius: 999px; background: #f3f4f2; color: var(--muted); font-size: .78rem; }
+.gemini-readiness > span { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; background: #dfe4e1; font-weight: 900; }
+.gemini-readiness small { color: inherit; }
+.gemini-readiness.gemini-ready { border-color: #a8c5ae; background: #eaf4ec; color: #315b3b; }
+.gemini-readiness.gemini-ready > span { background: #4f7a59; color: white; }
 .research-choice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); cursor: pointer; }
 .research-choice input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--plum); }
 .research-choice span { display: grid; gap: 3px; }

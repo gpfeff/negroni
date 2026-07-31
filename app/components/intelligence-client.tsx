@@ -401,6 +401,7 @@ export function IntelligenceClient() {
   const claudeStatus = providerStatus("claude_code");
   const geminiStatus = providerStatus("gemini_api");
   const geminiOAuthStatus = providerStatus("gemini_oauth");
+  const geminiApiReady = geminiStatus.status === "connected";
   const kieStatus = providerStatus("kie_ai");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
@@ -652,6 +653,12 @@ export function IntelligenceClient() {
 
             <div className="prompt-sequence" aria-label="Five research prompts">
               {RESEARCH_PROMPTS.map((prompt, index) => <span key={prompt}><b>{index < 3 ? index + 1 : index === 3 ? "4A" : "4B"}</b>{PROMPT_LABELS[prompt]}</span>)}
+            </div>
+
+            <div className={`gemini-readiness ${geminiApiReady ? "gemini-ready" : "gemini-not-ready"}`} role="status" aria-live="polite">
+              <span aria-hidden="true">{geminiApiReady ? "✓" : "○"}</span>
+              <strong>{geminiApiReady ? "Gemini API ready" : "Gemini API key not connected"}</strong>
+              <small>{geminiApiReady ? "Research can use the API key saved in Settings." : "Add your Gemini API key under Settings to enable research."}</small>
             </div>
 
             <div className="input-grid research-run-options">
