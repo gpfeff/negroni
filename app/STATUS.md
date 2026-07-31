@@ -37,6 +37,9 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
   Obsidian-compatible Markdown projections;
 - Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai, Apify,
   Google Drive, appearance, and Safety/YOLO mode;
+- owner-scoped Gemini, Kie.ai, and Apify credentials encrypted with AES-GCM in
+  D1 using a server-only runtime key; verification is non-generative and
+  plaintext credentials never return to the browser;
 - an optional developer `@negroni/local` package with the `negroni start` and
   `negroni doctor` commands; and
 - a loopback-only credential bridge that keeps API keys under `~/.negroni`
@@ -191,8 +194,8 @@ bridge still needs a Google OAuth client ID before Google Drive can connect.
   hosted persistence, and ad-account mutation are not implemented.
 - The Learning Core currently uses Node's experimental built-in SQLite API;
   the storage contract isolates that implementation for a later adapter.
-- Hosted broker connection flows need integration tests against the eventual
-  encrypted service; the current Site routes intentionally return a blocker.
+- The hosted Site credential vault is implemented; live provider verification
+  still depends on each provider accepting the submitted user credential.
 - The local Kie.ai and Gemini key vault is implemented, but no real key was
   entered and no paid generation request was made.
 - D1 record persistence needs one production authenticated save/reload check

@@ -1,5 +1,5 @@
 import { authenticatedOwner } from "@/lib/authenticated-user";
-import { geminiConnectionService } from "@/lib/connections/runtime";
+import { getGeminiConnectionService } from "@/lib/connections/runtime";
 import type { IntelligenceIntake } from "@/lib/intelligence/contracts";
 import { mutationAllowed } from "@/lib/request-security";
 import { getDatabase } from "@/lib/database";
@@ -15,6 +15,7 @@ export async function POST(request: Request, context: { params: Promise<{ runId:
     const { runId } = await context.params;
     const database = await getDatabase();
     if (!database) return Response.json({ status: "blocked", error: "Durable run approval storage is unavailable." }, { status: 503, headers });
+    const geminiConnectionService = await getGeminiConnectionService();
     const connected = geminiConnectionService ? (await geminiConnectionService.status(owner)).status === "connected" : false;
     await createResearchApprovalService(new D1ApprovalStore(database)).authorizeStart(owner, runId, connected);
     return executeApprovedResearch(owner, await request.json() as IntelligenceIntake);

@@ -14,6 +14,7 @@ export interface SecretStore {
   create(owner: string, name: "gemini", value: string, metadata: StoredMetadata): Promise<boolean>;
   replace(owner: string, name: "gemini", value: string, metadata: StoredMetadata): Promise<boolean>;
   delete(owner: string, name: "gemini"): Promise<boolean>;
+  read?(owner: string, name: "gemini"): Promise<string | null>;
 }
 
 export interface GeminiKeyVerifier {
@@ -36,6 +37,7 @@ export class InMemorySecretStore implements SecretStore {
     return true;
   }
   async delete(owner: string, name: "gemini") { return this.#values.delete(`${owner}:${name}`); }
+  async read(owner: string) { return this.#values.get(`${owner}:gemini`)?.value ?? null; }
   async testOnlyValue(owner: string) { return this.#values.get(`${owner}:gemini`)?.value ?? null; }
 }
 

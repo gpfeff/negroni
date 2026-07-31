@@ -408,6 +408,9 @@ export function IntelligenceClient() {
   }
 
   async function connectProvider(provider: ProviderStatus["provider"]) {
+    const replacing = providerStatus(provider).status === "connected";
+    if (replacing && (provider === "kie_ai" || provider === "apify")
+      && !window.confirm(`Replace the connected ${provider === "kie_ai" ? "Kie.ai" : "Apify"} credential?`)) return;
     setSettingsBusy(true);
     setSettingsMessage(null);
     try {
@@ -418,9 +421,9 @@ export function IntelligenceClient() {
           provider === "gemini_api"
             ? { provider, api_key: geminiKey }
             : provider === "kie_ai"
-              ? { provider, api_key: kieKey }
+              ? { provider, api_key: kieKey, confirmation: replacing ? "replace" : "save" }
               : provider === "apify"
-                ? { provider, api_key: apifyKey }
+                ? { provider, api_key: apifyKey, confirmation: replacing ? "replace" : "save" }
               : { provider },
         ),
       });
@@ -442,6 +445,24 @@ export function IntelligenceClient() {
       setApifyKey("");
       setSettingsBusy(false);
     }
+  }
+
+  async function disconnectApiProvider(provider: "kie_ai" | "apify") {
+    const label = provider === "kie_ai" ? "Kie.ai" : "Apify";
+    if (!window.confirm(`Disconnect ${label}? This removes Negroni access to the stored credential.`)) return;
+    setSettingsBusy(true);
+    setSettingsMessage(null);
+    try {
+      const response = await fetch("/api/settings", {
+        method: "DELETE", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ provider, confirmation: `disconnect ${provider}` }),
+      });
+      const payload = await response.json() as { message?: string; error?: string };
+      if (!response.ok) throw new Error(payload.error ?? `${label} could not be disconnected.`);
+      setSettingsMessage(payload.message ?? `${label} disconnected.`);
+      await refreshSettings();
+    } catch (error) { setSettingsMessage(error instanceof Error ? error.message : `${label} could not be disconnected.`); }
+    finally { setSettingsBusy(false); }
   }
 
   async function saveGemini() {
@@ -965,7 +986,10 @@ export function IntelligenceClient() {
                 <small>{kieStatus.status === "connected" ? kieStatus.detail ?? "Connected" : kieStatus.blocker ?? "Not connected"}</small>
                 <label htmlFor="kie-key">Kie.ai API key</label>
                 <input id="kie-key" type="password" value={kieKey} onChange={(event) => setKieKey(event.target.value)} placeholder="Paste key" autoComplete="off" disabled={!settingsAvailable} />
-                <button type="submit" disabled={!settingsAvailable || settingsBusy || kieKey.trim().length < 20}>Save Kie.ai key</button>
+                <div className="provider-actions">
+                  <button type="submit" disabled={!settingsAvailable || settingsBusy || kieKey.trim().length < 20}>{kieStatus.status === "connected" ? "Replace Kie.ai key" : "Save Kie.ai key"}</button>
+                  {kieStatus.status === "connected" ? <button type="button" onClick={() => void disconnectApiProvider("kie_ai")} disabled={settingsBusy}>Disconnect</button> : null}
+                </div>
               </form>
 
               <form className="provider-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("apify"); }}>
@@ -974,7 +998,10 @@ export function IntelligenceClient() {
                 <small>{apifyStatus.status === "connected" ? apifyStatus.detail ?? "Connected" : apifyStatus.blocker ?? "Not connected"}</small>
                 <label htmlFor="apify-key">Apify API token</label>
                 <input id="apify-key" type="password" value={apifyKey} onChange={(event) => setApifyKey(event.target.value)} placeholder="Paste token" autoComplete="off" disabled={!settingsAvailable} />
-                <button type="submit" disabled={!settingsAvailable || settingsBusy || apifyKey.trim().length < 20 || apifyKey.trim().length > 512}>Save Apify token</button>
+                <div className="provider-actions">
+                  <button type="submit" disabled={!settingsAvailable || settingsBusy || apifyKey.trim().length < 20 || apifyKey.trim().length > 512}>{apifyStatus.status === "connected" ? "Replace Apify token" : "Save Apify token"}</button>
+                  {apifyStatus.status === "connected" ? <button type="button" onClick={() => void disconnectApiProvider("apify")} disabled={settingsBusy}>Disconnect</button> : null}
+                </div>
               </form>
 
               <form className="provider-card" id="gemini-connection" onSubmit={(event) => { event.preventDefault(); void saveGemini(); }}>
