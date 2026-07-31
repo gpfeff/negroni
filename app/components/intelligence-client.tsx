@@ -17,7 +17,7 @@ import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } fro
 import { deriveHomeNextAction } from "@/lib/intelligence/next-action";
 import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
 
-type AppView = "home" | "research" | "draper" | "settings";
+type AppView = "home" | "research" | "library" | "brands" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
 type Appearance = "light" | "dark" | "system";
 
@@ -126,10 +126,9 @@ const RESEARCH_TOOLS: ReadonlyArray<{
 const RESEARCH_TABS: ReadonlyArray<{
   id: Extract<ResearchSection, "run" | "competitor-ads">;
   name: string;
-  marker: string;
 }> = [
-  { id: "run", name: "Create Brand", marker: "BR" },
-  { id: "competitor-ads", name: "Add Spy", marker: "SP" },
+  { id: "run", name: "Create Brand" },
+  { id: "competitor-ads", name: "Ad Spy" },
 ];
 
 export function IntelligenceClient() {
@@ -199,7 +198,7 @@ export function IntelligenceClient() {
       if (!active) return;
       const searchParams = new URLSearchParams(window.location.search);
       const requestedView = searchParams.get("view");
-      if (requestedView === "research" || requestedView === "draper" || requestedView === "settings") setActiveView(requestedView);
+      if (requestedView === "research" || requestedView === "library" || requestedView === "brands" || requestedView === "settings") setActiveView(requestedView);
       const requestedTool = searchParams.get("tool");
       if (RESEARCH_TOOLS.some((tool) => tool.id === requestedTool)) {
         setActiveResearchSection(requestedTool as ResearchSection);
@@ -414,6 +413,7 @@ export function IntelligenceClient() {
   const kieStatus = providerStatus("kie_ai");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
+  const activeBrand = selectedProfile ?? profiles.records[0] ?? null;
   const nextAction = deriveHomeNextAction({
     checking,
     capability,
@@ -502,7 +502,13 @@ export function IntelligenceClient() {
                       aria-current={activeResearchSection === tool.id ? "page" : undefined}
                       aria-label={tool.name}
                     >
-                      <span>{tool.marker}</span>{tool.name}
+                      <span aria-hidden="true">
+                        {tool.id === "run" ? (
+                          <svg viewBox="0 0 24 24"><path d="M12 3l1.35 4.15L17.5 8.5l-4.15 1.35L12 14l-1.35-4.15L6.5 8.5l4.15-1.35L12 3Zm6 11 .8 2.2L21 17l-2.2.8L18 20l-.8-2.2L15 17l2.2-.8L18 14ZM6 14l1.05 2.95L10 18l-2.95 1.05L6 22l-1.05-2.95L2 18l2.95-1.05L6 14Z" /></svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" /></svg>
+                        )}
+                      </span>{tool.name}
                     </button>
                   ))}
                 </div>
@@ -510,7 +516,8 @@ export function IntelligenceClient() {
             </Fragment>
           ))}
           <span className="nav-label">Tools</span>
-          <button className={activeView === "draper" ? "nav-active" : ""} type="button" onClick={() => navigate("draper")} aria-label="Draper"><span>DR</span>Draper</button>
+          <button className={activeView === "library" ? "nav-active" : ""} type="button" onClick={() => navigate("library")} aria-label="Library"><span>▦</span>Library</button>
+          <button className={activeView === "brands" ? "nav-active" : ""} type="button" onClick={() => navigate("brands")} aria-label="Brands"><span>◇</span>Brands</button>
         </nav>
         <div className="sidebar-footer">
           <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
@@ -756,54 +763,59 @@ export function IntelligenceClient() {
           </section>
 
         </div>
-      ) : activeView === "draper" ? (
-        <div className="content-column draper-column" id="top">
-          <section className="intro draper-intro" aria-labelledby="draper-title">
-            <p className="kicker">Tools · Conversational control plane</p>
-            <h1 id="draper-title">Ask Draper what the evidence says.</h1>
-            <p>Draper turns natural-language questions into validated, brand-scoped Negroni tools. Every answer keeps evidence, freshness, assumptions, limitations, and proposed changes visible.</p>
+      ) : activeView === "library" ? (
+        <div className="content-column tool-page" id="top">
+          <section className="intro" aria-labelledby="library-title">
+            <p className="kicker">Tools · Asset library</p>
+            <h1 id="library-title">Everything made for every brand.</h1>
+            <p>Research, competitor ads, copy, images, video, and campaign files stay attached to the brand and offer that created them.</p>
           </section>
-
-          <section className="draper-workspace" aria-label="Draper workspace">
-            <article className="draper-conversation">
-              <div className="draper-agent-heading"><span>DR</span><div><strong>Draper</strong><small>Negroni conversational agent</small></div><b>Local plugin</b></div>
-              <div className="draper-message">
-                <p>Ask me to inspect a brand, find ads, compare creative, analyze normalized performance, explain the current Loop, retrieve learnings, find stale data, or prepare a reviewable experiment.</p>
-                <small>I use validated intents—not arbitrary SQL—and I cannot publish, spend, launch traffic, change budgets, or mutate an ad account.</small>
-              </div>
-              <div className="draper-examples" aria-label="Example Draper questions">
-                <span>Try asking your Negroni agent</span>
-                <code>How is this brand&apos;s loop doing?</code>
-                <code>What evidence supports our next creative test?</code>
-                <code>What is stale, blocked, or missing?</code>
-              </div>
-              <div className="draper-browser-boundary">
-                <strong>Continue in the installed Negroni plugin</strong>
-                <p>This Site does not expose your machine-local database or private vault to the browser. Draper runs through the installed plugin&apos;s local tools.</p>
-              </div>
-            </article>
-
-            <aside className="draper-evidence-panel" aria-label="Learning Core boundaries">
-              <p className="utility-label">Learning Core</p>
-              <h2>One truth, two ways to read it.</h2>
-              <dl>
-                <div><dt>Authority</dt><dd>Local relational database</dd></div>
-                <div><dt>Readable layer</dt><dd>Generated Markdown vault</dd></div>
-                <div><dt>Retrieval</dt><dd>FTS5 + rebuildable vectors</dd></div>
-                <div><dt>Warehouse</dt><dd>Fixture adapter in this milestone</dd></div>
-              </dl>
-              <div className="draper-state-chain" aria-label="Learning lifecycle">
-                <span>Observation</span><i>→</i><span>Candidate</span><i>→</i><span>Supported</span><i>→</i><span>Trusted</span>
-              </div>
-              <p className="draper-terminal-states">Contradicted and superseded records remain visible. Model output never promotes itself.</p>
-            </aside>
+          <section className="tool-summary-bar" aria-label="Library filters">
+            <div><span>Brand</span><strong>{activeBrand?.company_name ?? "No brand selected"}</strong></div>
+            <select aria-label="Filter library by brand" value={activeBrand?.id ?? ""} onChange={(event) => setSelectedProfileId(event.target.value)} disabled={!profiles.records.length}>
+              {!profiles.records.length ? <option value="">Create a brand first</option> : null}
+              {profiles.records.map((profile) => <option key={profile.id} value={profile.id}>{profile.company_name}</option>)}
+            </select>
           </section>
-
-          <section className="draper-contract-grid" aria-label="Draper operating contracts">
-            <article><span>01</span><div><strong>Data plane</strong><p>Brands, offers, audiences, campaigns, ads, assets, experiments, and normalized outcomes.</p></div></article>
-            <article><span>02</span><div><strong>Knowledge plane</strong><p>Versioned learnings, evidence, counterevidence, retrieval receipts, and readable projections.</p></div></article>
-            <article><span>03</span><div><strong>Control plane</strong><p>Plain-language answers and proposed diffs, with decisions separate from external execution.</p></div></article>
+          <section className="asset-type-grid" aria-label="Brand asset types">
+            {[
+              ["Research", "DOC", result ? "Brand research and evidence are ready in this session." : "No completed research artifacts yet.", result ? "3" : "0"],
+              ["Competitor ads", "ADS", result?.competitor_ads.active_ads ? `${result.competitor_ads.active_ads} active ads observed.` : "No competitor ads collected yet.", String(result?.competitor_ads.active_ads ?? 0)],
+              ["Static creative", "IMG", "No image assets attached yet.", "0"],
+              ["Video creative", "VID", "No video assets attached yet.", "0"],
+              ["Copy & scripts", "TXT", "No copy assets attached yet.", "0"],
+              ["Campaign files", "CMP", "No launch files attached yet.", "0"],
+            ].map(([name, marker, description, count]) => (
+              <article key={name}><span>{marker}</span><div><h2>{name}</h2><p>{description}</p></div><b>{count}</b></article>
+            ))}
           </section>
+          {!activeBrand ? <div className="tool-empty"><h2>Your library is empty.</h2><p>Create a brand to give every future offer, ad, and asset a permanent home.</p><button type="button" onClick={() => navigate("research")}>Create Brand</button></div> : null}
+        </div>
+      ) : activeView === "brands" ? (
+        <div className="content-column tool-page" id="top">
+          <section className="intro tool-page-heading" aria-labelledby="brands-title">
+            <div><p className="kicker">Tools · Brand system</p><h1 id="brands-title">Brands are the source of truth.</h1><p>Each central brand file connects its offers, research, competitor intelligence, ads, and creative assets.</p></div>
+            <button type="button" onClick={() => navigate("research")}>+ Create Brand</button>
+          </section>
+          {profiles.records.length ? (
+            <section className="brand-file-grid" aria-label="Brand files">
+              {profiles.records.map((profile) => (
+                <article className="brand-file-card" key={profile.id}>
+                  <header><span>{profile.company_name.slice(0, 2).toUpperCase()}</span><div><small>Central brand file</small><h2>{profile.company_name}</h2></div></header>
+                  <dl>
+                    <div><dt>Industry</dt><dd>{profile.industry}</dd></div>
+                    <div><dt>Market</dt><dd>{profile.country_region}</dd></div>
+                    <div><dt>Primary offer</dt><dd>{profile.offer_or_lead_type}</dd></div>
+                    <div><dt>Customer service</dt><dd>{profile.service_or_offer_purchased}</dd></div>
+                  </dl>
+                  <div className="brand-relationships"><span><b>1</b> Offer</span><span><b>0</b> Ads</span><span><b>0</b> Creative assets</span></div>
+                  <button type="button" onClick={() => { chooseProfile(profile.id); navigate("research"); }}>Open brand file</button>
+                </article>
+              ))}
+            </section>
+          ) : (
+            <div className="tool-empty"><h2>No brand files yet.</h2><p>Create the first central brand file, then attach offers, research, ads, and creative as the campaign grows.</p><button type="button" onClick={() => navigate("research")}>Create Brand</button></div>
+          )}
         </div>
       ) : (
         <div className="content-column settings-column" id="top">

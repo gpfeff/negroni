@@ -9,10 +9,11 @@ and Review & Approve. A factual guidance rail shows research readiness, the
 next honest action, runner availability, and spend protection. Research is the
 first executable section; later phases remain visibly planned.
 
-Tools also includes Draper, Negroni's conversational control plane. The Site
-explains its scope and safety boundary but does not expose a machine-local
-SQLite database or private vault to browser code. Actual Draper queries run
-through the installed plugin's validated MCP and stable CLI contracts.
+Tools includes Library and Brands. Brands is the organizing parent for each
+central brand file and its offers, research, ads, and creative. Library is the
+brand-aware view of generated and collected assets. Draper remains available
+through the installed plugin contracts but is intentionally not shown in the
+Site navigation.
 
 A focused Negroni interface for saving a reusable research set, running the
 five approved research prompts in order, and producing five durable Research

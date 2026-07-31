@@ -104,10 +104,11 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   const researchTabs = page.locator(".side-nav > button.nav-active + .research-subnav");
   checks.push({ name: "Research has exactly two tabs", passed: await researchTabs.getByRole("button").count() === 2 });
-  checks.push({ name: "Research tabs are Create Brand and Add Spy", passed:
+  checks.push({ name: "Research tabs are Create Brand and Ad Spy", passed:
     await researchTabs.getByRole("button", { name: "Create Brand", exact: true }).count() === 1
-      && await researchTabs.getByRole("button", { name: "Add Spy", exact: true }).count() === 1,
+      && await researchTabs.getByRole("button", { name: "Ad Spy", exact: true }).count() === 1,
   });
+  checks.push({ name: "Research tabs use distinct icons", passed: await researchTabs.locator("svg").count() === 2 });
   for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Known competitors", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Final Gemini Deep Research prompt", "Create competitor database", "Enable ongoing monitoring", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "4A · Master research", "4B · Brand tone", "Run status", "Nightly competitor ads", "Competitor Ads", "No secure five-prompt research runner"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
@@ -118,15 +119,20 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await inspect(page, "thin-client-mobile");
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole("button", { name: "Draper", exact: true }).click();
-  for (const text of ["Ask Draper what the evidence says.", "Negroni conversational agent", "validated intents", "Continue in the installed Negroni plugin", "Learning Core", "Local relational database", "FTS5 + rebuildable vectors", "Fixture adapter in this milestone", "Data plane", "Knowledge plane", "Control plane"]) {
-    checks.push({ name: `Draper visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  checks.push({ name: "Draper is removed from navigation", passed: await page.getByRole("button", { name: "Draper", exact: true }).count() === 0 });
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  for (const text of ["Everything made for every brand.", "Research", "Competitor ads", "Static creative", "Video creative", "Copy & scripts", "Campaign files"]) {
+    checks.push({ name: `Library visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
-  checks.push({ name: "Draper shows no browser-side database controls", passed: await page.locator(".draper-column").getByRole("textbox").count() === 0 });
-  checks.push({ name: "Draper keeps external action boundaries visible", passed: await page.getByText("cannot publish, spend, launch traffic, change budgets, or mutate an ad account", { exact: false }).isVisible() });
-  await inspect(page, "draper-desktop");
+  await inspect(page, "library-desktop");
   await page.setViewportSize({ width: 390, height: 844 });
-  await inspect(page, "draper-mobile");
+  await inspect(page, "library-mobile");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Brands", exact: true }).click();
+  checks.push({ name: "Brands explains the central brand file", passed: await page.getByText("Brands are the source of truth.", { exact: true }).isVisible() });
+  await inspect(page, "brands-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await inspect(page, "brands-mobile");
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.getByRole("button", { name: "Settings" }).click();
   for (const text of ["Connect the tools behind your workspace.", "Appearance & approvals", "Commit approvals", "Codex", "Claude Code", "API keys & storage", "Kie.ai API key", "Gemini API key", "Google Drive", "Developer fallback", "Connection setup needed"]) {

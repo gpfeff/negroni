@@ -667,6 +667,9 @@ html[data-theme="system"] .app-sidebar {
 .side-nav button small { background: #1c293d; color: #8793a6; font-size: 10px; }
 .research-subnav { margin-left: 22px; border-color: #39465a; }
 .research-subnav button { min-height: 34px; font-size: 12px; }
+.research-subnav button > span { display: grid; place-items: center; }
+.research-subnav button > span svg { width: 15px; height: 15px; fill: currentColor; stroke: currentColor; stroke-width: 1.8; }
+.research-subnav button > span svg circle { fill: none; }
 
 .sidebar-footer { display: grid; gap: 6px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--studio-line); }
 .sidebar-toggle { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; min-height: 48px; padding: 4px 11px; }
@@ -1021,7 +1024,7 @@ html[data-theme="dark"] .media-card { background: #101a2c; }
 .preference-card > strong { color: #f07870; }
 
 html[data-theme="light"] body { background: #edf1f6; color: #182131; }
-html[data-theme="light"] .app-main { background-color: #edf1f6; background-image: radial-gradient(circle, #d4dbe5 1px, transparent 1px); }
+html[data-theme="light"] .app-main { background: #edf1f6; }
 html[data-theme="light"] .app-sidebar { background: #f8fafc; color: #182131; }
 html[data-theme="light"] .brand-copy strong,
 html[data-theme="light"] .dashboard-heading h1,
@@ -1166,4 +1169,59 @@ html[data-theme="light"] .draper-browser-boundary p { color: #6f5660; }
   .draper-agent-heading > b { grid-column: 2; width: fit-content; }
   .draper-message { margin-right: 0; }
   .draper-evidence-panel { padding: 20px; }
+}
+
+.tool-page { min-height: 100vh; }
+.tool-page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; }
+.tool-page-heading > div { min-width: 0; }
+.tool-page-heading > button,
+.tool-empty button,
+.brand-file-card > button { min-height: 42px; padding: 0 15px; border: 1px solid #a63e39; border-radius: 8px; background: #a63e39; color: white; font-weight: 750; }
+.tool-summary-bar { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px; padding: 16px 18px; border: 1px solid var(--studio-line); border-radius: 12px; background: var(--studio-card); }
+.tool-summary-bar > div { display: grid; gap: 3px; }
+.tool-summary-bar span { color: var(--studio-faint); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.tool-summary-bar strong { color: var(--studio-ink); font-size: 17px; }
+.tool-summary-bar select { width: min(320px, 48%); }
+.asset-type-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.asset-type-grid article { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 15px; min-height: 126px; padding: 20px; border: 1px solid var(--studio-line); border-radius: 12px; background: var(--studio-card); }
+.asset-type-grid article > span { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 10px; background: #232c3d; color: #ff8177; font-size: 10px; font-weight: 850; letter-spacing: .05em; }
+.asset-type-grid h2 { margin: 0; color: var(--studio-ink); font-size: 17px; }
+.asset-type-grid p { margin: 5px 0 0; color: var(--studio-muted); font-size: 12px; }
+.asset-type-grid article > b { align-self: start; color: var(--studio-faint); font-size: 13px; }
+.brand-file-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.brand-file-card { display: grid; gap: 18px; padding: 22px; border: 1px solid var(--studio-line); border-radius: 14px; background: var(--studio-card); }
+.brand-file-card header { display: flex; align-items: center; gap: 13px; }
+.brand-file-card header > span { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 10px; background: var(--negroni-red-soft); color: #ff8a81; font-weight: 850; }
+.brand-file-card header small { color: var(--studio-faint); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; }
+.brand-file-card h2 { margin: 2px 0 0; color: var(--studio-ink); font-size: 20px; }
+.brand-file-card dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; }
+.brand-file-card dl div { min-width: 0; padding: 11px; border: 1px solid var(--studio-line-soft); border-radius: 8px; background: #0b1424; }
+.brand-file-card dt { color: var(--studio-faint); font-size: 9px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.brand-file-card dd { margin: 4px 0 0; overflow-wrap: anywhere; color: var(--studio-ink); font-size: 12px; }
+.brand-relationships { display: flex; flex-wrap: wrap; gap: 8px; }
+.brand-relationships span { padding: 6px 9px; border-radius: 999px; background: #202a3b; color: var(--studio-muted); font-size: 10px; }
+.brand-relationships b { color: var(--studio-ink); }
+.brand-file-card > button { justify-self: start; }
+.tool-empty { display: grid; justify-items: start; gap: 8px; padding: 34px; border: 1px dashed #3a485e; border-radius: 14px; background: #0d1728; }
+.tool-empty h2 { margin: 0; color: var(--studio-ink); }
+.tool-empty p { max-width: 590px; margin: 0 0 10px; color: var(--studio-muted); }
+html[data-theme="light"] .tool-summary-bar,
+html[data-theme="light"] .asset-type-grid article,
+html[data-theme="light"] .brand-file-card,
+html[data-theme="light"] .tool-empty { border-color: #ccd4df; background: #f8fafc; }
+html[data-theme="light"] .tool-summary-bar strong,
+html[data-theme="light"] .asset-type-grid h2,
+html[data-theme="light"] .brand-file-card h2,
+html[data-theme="light"] .tool-empty h2 { color: #182131; }
+html[data-theme="light"] .brand-file-card dl div { border-color: #dbe1e9; background: #edf1f6; }
+html[data-theme="light"] .brand-file-card dd { color: #182131; }
+
+@media (max-width: 760px) {
+  .tool-page-heading { align-items: flex-start; flex-direction: column; }
+  .tool-summary-bar { align-items: stretch; flex-direction: column; }
+  .tool-summary-bar select { width: 100%; }
+  .asset-type-grid, .brand-file-grid { grid-template-columns: 1fr; }
+  .asset-type-grid article { grid-template-columns: 44px 1fr auto; min-height: 112px; padding: 16px; }
+  .asset-type-grid article > span { width: 42px; height: 42px; }
+  .brand-file-card dl { grid-template-columns: 1fr; }
 }
