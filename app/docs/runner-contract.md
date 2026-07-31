@@ -18,6 +18,13 @@ exactly five artifacts, and writes immutable SHA-256 receipts. Automated proof
 uses fake providers only. The default dependencies are blocked or inactive, so
 this is `locally_verified_not_deployed`, not a hosted research service.
 
+The configured Gemini path uses one brokered Interactions API task for the
+entire five-prompt sequence. It is fixed to Deep Research Max
+`deep-research-max-preview-04-2026`, preserves one validated receipt per prompt,
+and fails closed when any section or URL citation is missing. The runner never
+receives the Gemini API key. It also refuses network access unless
+`NEGRONI_GEMINI_MAX_APPROVED_RUN_ID` exactly matches the owner-scoped run ID.
+
 The deployment target, required server-side configuration, approval-gated
 diff, and rollback are defined in
 [`research-runner-deployment.md`](research-runner-deployment.md).

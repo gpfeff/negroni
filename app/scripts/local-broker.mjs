@@ -11,6 +11,9 @@ const credentialsPath = process.env.NEGRONI_CREDENTIALS_PATH
   || join(homedir(), ".negroni", "credentials.json");
 const brokerToken = process.env.CREDENTIAL_BROKER_TOKEN;
 const brokerPort = Number(process.env.NEGRONI_BROKER_PORT || "47831");
+const geminiInteractionsBaseUrl = new URL(process.env.NEGRONI_GEMINI_INTERACTIONS_BASE_URL
+  || "https://generativelanguage.googleapis.com/v1beta/interactions");
+const GEMINI_MAX_AGENT = "deep-research-max-preview-04-2026";
 
 if (!brokerToken) throw new Error("CREDENTIAL_BROKER_TOKEN is required.");
 
@@ -89,6 +92,40 @@ async function providerStatuses() {
   ];
 }
 
+function allowedGeminiBaseUrl(url) {
+  return (url.protocol === "https:" && url.hostname === "generativelanguage.googleapis.com")
+    || (url.protocol === "http:" && ["127.0.0.1", "localhost", "::1"].includes(url.hostname));
+}
+
+async function proxyGeminiInteraction(path, init) {
+  if (!allowedGeminiBaseUrl(geminiInteractionsBaseUrl)) {
+    throw new Error("The Gemini Interactions API endpoint is not allowed.");
+  }
+  const credentials = await readCredentials();
+  const apiKey = credentials.gemini_api?.api_key;
+  if (typeof apiKey !== "string" || apiKey.length < 20) {
+    return json({ error: "Gemini API is not connected." }, 409);
+  }
+  const target = new URL(path, geminiInteractionsBaseUrl.href.endsWith("/")
+    ? geminiInteractionsBaseUrl
+    : `${geminiInteractionsBaseUrl.href}/`);
+  const response = await fetch(target, {
+    ...init,
+    headers: {
+      "content-type": "application/json",
+      "x-goog-api-key": apiKey,
+    },
+  });
+  const body = await response.text();
+  if (!response.ok) {
+    return json({ error: "Gemini Interactions API request failed.", status: response.status }, 502);
+  }
+  return new Response(body, {
+    status: response.status,
+    headers: { "content-type": "application/json", "cache-control": "no-store" },
+  });
+}
+
 function json(response, status = 200) {
   return new Response(JSON.stringify(response), {
     status,
@@ -124,6 +161,37 @@ async function handle(request) {
       google_drive: "Add a Google OAuth client ID to the local bridge before connecting Drive.",
     };
     return json({ connected: false, message: loginCommands[body.provider] || provider?.blocker || "Connection is not ready." });
+  }
+  if (request.method === "POST" && url.pathname === "/v1/providers/gemini/deep-research/interactions") {
+    const body = await request.json();
+    if (body.agent !== GEMINI_MAX_AGENT
+      || typeof body.run_id !== "string"
+      || !/^run_[a-f0-9]{24}$/.test(body.run_id)
+      || typeof body.input !== "string"
+      || !body.input.trim()
+      || Buffer.byteLength(body.input, "utf8") > 512 * 1024) {
+      return json({ error: "Invalid Gemini Deep Research Max request." }, 400);
+    }
+    return proxyGeminiInteraction("", {
+      method: "POST",
+      body: JSON.stringify({
+        input: body.input,
+        agent: GEMINI_MAX_AGENT,
+        agent_config: {
+          type: "deep-research",
+          thinking_summaries: "none",
+          visualization: "auto",
+          collaborative_planning: false,
+        },
+        background: true,
+        store: true,
+        user_metadata: { negroni_run_id: body.run_id },
+      }),
+    });
+  }
+  const interactionMatch = url.pathname.match(/^\/v1\/providers\/gemini\/deep-research\/interactions\/(v1_[A-Za-z0-9_-]{10,512})$/);
+  if (request.method === "GET" && interactionMatch) {
+    return proxyGeminiInteraction(encodeURIComponent(interactionMatch[1]), { method: "GET" });
   }
   return json({ error: "Not found" }, 404);
 }

@@ -46,6 +46,14 @@ export type PromptExecutionRequest = {
   completed_prompt_ids: ResearchPromptId[];
 };
 
+export type ResearchSequenceRequest = Omit<
+  PromptExecutionRequest,
+  "prompt_id" | "prompt_text" | "completed_prompt_ids"
+> & {
+  prompts: Array<{ id: ResearchPromptId; content: string }>;
+  completed_prompt_ids: ResearchPromptId[];
+};
+
 export type ResearchPromptOutput = {
   prompt_id: ResearchPromptId;
   status: "complete" | "limited";
@@ -105,7 +113,8 @@ export type ResearchRunnerDependencies = {
     }): Promise<ApprovedPromptSource>;
   };
   research_engine: {
-    executePrompt(input: PromptExecutionRequest): Promise<ResearchPromptOutput>;
+    executePrompt?: (input: PromptExecutionRequest) => Promise<ResearchPromptOutput>;
+    executeSequence?: (input: ResearchSequenceRequest) => Promise<ResearchPromptOutput[]>;
   };
   competitor_boundary: {
     run(input: {

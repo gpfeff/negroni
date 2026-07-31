@@ -15,6 +15,7 @@ import type {
   CompetitorBoundaryResult,
   GoogleFilingResult,
   PromptExecutionRequest,
+  ResearchSequenceRequest,
   ResearchRunnerDependencies,
   RunnerOutcome,
   SecureRunnerReceipt,
@@ -147,9 +148,26 @@ function fakeDependencies(options: {
   activeMonitor?: boolean;
   blockGoogle?: boolean;
   failPromptCallOnce?: number;
+  sequence?: boolean;
 } = {}) {
   const promptCalls: PromptExecutionRequest[] = [];
+  const sequenceCalls: ResearchSequenceRequest[] = [];
   let failedOnce = false;
+  function sequenceOutputs(request: ResearchSequenceRequest) {
+    return request.prompts.map(({ id }, index) => ({
+      prompt_id: id,
+      status: "complete" as const,
+      limitation: null,
+      markdown: `Evidence-backed ${id} finding from one bounded sequence [SEQ${index + 1}].`,
+      opportunities: [`Test one original ${id.replaceAll("_", " ")} hypothesis.`],
+      sources: [{
+        id: `SEQ${index + 1}`,
+        url: `https://example.test/sequence-source-${index + 1}`,
+        title: `Sequence fixture source ${index + 1}`,
+        accessed_at: NOW,
+      }],
+    }));
+  }
   const dependencies: ResearchRunnerDependencies = {
     capabilities: {
       prompt_source: "fake_verified",
@@ -172,7 +190,12 @@ function fakeDependencies(options: {
         };
       },
     },
-    research_engine: {
+    research_engine: options.sequence ? {
+      async executeSequence(request) {
+        sequenceCalls.push(request);
+        return sequenceOutputs(request);
+      },
+    } : {
       async executePrompt(request) {
         promptCalls.push(request);
         if (!failedOnce && promptCalls.length === options.failPromptCallOnce) {
@@ -224,7 +247,7 @@ function fakeDependencies(options: {
       },
     },
   };
-  return { dependencies, promptCalls };
+  return { dependencies, promptCalls, sequenceCalls, sequenceOutputs };
 }
 
 async function harness(label: string, dependencies: ResearchRunnerDependencies) {
@@ -362,6 +385,58 @@ test("one owner gets an idempotent five-prompt result and exactly five immutable
     }));
     assert.deepEqual(await replay.json(), payload);
     assert.equal(fake.promptCalls.length, 5);
+  } finally {
+    await rm(app.base, { recursive: true, force: true });
+  }
+});
+
+test("a sequence provider executes one research task for all five prompts", async () => {
+  const fake = fakeDependencies({ sequence: true });
+  const app = await harness("single-sequence", fake.dependencies);
+  try {
+    const response = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      body: validIntake(),
+    }));
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal(fake.promptCalls.length, 0);
+    assert.equal(fake.sequenceCalls.length, 1);
+    assert.deepEqual(fake.sequenceCalls[0]?.prompts.map(({ id }) => id), [...RESEARCH_PROMPTS]);
+  } finally {
+    await rm(app.base, { recursive: true, force: true });
+  }
+});
+
+test("a sequence provider resumes only prompts without an existing checkpoint", async () => {
+  const fake = fakeDependencies({ failPromptCallOnce: 3 });
+  const app = await harness("sequence-resume", fake.dependencies);
+  try {
+    const first = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      body: validIntake(),
+    }));
+    assert.equal(first.status, 503, await first.clone().text());
+
+    fake.dependencies.research_engine = {
+      async executeSequence(input) {
+        fake.sequenceCalls.push(input);
+        return fake.sequenceOutputs(input);
+      },
+    };
+    const resumed = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      body: validIntake(),
+    }));
+    assert.equal(resumed.status, 200, await resumed.clone().text());
+    assert.equal(fake.sequenceCalls.length, 1);
+    assert.deepEqual(fake.sequenceCalls[0]?.completed_prompt_ids, RESEARCH_PROMPTS.slice(0, 2));
+    assert.deepEqual(fake.sequenceCalls[0]?.prompts.map(({ id }) => id), RESEARCH_PROMPTS.slice(2));
   } finally {
     await rm(app.base, { recursive: true, force: true });
   }

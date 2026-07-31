@@ -104,3 +104,61 @@ test("local broker never returns command output in provider status", async () =>
     await rm(stubs, { recursive: true, force: true });
   }
 });
+
+test("local broker keeps the Gemini key server-side and fixes Deep Research to Max", async () => {
+  const directory = await mkdtemp(join(tmpdir(), "negroni-gemini-broker-"));
+  const brokerPort = await unusedPort();
+  const token = "local-bridge-test-token";
+  const apiKey = "test-gemini-key-never-returned";
+  const credentialsPath = join(directory, "credentials.json");
+  await writeFile(credentialsPath, JSON.stringify({ gemini_api: { api_key: apiKey } }), { mode: 0o600 });
+
+  let receivedHeader = "";
+  let receivedBody = "";
+  const google = createServer((request, response) => {
+    receivedHeader = String(request.headers["x-goog-api-key"] ?? "");
+    request.setEncoding("utf8");
+    request.on("data", (chunk) => { receivedBody += chunk; });
+    request.on("end", () => {
+      response.writeHead(200, { "content-type": "application/json" });
+      response.end(JSON.stringify({ id: "v1_0123456789abcdef", status: "in_progress" }));
+    });
+  });
+  await new Promise<void>((resolvePromise) => google.listen(0, "127.0.0.1", resolvePromise));
+  const googleAddress = google.address();
+  assert.ok(googleAddress && typeof googleAddress === "object");
+
+  const broker = spawn(process.execPath, [brokerPath], {
+    env: {
+      ...process.env,
+      NEGRONI_BROKER_PORT: String(brokerPort),
+      CREDENTIAL_BROKER_TOKEN: token,
+      NEGRONI_CREDENTIALS_PATH: credentialsPath,
+      NEGRONI_GEMINI_INTERACTIONS_BASE_URL: `http://127.0.0.1:${googleAddress.port}/v1beta/interactions`,
+    },
+  });
+  try {
+    await waitForStatus(brokerPort, token);
+    const response = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        run_id: "run_0123456789abcdef01234567",
+        agent: "deep-research-max-preview-04-2026",
+        input: "Bounded foundational research request.",
+      }),
+    });
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal(receivedHeader, apiKey);
+    const upstream = JSON.parse(receivedBody);
+    assert.equal(upstream.agent, "deep-research-max-preview-04-2026");
+    assert.equal(upstream.agent_config.collaborative_planning, false);
+    assert.equal(upstream.background, true);
+    assert.equal((await response.text()).includes(apiKey), false);
+  } finally {
+    broker.kill("SIGTERM");
+    await new Promise<void>((resolvePromise) => broker.once("exit", () => resolvePromise()));
+    await new Promise<void>((resolvePromise, reject) => google.close((error) => error ? reject(error) : resolvePromise()));
+    await rm(directory, { recursive: true, force: true });
+  }
+});

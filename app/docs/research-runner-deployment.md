@@ -5,15 +5,16 @@ Updated: 2026-07-30
 ## Capability state
 
 The owner-scoped HTTP boundary is locally verified and not deployed. The
-default dependency set is deliberately blocked: it has no live prompt-source,
-research-engine, Google Drive, official Meta, or scheduler capability. Local
-tests use fake providers and prove contracts, not live access.
+default dependency set remains blocked unless separately configured. The
+Gemini research-engine adapter is locally verified against a fake broker, but
+there is no paid production proof, live prompt-source provider, Google Drive,
+official Meta, or scheduler capability.
 
 ## Deployment target
 
-Run `bin/research-runner.ts` as a private Node.js 22 service on an
-owner-controlled Mac mini or Linux container. Bind it to loopback or a private
-network only. Mount these roots separately:
+Run `bin/research-runner.ts` as a private Node.js 22 service on the Mac mini,
+the sole Negroni execution host. Bind it to loopback or a private network only.
+Mount these roots separately:
 
 - repository code: read-only checkout;
 - private runtime: `/Users/greg-mac-mini/.local/share/negroni` or an equivalent
@@ -28,6 +29,13 @@ configuration is `NEGRONI_RUNNER_PORT`, `NEGRONI_RUNTIME_ROOT`, and
 owner-isolated prompt-source client, research provider, and credential broker;
 provider secrets must never enter the browser, site database, source tree, or
 receipts.
+
+Gemini Deep Research Max additionally requires `CREDENTIAL_BROKER_URL`,
+`CREDENTIAL_BROKER_TOKEN`, and the exact one-run approval value
+`NEGRONI_GEMINI_MAX_APPROVED_RUN_ID`. The key remains inside the credential
+broker. Changing that run ID is an action-time paid-run approval, not standing
+authorization. One approved Negroni run creates one Max interaction covering
+all five required prompts.
 
 The Site receives only:
 
@@ -52,7 +60,7 @@ No part of this diff was applied during local verification.
    and log redaction from the private network.
 4. Set `LEAD_INTELLIGENCE_RUNNER_URL` and
    `LEAD_INTELLIGENCE_RUNNER_TOKEN` on the preserved Sites project
-   `appgprj_6a69601f2d3881919387445a11ad4a5b`.
+   `appgprj_6a6bf385b41c8191808c34035484ee4c`.
 5. Deploy that saved project revision and run one approved owner-scoped
    rehearsal.
 

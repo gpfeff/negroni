@@ -85,6 +85,13 @@ The server-only Meta Ads Intelligence adapter now:
   `research-receipt.json`;
 - never installs a scheduler.
 
+The local Research runner now also has a provider-neutral sequence seam and a
+brokered Gemini Deep Research Max adapter. One approved run uses one Max
+interaction for all five required prompts, validates section coverage and URL
+citations, and keeps the API key inside the credential broker. Paid execution
+is fail-closed behind an exact run-ID approval. No real Gemini key was changed
+and no paid Deep Research request was executed during this implementation.
+
 Live research remains correctly **blocked** because the Sites runtime has no
 secure research runner variables. Hosted provider connections remain correctly
 **blocked** because it has no credential-broker variables. The installed
@@ -131,8 +138,8 @@ browser and continues to report unavailable hosted capabilities as blocked.
 
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
-- Plugin contract tests: 3/3 passed
-- Application contract/security tests: 105/105 passed
+- Plugin contract tests: 4/4 passed
+- Application contract/security tests: 111/111 passed
 - Vinext production build: passed
 - Install smoke test: global package, local app, and six-provider Settings API passed
 - Visual QA: Home, Research, Draper, and Settings passed at desktop and mobile

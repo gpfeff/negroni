@@ -578,16 +578,13 @@ export function createResearchRunner(configuration: RunnerConfiguration): Resear
           }
         }
 
-        for (const promptId of RESEARCH_PROMPTS) {
-          if (state.prompt_outputs[promptId]) continue;
-          const prompt = state.prompt_source.prompts.find(({ id }) => id === promptId)!;
-          let output: ResearchPromptOutput;
+        const missingPromptIds = RESEARCH_PROMPTS.filter((id) => !state!.prompt_outputs[id]);
+        if (missingPromptIds.length && dependencies.research_engine.executeSequence) {
           try {
-            output = await dependencies.research_engine.executePrompt({
+            const outputs = await dependencies.research_engine.executeSequence({
               owner_key: ownerKey,
               run_id: runId,
-              prompt_id: promptId,
-              prompt_text: prompt.content,
+              prompts: state.prompt_source.prompts.filter(({ id }) => missingPromptIds.includes(id)),
               trust: "untrusted",
               allowed_tools: [],
               fixed_rules: FIXED_RULES,
@@ -605,6 +602,18 @@ export function createResearchRunner(configuration: RunnerConfiguration): Resear
               },
               completed_prompt_ids: RESEARCH_PROMPTS.filter((id) => Boolean(state!.prompt_outputs[id])),
             });
+            if (outputs.length !== missingPromptIds.length) {
+              throw new RunnerInvariantError("The sequence provider did not return exactly one output per missing prompt.");
+            }
+            const byId = new Map(outputs.map((output) => [output.prompt_id, output]));
+            for (const promptId of missingPromptIds) {
+              const output = byId.get(promptId);
+              if (!output || byId.size !== outputs.length) {
+                throw new RunnerInvariantError("The sequence provider returned an incomplete or duplicate prompt set.");
+              }
+              state.prompt_outputs[promptId] = validatePromptOutput(output, promptId);
+              await atomicWrite(statePath, state);
+            }
           } catch {
             const completed = Object.keys(state.prompt_outputs).length;
             const status = completed ? "partial" : "blocked";
@@ -619,8 +628,53 @@ export function createResearchRunner(configuration: RunnerConfiguration): Resear
             }));
             return { status, run_id: runId, result: null, runner_receipt: receipt, error: "The research provider did not complete the five-prompt sequence." };
           }
-          state.prompt_outputs[promptId] = validatePromptOutput(output, promptId);
-          await atomicWrite(statePath, state);
+        } else {
+          if (missingPromptIds.length && !dependencies.research_engine.executePrompt) {
+            throw new RunnerInvariantError("The research provider has no execution method.");
+          }
+          for (const promptId of missingPromptIds) {
+            const prompt = state.prompt_source.prompts.find(({ id }) => id === promptId)!;
+            let output: ResearchPromptOutput;
+            try {
+              output = await dependencies.research_engine.executePrompt!({
+                owner_key: ownerKey,
+                run_id: runId,
+                prompt_id: promptId,
+                prompt_text: prompt.content,
+                trust: "untrusted",
+                allowed_tools: [],
+                fixed_rules: FIXED_RULES,
+                intake: {
+                  client_customer_name: intake.client_customer_name,
+                  profession_job_title: intake.profession_job_title,
+                  company_name: intake.company_name,
+                  website_or_public_profile_url: intake.website_or_public_profile_url,
+                  service_or_offer_purchased: intake.service_or_offer_purchased,
+                  competitor_used: intake.competitor_used,
+                  offer_or_lead_type: intake.offer_or_lead_type,
+                  industry: intake.industry,
+                  country_region: intake.country_region,
+                  target_age_range: intake.target_age_range,
+                },
+                completed_prompt_ids: RESEARCH_PROMPTS.filter((id) => Boolean(state!.prompt_outputs[id])),
+              });
+            } catch {
+              const completed = Object.keys(state.prompt_outputs).length;
+              const status = completed ? "partial" : "blocked";
+              state.status = status;
+              await atomicWrite(statePath, state);
+              const receipt = await persistRunnerReceipt(roots.artifact_root, receiptDraft({
+                state,
+                status,
+                limitations: [completed
+                  ? "The provider stopped after a durable prompt checkpoint; retrying the same intake resumes this run."
+                  : "The research provider is unavailable for this owner."],
+              }));
+              return { status, run_id: runId, result: null, runner_receipt: receipt, error: "The research provider did not complete the five-prompt sequence." };
+            }
+            state.prompt_outputs[promptId] = validatePromptOutput(output, promptId);
+            await atomicWrite(statePath, state);
+          }
         }
 
         const promptOutputs = state.prompt_outputs as Record<ResearchPromptId, ResearchPromptOutput>;

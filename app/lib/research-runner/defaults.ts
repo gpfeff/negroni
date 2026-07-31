@@ -10,6 +10,7 @@ import type {
   CompetitorBoundaryResult,
   ResearchRunnerDependencies,
 } from "./contracts.ts";
+import { createGeminiDeepResearchMaxEngine } from "./gemini-deep-research.ts";
 
 const OFFICIAL_BLOCKER = "Official competitor collection is blocked until owner authorization and required commercial-ad coverage pass a bounded proof.";
 
@@ -66,10 +67,14 @@ function blockedCompetitorResult(projectId: string): CompetitorBoundaryResult {
 }
 
 export function createDefaultResearchRunnerDependencies(): ResearchRunnerDependencies {
+  const brokerUrl = process.env.CREDENTIAL_BROKER_URL?.trim() ?? "";
+  const brokerToken = process.env.CREDENTIAL_BROKER_TOKEN?.trim() ?? "";
+  const approvedRunId = process.env.NEGRONI_GEMINI_MAX_APPROVED_RUN_ID?.trim() ?? "";
+  const geminiConfigured = Boolean(brokerUrl && brokerToken && /^run_[a-f0-9]{24}$/.test(approvedRunId));
   return {
     capabilities: {
       prompt_source: "blocked",
-      research_engine: "blocked",
+      research_engine: geminiConfigured ? "configured" : "blocked",
       google_drive: "blocked",
       competitor_collection: "blocked",
       scheduler: "inactive",
@@ -79,11 +84,17 @@ export function createDefaultResearchRunnerDependencies(): ResearchRunnerDepende
         throw new Error("No owner-scoped prompt-source provider is configured.");
       },
     },
-    research_engine: {
-      async executePrompt() {
-        throw new Error("No owner-scoped research provider is configured.");
+    research_engine: geminiConfigured
+      ? createGeminiDeepResearchMaxEngine({
+        broker_url: brokerUrl,
+        broker_token: brokerToken,
+        approved_run_id: approvedRunId,
+      })
+      : {
+        async executePrompt() {
+          throw new Error("No owner-scoped research provider is configured.");
+        },
       },
-    },
     competitor_boundary: {
       async run({ project_id, deadline_seconds }) {
         // The dry-run call is deliberate: every runner integration exercises the
