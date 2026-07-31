@@ -1,13 +1,15 @@
 {
-  "generated_at": "2026-07-31T01:15:07.400Z",
+  "generated_at": "2026-07-31T06:55:08.544Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
     "home: 390x844",
     "research: 1440x1000",
     "research: 390x844",
-    "draper: 1440x1000",
-    "draper: 390x844",
+    "library: 1440x1000",
+    "library: 390x844",
+    "brands: 1440x1000",
+    "brands: 390x844",
     "settings: 1440x1000",
     "settings: 390x844"
   ],
@@ -137,7 +139,15 @@
       "passed": true
     },
     {
-      "name": "Research tools sit directly beneath the Research phase",
+      "name": "Research has exactly two tabs",
+      "passed": true
+    },
+    {
+      "name": "Research tabs are Create Brand and Ad Spy",
+      "passed": true
+    },
+    {
+      "name": "Research tabs use distinct icons",
       "passed": true
     },
     {
@@ -169,7 +179,7 @@
       "passed": true
     },
     {
-      "name": "visible: Competitor they use",
+      "name": "visible: Known competitors",
       "passed": true
     },
     {
@@ -190,6 +200,18 @@
     },
     {
       "name": "visible: Target age range",
+      "passed": true
+    },
+    {
+      "name": "visible: Final Gemini Deep Research prompt",
+      "passed": true
+    },
+    {
+      "name": "visible: Create competitor database",
+      "passed": true
+    },
+    {
+      "name": "visible: Enable ongoing monitoring",
       "passed": true
     },
     {
@@ -217,11 +239,11 @@
       "passed": true
     },
     {
-      "name": "visible: Master research",
+      "name": "visible: 4A · Master research",
       "passed": true
     },
     {
-      "name": "visible: Tone of voice",
+      "name": "visible: 4B · Brand tone",
       "passed": true
     },
     {
@@ -237,35 +259,15 @@
       "passed": true
     },
     {
-      "name": "visible: Outputs",
-      "passed": true
-    },
-    {
       "name": "visible: No secure five-prompt research runner",
       "passed": true
     },
     {
-      "name": "visible: Open Google Doc",
-      "passed": true
-    },
-    {
-      "name": "visible: Open Google Sheet",
-      "passed": true
-    },
-    {
-      "name": "visible: Download Markdown",
-      "passed": true
-    },
-    {
-      "name": "exactly three output cards",
+      "name": "removed final-research output cards",
       "passed": true
     },
     {
       "name": "run is disabled while execution is blocked",
-      "passed": true
-    },
-    {
-      "name": "Research empty review text stays legible on its paper surface",
       "passed": true
     },
     {
@@ -301,87 +303,103 @@
       "passed": true
     },
     {
-      "name": "Draper visible: Ask Draper what the evidence says.",
+      "name": "Draper is removed from navigation",
       "passed": true
     },
     {
-      "name": "Draper visible: Negroni conversational agent",
+      "name": "Library visible: Everything made for every brand.",
       "passed": true
     },
     {
-      "name": "Draper visible: validated intents",
+      "name": "Library visible: Research",
       "passed": true
     },
     {
-      "name": "Draper visible: Continue in the installed Negroni plugin",
+      "name": "Library visible: Competitor ads",
       "passed": true
     },
     {
-      "name": "Draper visible: Learning Core",
+      "name": "Library visible: Static creative",
       "passed": true
     },
     {
-      "name": "Draper visible: Local relational database",
+      "name": "Library visible: Video creative",
       "passed": true
     },
     {
-      "name": "Draper visible: FTS5 + rebuildable vectors",
+      "name": "Library visible: Copy & scripts",
       "passed": true
     },
     {
-      "name": "Draper visible: Fixture adapter in this milestone",
+      "name": "Library visible: Campaign files",
       "passed": true
     },
     {
-      "name": "Draper visible: Data plane",
+      "name": "library-desktop: no horizontal overflow",
       "passed": true
     },
     {
-      "name": "Draper visible: Knowledge plane",
+      "name": "library-desktop: operational body copy is at least 12px",
       "passed": true
     },
     {
-      "name": "Draper visible: Control plane",
+      "name": "library-desktop: metadata is at least 10px",
       "passed": true
     },
     {
-      "name": "Draper shows no browser-side database controls",
+      "name": "library-desktop: no serious or critical accessibility violations",
       "passed": true
     },
     {
-      "name": "Draper keeps external action boundaries visible",
+      "name": "library-mobile: no horizontal overflow",
       "passed": true
     },
     {
-      "name": "draper-desktop: no horizontal overflow",
+      "name": "library-mobile: operational body copy is at least 12px",
       "passed": true
     },
     {
-      "name": "draper-desktop: operational body copy is at least 12px",
+      "name": "library-mobile: metadata is at least 10px",
       "passed": true
     },
     {
-      "name": "draper-desktop: metadata is at least 10px",
+      "name": "library-mobile: no serious or critical accessibility violations",
       "passed": true
     },
     {
-      "name": "draper-desktop: no serious or critical accessibility violations",
+      "name": "Brands explains the central brand file",
       "passed": true
     },
     {
-      "name": "draper-mobile: no horizontal overflow",
+      "name": "brands-desktop: no horizontal overflow",
       "passed": true
     },
     {
-      "name": "draper-mobile: operational body copy is at least 12px",
+      "name": "brands-desktop: operational body copy is at least 12px",
       "passed": true
     },
     {
-      "name": "draper-mobile: metadata is at least 10px",
+      "name": "brands-desktop: metadata is at least 10px",
       "passed": true
     },
     {
-      "name": "draper-mobile: no serious or critical accessibility violations",
+      "name": "brands-desktop: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "brands-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "brands-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "brands-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "brands-mobile: no serious or critical accessibility violations",
       "passed": true
     },
     {
@@ -495,11 +513,19 @@
       "material_violations": []
     },
     {
-      "name": "draper-desktop",
+      "name": "library-desktop",
       "material_violations": []
     },
     {
-      "name": "draper-mobile",
+      "name": "library-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "brands-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "brands-mobile",
       "material_violations": []
     },
     {

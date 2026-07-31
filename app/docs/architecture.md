@@ -69,8 +69,9 @@ Draper (control plane)
 
 The local Learning Core is plugin runtime, not hosted Site storage. It remains
 owner-, workspace-, and brand-scoped and creates an immutable version for each
-learning transition. The browser shows Draper under Tools but receives no
-SQLite handle, private vault path, generic SQL boundary, or machine-local data.
+learning transition. The Site exposes Library and Brands under Tools; Draper
+remains plugin-only and receives no browser route, SQLite handle, private vault
+path, generic SQL boundary, or machine-local data.
 See [`draper-learning-core.md`](draper-learning-core.md).
 
 The browser receives no runner or provider token. Research sets contain the

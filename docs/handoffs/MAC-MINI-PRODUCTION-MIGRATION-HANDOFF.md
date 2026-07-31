@@ -90,12 +90,11 @@ This section summarizes the Negroni product conversation.
    Research, Creative, Launch, Iteration, and Loop.
 2. `app/` is the canonical product. The older `web/` directory is a prototype,
    not the production source.
-3. Phase 1 Research includes:
-   Run Research, Client, Customer, Competitors, Competitor Ads, and
-   Review & Approve.
+3. Phase 1 Research exposes Create Brand and Ad Spy, with the editable five-step
+   Gemini Deep Research sequence contained inside Create Brand.
 4. The UI follows a compact dark AI-workspace structure with Negroni branding,
-   restrained red accents, a dotted navy workspace, a left phase rail, and an
-   `Up next` rail.
+   restrained red accents, a flat navy workspace, a left phase rail, and one
+   state-derived next-action panel on Home.
 5. Research cards use six distinct original mid-century advertising-studio
    illustrations. The Negroni glass is reserved for product identity.
 6. Image assets are optimized. The installable package is approximately

@@ -1,6 +1,6 @@
 # Draper and Learning Core
 
-Draper is Negroni's conversational agent under Tools. The Learning Core is the shared, brand-scoped evidence and retrieval system behind Draper and all five phases.
+Draper is Negroni's plugin-only conversational control plane. The Learning Core is the shared, brand-scoped evidence and retrieval system behind Draper and all five phases. The Site does not expose Draper in its navigation.
 
 ## Stable boundaries
 
@@ -62,6 +62,6 @@ The sanitized Desert Ember HVAC fixture creates three ads and creative assets, o
 
 ## Runtime and deployment status
 
-Local runtime data belongs under the machine-local Negroni data root. The hosted Site shows Draper under Tools but does not read a Mac-local database from the browser. Live warehouse adapters, PostgreSQL, hosted persistence, production deployment, continuous ingestion, and advertising-account actions are not implemented by this milestone.
+Local runtime data belongs under the machine-local Negroni data root. The hosted Site intentionally omits Draper from navigation and does not read a Mac-local database from the browser. Live warehouse adapters, PostgreSQL, hosted persistence, production deployment, continuous ingestion, and advertising-account actions are not implemented by this milestone.
 
 See the architecture decision at [`../../docs/decisions/2026-07-30-draper-learning-core-architecture.md`](../../docs/decisions/2026-07-30-draper-learning-core-architecture.md).

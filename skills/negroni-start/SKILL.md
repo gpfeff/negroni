@@ -14,7 +14,7 @@ Treat Negroni as an agent-native system with a live Site, not as a standalone ap
 3. Identify the authenticated user and each requested connected source before reading data. Mark a missing, revoked, or mismatched connection as `blocked` or `not checked`.
 4. Read the current campaign, phase artifacts, approval state, and last valid receipt.
 5. Present the current phase, what is ready, what is blocked, and one next honest action.
-6. When the user wants a plain-language answer across phases, open Draper under Tools and use the brand-scoped Learning Core rather than asking the user to inspect databases or artifacts.
+6. When the user wants a plain-language answer across phases, use the Draper plugin skill and its brand-scoped Learning Core rather than asking the user to inspect databases or artifacts. Draper is not part of the Site navigation.
 
 ## Data boundary
 
