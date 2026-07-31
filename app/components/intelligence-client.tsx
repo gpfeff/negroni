@@ -123,6 +123,15 @@ const RESEARCH_TOOLS: ReadonlyArray<{
   },
 ];
 
+const RESEARCH_TABS: ReadonlyArray<{
+  id: Extract<ResearchSection, "run" | "competitor-ads">;
+  name: string;
+  marker: string;
+}> = [
+  { id: "run", name: "Create Brand", marker: "BR" },
+  { id: "competitor-ads", name: "Add Spy", marker: "SP" },
+];
+
 export function IntelligenceClient() {
   const [activeView, setActiveView] = useState<AppView>("home");
   const [intake, setIntake] = useState<IntelligenceIntake>(() => createEmptyIntake(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"));
@@ -484,14 +493,14 @@ export function IntelligenceClient() {
               </button>
               {phase.number === "01" && activeView === "research" ? (
                 <div className="research-subnav" aria-label="Research tools">
-                  {RESEARCH_TOOLS.map((tool) => (
+                  {RESEARCH_TABS.map((tool) => (
                     <button
                       className={activeResearchSection === tool.id ? "research-subnav-active" : ""}
                       key={tool.id}
                       type="button"
                       onClick={() => openResearchSection(tool.id)}
                       aria-current={activeResearchSection === tool.id ? "page" : undefined}
-                      aria-label={tool.id === "run" ? "Open research intake" : `Open ${tool.name}`}
+                      aria-label={tool.name}
                     >
                       <span>{tool.marker}</span>{tool.name}
                     </button>

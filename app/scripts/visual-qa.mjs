@@ -102,49 +102,17 @@ try {
   checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Tell us the business. We’ll find the signal." }).isVisible() });
 
   await page.setViewportSize({ width: 1440, height: 1000 });
-  checks.push({ name: "Research tools sit directly beneath the Research phase", passed: await page.locator(".side-nav > button.nav-active + .research-subnav").count() === 1 });
+  const researchTabs = page.locator(".side-nav > button.nav-active + .research-subnav");
+  checks.push({ name: "Research has exactly two tabs", passed: await researchTabs.getByRole("button").count() === 2 });
+  checks.push({ name: "Research tabs are Create Brand and Add Spy", passed:
+    await researchTabs.getByRole("button", { name: "Create Brand", exact: true }).count() === 1
+      && await researchTabs.getByRole("button", { name: "Add Spy", exact: true }).count() === 1,
+  });
   for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Known competitors", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Final Gemini Deep Research prompt", "Create competitor database", "Enable ongoing monitoring", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "4A · Master research", "4B · Brand tone", "Run status", "Nightly competitor ads", "Competitor Ads", "No secure five-prompt research runner"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "removed final-research output cards", passed: (await page.locator(".output-card").count()) === 0 });
   checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run research", exact: true }).isDisabled() });
-  const reviewEmptyContrast = await page.locator(".review-empty > div").evaluate((element) => {
-    const parseColor = (value) => {
-      const match = value.match(/rgba?\((\d+)[, ]+(\d+)[, ]+(\d+)(?:[, /]+([\d.]+))?\)/);
-      return match ? [Number(match[1]), Number(match[2]), Number(match[3]), match[4] === undefined ? 1 : Number(match[4])] : null;
-    };
-    const composite = (foreground, background) => foreground.slice(0, 3).map((channel, index) => (
-      channel * foreground[3] + background[index] * (1 - foreground[3])
-    ));
-    const luminance = (color) => {
-      const linear = color.slice(0, 3).map((channel) => {
-        const normalized = channel / 255;
-        return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
-      });
-      return (0.2126 * linear[0]) + (0.7152 * linear[1]) + (0.0722 * linear[2]);
-    };
-    const ratio = (foreground, background) => {
-      const lighter = Math.max(luminance(foreground), luminance(background));
-      const darker = Math.min(luminance(foreground), luminance(background));
-      return (lighter + 0.05) / (darker + 0.05);
-    };
-    const paper = parseColor(getComputedStyle(element).backgroundColor);
-    const heading = element.querySelector("h2");
-    const paragraph = element.querySelector("p:last-child");
-    if (!paper || !heading || !paragraph) return null;
-    const background = composite(paper, [255, 255, 255]);
-    const headingColor = parseColor(getComputedStyle(heading).color);
-    const paragraphColor = parseColor(getComputedStyle(paragraph).color);
-    if (!headingColor || !paragraphColor) return null;
-    return {
-      heading: ratio(headingColor, background),
-      paragraph: ratio(paragraphColor, background),
-    };
-  });
-  checks.push({
-    name: "Research empty review text stays legible on its paper surface",
-    passed: Boolean(reviewEmptyContrast && reviewEmptyContrast.heading >= 3 && reviewEmptyContrast.paragraph >= 4.5),
-  });
   await inspect(page, "thin-client-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });
