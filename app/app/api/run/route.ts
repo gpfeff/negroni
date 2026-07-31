@@ -18,19 +18,13 @@ export async function GET(): Promise<Response> {
   return Response.json(capability, { status: 200, headers: { "cache-control": "no-store" } });
 }
 
-export async function POST(request: Request): Promise<Response> {
-  const owner = authenticatedOwner(request);
-  if (!owner) {
-    const error: RunError = { status: "blocked", error: "Authentication is required." };
-    return Response.json(error, { status: 401 });
-  }
+export async function executeApprovedResearch(owner: string, intake: IntelligenceIntake): Promise<Response> {
   const config = configuration();
   if (!config.url || !config.token) {
     const error: RunError = { status: "blocked", error: RUNNER_BLOCKER };
     return Response.json(error, { status: 503 });
   }
   try {
-    const intake = await request.json() as IntelligenceIntake;
     const errors = validateIntake(intake);
     if (errors.length) {
       return Response.json({ status: "failed", error: errors.join(" ") } satisfies RunError, { status: 400 });
@@ -61,4 +55,10 @@ export async function POST(request: Request): Promise<Response> {
     const response: RunError = { status: "failed", error: error instanceof Error ? error.message : "The research run failed." };
     return Response.json(response, { status: 502 });
   }
+}
+
+export async function POST(request: Request): Promise<Response> {
+  const owner = authenticatedOwner(request);
+  if (!owner) return Response.json({ status: "blocked", error: "Authentication is required." } satisfies RunError, { status: 401 });
+  return Response.json({ status: "blocked", error: "Create and approve an exact run ID before starting Standard Deep Research." } satisfies RunError, { status: 409 });
 }

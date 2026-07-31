@@ -94,13 +94,19 @@ The local Research runner now also has a provider-neutral sequence seam and a
 brokered standard Gemini Deep Research adapter. One approved run uses one
 standard interaction for all five required prompts, validates section coverage
 and URL citations, and keeps the API key inside the credential broker. Paid
-execution is fail-closed behind an exact run-ID approval. No real Gemini key was
+execution is fail-closed behind an exact owner-scoped run-ID approval. The Site
+now exposes authenticated, same-origin Gemini connection routes and separate
+approve/start routes; a direct browser POST to the legacy run endpoint fails
+closed. Saving or checking a key cannot start research. No real Gemini key was
 changed and no paid Deep Research request was executed during this
 implementation.
 
 Live research remains correctly **blocked** because the Sites runtime has no
-secure research runner variables. Hosted provider connections remain correctly
-**blocked** because it has no credential-broker variables. The installed
+secure research runner variables. Hosted Gemini connection remains correctly
+**blocked** because no encrypted hosted `SecretStore` adapter is wired; the
+test-only in-memory adapter cannot run in production. Other hosted provider
+connections remain correctly **blocked** because there are no credential-broker
+variables. The installed
 edition verifies Codex as connected on this machine; Claude Code is installed
 but logged out, and Gemini OAuth is blocked until `gcloud` is installed. No
 fake run, Google file, provider connection, schedule, watch count, finding, or
@@ -145,11 +151,11 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
 - Plugin contract tests: 4/4 passed
-- Application contract/security tests: 116/116 passed
+- Application contract/security tests: 122/122 passed
 - Vinext production build: passed
 - Install smoke test: global package, local app, and six-provider Settings API passed
 - Visual QA: Home, Research, Library, Brands, and Settings passed at desktop
-  and mobile sizes, 120/120 checks
+  and mobile sizes, 121/121 checks
 - Accessibility: zero serious or critical Axe violations across all tested states
 - Browser runtime: no unexpected console errors or horizontal overflow
 
@@ -165,8 +171,9 @@ Configure these server-side values with their real services:
 
 The runner must invoke the implemented Meta Ads Intelligence adapter, expose
 access-controlled report URLs, and provide an authorized collection route.
-The hosted broker must implement the six-provider contract. The local bridge
-still needs a Google OAuth client ID before Google Drive can connect.
+The hosted broker must implement the six-provider contract, including an
+encrypted Gemini `SecretStore` plus non-generative Google verifier. The local
+bridge still needs a Google OAuth client ID before Google Drive can connect.
 
 ## Remaining risks
 
@@ -184,7 +191,8 @@ still needs a Google OAuth client ID before Google Drive can connect.
   hosted persistence, and ad-account mutation are not implemented.
 - The Learning Core currently uses Node's experimental built-in SQLite API;
   the storage contract isolates that implementation for a later adapter.
-- Hosted broker connection flows need integration tests against the eventual service.
+- Hosted broker connection flows need integration tests against the eventual
+  encrypted service; the current Site routes intentionally return a blocker.
 - The local Kie.ai and Gemini key vault is implemented, but no real key was
   entered and no paid generation request was made.
 - D1 record persistence needs one production authenticated save/reload check

@@ -109,11 +109,11 @@ try {
       && await researchTabs.getByRole("button", { name: "Ad Spy", exact: true }).count() === 1,
   });
   checks.push({ name: "Research tabs use distinct icons", passed: await researchTabs.locator("svg").count() === 2 });
-  for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Known competitors", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Final Gemini Deep Research prompt", "Create competitor database", "Enable ongoing monitoring", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "4A · Master research", "4B · Brand tone", "Run status", "Nightly competitor ads", "Competitor Ads", "No secure five-prompt research runner"]) {
+  for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Known competitors", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Final Gemini Deep Research prompt", "Create competitor database", "Enable ongoing monitoring", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "4A · Master research", "4B · Brand tone", "Gemini Connection error", "Run status", "Nightly competitor ads", "Competitor Ads", "No secure five-prompt research runner"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
   checks.push({ name: "removed final-research output cards", passed: (await page.locator(".output-card").count()) === 0 });
-  checks.push({ name: "run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Run research", exact: true }).isDisabled() });
+  checks.push({ name: "paid run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Review paid run", exact: true }).isDisabled() });
   await inspect(page, "thin-client-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });

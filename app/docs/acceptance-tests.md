@@ -18,6 +18,11 @@ Automated tests cover:
 - competitor evidence mapped into every Research artifact;
 - output naming, citations, source metadata, secret scans, and example-leak scans;
 - credential-broker status parsing and HTTPS-only OAuth redirects;
+- authenticated Gemini metadata responses, same-origin save/disconnect
+  mutations, redacted verification failures, non-persistence of submitted keys,
+  and a production-blocked secret-store boundary;
+- exact owner/run approval, Standard-model enforcement, connected-state gating,
+  one-time approval consumption, and no research execution from key save;
 - Google Workspace connection metadata without secret material;
 - fake Google URLs, failed parity, and incomplete validations;
 - research-seed size bounds and deterministic approval fingerprints;
@@ -65,10 +70,10 @@ Automated tests cover:
 - deterministic non-installed schedule planning with one owner, overlap lock,
   bounded runtime, exit receipts, resume command, exposure, and rollback.
 
-Visual QA covers Home, Research, Draper, and Settings at desktop/mobile; one local
-next-action panel; all six Research cards; no global right rail, synthetic
-goals, duplicate pipeline, or unsupported performance language; all four
-inputs; the five prompt labels; exactly three output cards; the visible runtime
-and settings blockers; disabled actions
-when blocked, the interactive seed editor, desktop/mobile overflow, browser
-errors, and material accessibility violations.
+Visual QA covers Home, Research, Library, Brands, and Settings at desktop/mobile;
+one local next-action panel; all six Research cards; no global right rail,
+synthetic goals, duplicate pipeline, Draper Site navigation, textured canvas, or
+unsupported performance language; the complete customer profile and research
+scope; the five prompt labels; the visible runner and Gemini broker blockers;
+disabled paid-run actions when blocked; desktop/mobile overflow; browser errors;
+and material accessibility violations.

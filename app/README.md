@@ -85,7 +85,8 @@ Settings provides the workspace-side connection and preference surface:
 - one home for all preferences and connection setup
 - Codex or ChatGPT plugin readiness
 - Claude Code login
-- Gemini API key or Google OAuth through Application Default Credentials
+- Gemini API-key connection status, deliberate save/replace/disconnect actions,
+  and an exact paid-run approval step
 - Kie.ai API key for image and video generation
 - Google Workspace OAuth with the minimum `drive.file` scope
 - light, dark, or system appearance
@@ -97,11 +98,15 @@ developer fallback and must not be presented as the default product path.
 
 The installed edition uses each agent CLI's native login. Negroni checks
 `codex login status` or `claude auth status`; it never reads, copies, or
-re-saves their OAuth credentials. Gemini and Kie.ai keys are sent directly to
-the local credential bridge, stored under `~/.negroni` with owner-only file
-permissions, and cleared from the form. Hosted deployments use an equivalent
-server-side credential broker. Negroni does not persist secret values in the
-browser, site database, repository, logs, or research payload.
+re-saves their OAuth credentials. Kie.ai and installed-edition Gemini keys are
+sent directly to the local credential bridge, stored under `~/.negroni` with
+owner-only file permissions, and cleared from the form. The hosted Site uses
+`/api/connections/gemini` for owner-scoped connection metadata and deliberate
+save, replace, and disconnect requests. Production fails closed until that
+route is backed by an encrypted hosted secret store; the repository's in-memory
+adapter is limited to tests and explicit non-production local previews. Negroni
+does not persist secret values in the browser, site database, repository, logs,
+or research payload.
 
 Safety mode asks before every Git commit. YOLO mode may automate local drafts,
 file writes, and commits. Neither mode can bypass explicit approval for
@@ -112,7 +117,10 @@ Phase 1's configured Gemini research path defaults to standard Deep Research
 (`deep-research-preview-04-2026`) for foundational research projects. It sends
 all five required research prompts through one brokered interaction. Connecting
 a key does not authorize a paid run; the runner also requires an exact
-owner-scoped approved run ID.
+owner-scoped approved run ID. The browser first records that exact ID at
+`/api/research/runs/:runId/approve`, then starts only the same approved ID at
+`/api/research/runs/:runId/start`. Direct browser POSTs to `/api/run` fail
+closed.
 
 Google OAuth uses the web-server authorization-code flow with offline access.
 The broker verifies OAuth state, stores refresh tokens securely, and creates or
@@ -141,6 +149,9 @@ Without the runner, research is visibly blocked.
 Without the credential broker, Settings is visibly blocked. The app never
 falls back to fixtures or invents Google IDs, output URLs, research findings,
 or monitoring state.
+
+The Gemini broker contract, deployment gate, and rollback boundary are in
+[`docs/gemini-credential-broker.md`](docs/gemini-credential-broker.md).
 
 The repository includes a deployable local runner boundary at
 `bin/research-runner.ts`. It authenticates a server bearer token plus opaque

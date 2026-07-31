@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-31T06:55:08.544Z",
+  "generated_at": "2026-07-31T07:39:30.560Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
@@ -247,6 +247,10 @@
       "passed": true
     },
     {
+      "name": "visible: Gemini Connection error",
+      "passed": true
+    },
+    {
       "name": "visible: Run status",
       "passed": true
     },
@@ -267,7 +271,7 @@
       "passed": true
     },
     {
-      "name": "run is disabled while execution is blocked",
+      "name": "paid run is disabled while execution is blocked",
       "passed": true
     },
     {

@@ -20,6 +20,7 @@ import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
 type AppView = "home" | "research" | "library" | "brands" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
 type Appearance = "light" | "dark" | "system";
+type GeminiConnection = { status: "checking" | "not_connected" | "connected" | "connection_error"; last_verified_at: string | null; fingerprint: string | null; last_four: string | null; error?: string };
 
 const PHASES = [
   {
@@ -137,6 +138,7 @@ export function IntelligenceClient() {
   const [capability, setCapability] = useState<RunCapability>({ available: false, status: "blocked", blocker: RUNNER_BLOCKER });
   const [checking, setChecking] = useState(true);
   const [running, setRunning] = useState(false);
+  const [proposedRunId, setProposedRunId] = useState<string | null>(null);
   const [errors, setErrors] = useState<string[]>([]);
   const [result, setResult] = useState<RunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
@@ -147,6 +149,7 @@ export function IntelligenceClient() {
   const [providerStatuses, setProviderStatuses] = useState<ProviderStatus[]>([]);
   const [settingsBlocker, setSettingsBlocker] = useState<string | null>(null);
   const [geminiKey, setGeminiKey] = useState("");
+  const [geminiConnection, setGeminiConnection] = useState<GeminiConnection>({ status: "checking", last_verified_at: null, fingerprint: null, last_four: null });
   const [kieKey, setKieKey] = useState("");
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null);
   const [settingsBusy, setSettingsBusy] = useState(false);
@@ -176,6 +179,17 @@ export function IntelligenceClient() {
     } catch (error) {
       setSettingsAvailable(false);
       setSettingsBlocker(error instanceof Error ? error.message : "Provider settings are unavailable.");
+    }
+  }
+
+  async function refreshGemini() {
+    try {
+      const response = await fetch("/api/connections/gemini", { cache: "no-store" });
+      const payload = await response.json() as GeminiConnection;
+      if (!response.ok) throw new Error(payload.error ?? "Gemini connection could not be checked.");
+      setGeminiConnection(payload);
+    } catch (error) {
+      setGeminiConnection({ status: "connection_error", last_verified_at: null, fingerprint: null, last_four: null, error: error instanceof Error ? error.message : "Gemini connection could not be checked." });
     }
   }
 
@@ -221,6 +235,11 @@ export function IntelligenceClient() {
     }
     void loadInitialState();
     return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void refreshGemini(), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -340,16 +359,27 @@ export function IntelligenceClient() {
     setErrors(validationErrors);
     setResult(null);
     setRunError(null);
-    if (validationErrors.length || !capability.available) {
+    if (validationErrors.length || !capability.available || !geminiApiReady) {
       if (!capability.available) setRunError(capability.blocker ?? RUNNER_BLOCKER);
+      else if (!geminiApiReady) setRunError("Connect Gemini before starting Standard Deep Research.");
       document.getElementById("run-status")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
 
+    if (!proposedRunId) {
+      const bytes = crypto.getRandomValues(new Uint8Array(12));
+      setProposedRunId(`run_${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`);
+      return;
+    }
     if (profiles.available) await saveProfile();
     setRunning(true);
     try {
-      const response = await fetch("/api/run", {
+      const approval = await fetch(`/api/research/runs/${proposedRunId}/approve`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ model: "deep-research-preview-04-2026", scope: "Five-step Research sequence (1 → 2 → 3 → 4a → 4b)", estimated_cost: "Provider pricing applies; exact cost is not available locally" }),
+      });
+      if (!approval.ok) throw new Error((await approval.json() as { error?: string }).error ?? "Run approval failed.");
+      const response = await fetch(`/api/research/runs/${proposedRunId}/start`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(intake),
@@ -358,6 +388,7 @@ export function IntelligenceClient() {
       if (!response.ok || "error" in payload) throw new Error("error" in payload ? payload.error : "The research run failed.");
       const researchName = buildResearchName(intake.offer_or_lead_type, intake.country_region);
       setResult(parseRunResult(payload, researchName));
+      setProposedRunId(null);
     } catch (error) {
       setRunError(error instanceof Error ? error.message : "The research run failed.");
     } finally {
@@ -405,11 +436,45 @@ export function IntelligenceClient() {
     }
   }
 
+  async function saveGemini() {
+    const replacing = geminiConnection.status === "connected";
+    if (replacing && !window.confirm("Replace the connected Gemini key? The previous credential will no longer be available to Negroni.")) return;
+    setSettingsBusy(true);
+    setSettingsMessage(null);
+    try {
+      const response = await fetch("/api/connections/gemini", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ api_key: geminiKey, confirmation: replacing ? "replace" : "save" }),
+      });
+      setGeminiKey("");
+      const payload = await response.json() as GeminiConnection;
+      if (!response.ok) throw new Error(payload.error ?? "Gemini could not be connected.");
+      setGeminiConnection(payload);
+      setSettingsMessage("Gemini connected. Saving this key did not start research.");
+    } catch (error) {
+      setGeminiKey("");
+      setSettingsMessage(error instanceof Error ? error.message : "Gemini could not be connected.");
+      await refreshGemini();
+    } finally { setSettingsBusy(false); }
+  }
+
+  async function disconnectGemini() {
+    if (!window.confirm('Disconnect Gemini? This removes Negroni access to the stored credential.')) return;
+    setSettingsBusy(true);
+    try {
+      const response = await fetch("/api/connections/gemini", { method: "DELETE", headers: { "content-type": "application/json" }, body: JSON.stringify({ confirmation: "disconnect Gemini" }) });
+      const payload = await response.json() as GeminiConnection;
+      if (!response.ok) throw new Error(payload.error ?? "Gemini could not be disconnected.");
+      setGeminiConnection(payload);
+      setSettingsMessage("Gemini disconnected.");
+    } catch (error) { setSettingsMessage(error instanceof Error ? error.message : "Gemini could not be disconnected."); }
+    finally { setSettingsBusy(false); }
+  }
+
   const codexStatus = providerStatus("codex_cli");
   const claudeStatus = providerStatus("claude_code");
-  const geminiStatus = providerStatus("gemini_api");
-  const geminiOAuthStatus = providerStatus("gemini_oauth");
-  const geminiApiReady = geminiStatus.status === "connected";
+  const geminiApiReady = geminiConnection.status === "connected";
   const kieStatus = providerStatus("kie_ai");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
@@ -672,9 +737,10 @@ export function IntelligenceClient() {
             </div>
 
             <div className={`gemini-readiness ${geminiApiReady ? "gemini-ready" : "gemini-not-ready"}`} role="status" aria-live="polite">
-              <span aria-hidden="true">{geminiApiReady ? "✓" : "○"}</span>
-              <strong>{geminiApiReady ? "Gemini API ready" : "Gemini API key not connected"}</strong>
-              <small>{geminiApiReady ? "Research can use the API key saved in Settings." : "Add your Gemini API key under Settings to enable research."}</small>
+              <span aria-hidden="true">{geminiApiReady ? "✓" : geminiConnection.status === "checking" ? "…" : "○"}</span>
+              <strong>{geminiApiReady ? "Gemini API ready · Connected" : geminiConnection.status === "checking" ? "Checking Gemini" : geminiConnection.status === "connection_error" ? "Gemini Connection error" : "Gemini Not connected"}</strong>
+              <small>{geminiApiReady ? `API key saved in Settings. Last verified ${geminiConnection.last_verified_at ? new Date(geminiConnection.last_verified_at).toLocaleString() : "recently"}.` : geminiConnection.error ?? "Connect Gemini before starting research."}</small>
+              {!geminiApiReady && geminiConnection.status !== "checking" ? <button type="button" onClick={() => { navigate("settings"); window.setTimeout(() => document.getElementById("gemini-connection")?.scrollIntoView(), 0); }}>Connect Gemini</button> : null}
             </div>
 
             <div className="input-grid research-run-options">
@@ -707,7 +773,8 @@ export function IntelligenceClient() {
 
             {errors.length ? <div className="validation-box" role="alert"><strong>Check the research setup</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div> : null}
             <div className="run-row">
-              <button className="run-button" type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available}>{running ? "Running five research prompts…" : checking ? "Checking research access…" : "Run research"}</button>
+              {proposedRunId ? <div className="run-approval"><strong>Paid-action approval</strong><small>Run ID: {proposedRunId}</small><small>Model: deep-research-preview-04-2026</small><small>Scope: five Research prompts</small><small>Estimated cost: provider pricing applies; exact cost unavailable locally</small></div> : null}
+              <button className="run-button" type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available || !geminiApiReady}>{running ? "Running five research prompts…" : checking ? "Checking research access…" : proposedRunId ? "Approve and start" : "Review paid run"}</button>
               <p>Gemini Deep Research creates a polished Google Doc and matching brand Markdown. Competitor storage and monitoring run only when selected.</p>
             </div>
           </section>
@@ -892,21 +959,15 @@ export function IntelligenceClient() {
                 <button type="submit" disabled={!settingsAvailable || settingsBusy || kieKey.trim().length < 20}>Save Kie.ai key</button>
               </form>
 
-              <form className="provider-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("gemini_api"); }}>
-                <div><span className={`provider-dot provider-${geminiStatus.status === "connected" || geminiOAuthStatus.status === "connected" ? "connected" : geminiStatus.status}`} /><strong>Gemini</strong><span className="provider-badge">Two ways</span></div>
-                <p>Use a Gemini API key now, or connect Google OAuth through Application Default Credentials in the installed edition.</p>
-                <small>
-                  {geminiStatus.status === "connected"
-                    ? "API key connected"
-                    : geminiOAuthStatus.status === "connected"
-                      ? "Google OAuth connected"
-                      : geminiStatus.blocker ?? geminiOAuthStatus.blocker ?? "Not connected"}
-                </small>
+              <form className="provider-card" id="gemini-connection" onSubmit={(event) => { event.preventDefault(); void saveGemini(); }}>
+                <div><span className={`provider-dot provider-${geminiApiReady ? "connected" : geminiConnection.status === "connection_error" ? "blocked" : "not_connected"}`} /><strong>Gemini</strong><span className="provider-badge">Standard Research</span></div>
+                <p>The key is sent once to an owner-scoped server credential broker, stored securely, and never included in research artifacts. Saving never starts paid research.</p>
+                <small>{geminiApiReady ? `Connected · last verified ${geminiConnection.last_verified_at ? new Date(geminiConnection.last_verified_at).toLocaleString() : "recently"}${geminiConnection.last_four ? ` · ending ${geminiConnection.last_four}` : ""}` : geminiConnection.status === "checking" ? "Checking" : geminiConnection.error ?? "Not connected"}</small>
                 <label htmlFor="gemini-key">Gemini API key</label>
-                <input id="gemini-key" type="password" value={geminiKey} onChange={(event) => setGeminiKey(event.target.value)} placeholder="Paste key" autoComplete="off" disabled={!settingsAvailable} />
+                <input id="gemini-key" type="password" value={geminiKey} onChange={(event) => setGeminiKey(event.target.value)} placeholder={geminiApiReady ? "Paste replacement key" : "Paste key"} autoComplete="off" />
                 <div className="provider-actions">
-                  <button type="submit" disabled={!settingsAvailable || settingsBusy || geminiKey.trim().length < 20}>Save API key</button>
-                  <button type="button" onClick={() => void connectProvider("gemini_oauth")} disabled={!settingsAvailable || settingsBusy || geminiOAuthStatus.status === "blocked"}>Check Google OAuth</button>
+                  <button type="submit" disabled={settingsBusy || geminiKey.trim().length < 20}>{geminiApiReady ? "Replace key" : "Save and verify"}</button>
+                  {geminiApiReady ? <button type="button" onClick={() => void disconnectGemini()} disabled={settingsBusy}>Disconnect</button> : null}
                 </div>
               </form>
 

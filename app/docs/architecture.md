@@ -12,7 +12,10 @@ Authenticated browser
   |     |     |     +-- proposed revision only
   |     |     +-- explicit apply, reject, restore, and approve
   |     |     +-- approved revision ID + SHA-256 -> Phase 2
-  |     +-- POST /api/run -> secure runner
+  |     +-- POST /api/research/runs/:runId/approve
+  |     |     +-- exact owner, Standard model, scope, and cost disclosure
+  |     +-- POST /api/research/runs/:runId/start -> secure runner
+  |           +-- consumes the same owner-scoped approval exactly once
   |           +-- authenticated owner -> owner-isolated Drive connection
   |           +-- fixed five-prompt research sequence
   |           +-- public research tools
@@ -34,7 +37,10 @@ Authenticated browser
   |
   +-- Settings tab
         +-- Codex OAuth --------+
-        +-- Gemini API key -----+-> server-side credential broker
+        +-- Gemini API key -----+-> /api/connections/gemini
+        |                              +-- same-origin mutations
+        |                              +-- metadata-only status
+        |                              +-- encrypted hosted SecretStore required
         +-- Google OAuth -------+
 ```
 
@@ -81,6 +87,13 @@ broker and are never written to D1. The broker owns the Google
 authorization-code callback, OAuth state verification, encrypted refresh-token
 storage, refresh, and revocation handling. The app accepts only sanitized
 connection metadata and an HTTPS authorization URL.
+
+The direct `/api/run` POST endpoint is not a browser execution shortcut. It
+rejects requests until the browser has created an exact run ID and completed
+the separate approve/start flow. Production Gemini connection routes also fail
+closed until an encrypted hosted `SecretStore` and non-generative verifier are
+wired; only tests and explicit non-production local previews may use the
+in-memory adapter. See [`gemini-credential-broker.md`](gemini-credential-broker.md).
 
 The app rejects noncanonical engines, a changed prompt source or order, extra
 or missing outward actions, missing five-artifact receipts, unverified native

@@ -219,6 +219,9 @@ input[type="file"]::file-selector-button { margin-right: 12px; padding: 8px 12px
 .gemini-readiness small { color: inherit; }
 .gemini-readiness.gemini-ready { border-color: #a8c5ae; background: #eaf4ec; color: #315b3b; }
 .gemini-readiness.gemini-ready > span { background: #4f7a59; color: white; }
+.gemini-readiness button { margin-left: 5px; border: 0; border-radius: 999px; padding: 6px 10px; background: var(--ink); color: var(--paper); font: inherit; font-weight: 800; cursor: pointer; }
+.run-approval { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.run-approval small { overflow-wrap: anywhere; }
 .research-choice { display: flex; gap: 12px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); cursor: pointer; }
 .research-choice input { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--plum); }
 .research-choice span { display: grid; gap: 3px; }
