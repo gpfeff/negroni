@@ -4,7 +4,7 @@ import type {
   ResearchSequenceRequest,
 } from "./contracts.ts";
 
-export const GEMINI_DEEP_RESEARCH_MAX_AGENT = "deep-research-max-preview-04-2026";
+export const GEMINI_DEEP_RESEARCH_AGENT = "deep-research-preview-04-2026";
 
 type GeminiDeepResearchConfiguration = {
   broker_url: string;
@@ -196,7 +196,7 @@ function parseInteraction(value: unknown): Interaction {
   return value as Interaction;
 }
 
-export function createGeminiDeepResearchMaxEngine(configuration: GeminiDeepResearchConfiguration) {
+export function createGeminiDeepResearchEngine(configuration: GeminiDeepResearchConfiguration) {
   const brokerUrl = safeBrokerUrl(configuration.broker_url);
   const brokerToken = configuration.broker_token.trim();
   const approvedRunId = configuration.approved_run_id.trim();
@@ -206,7 +206,7 @@ export function createGeminiDeepResearchMaxEngine(configuration: GeminiDeepResea
   const now = configuration.now ?? (() => new Date().toISOString());
   const sleep = configuration.sleep ?? ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
   if (brokerToken.length < 16) throw new Error("A scoped Gemini credential-broker token is required.");
-  if (!/^run_[a-f0-9]{24}$/.test(approvedRunId)) throw new Error("An exact approved Gemini Max run ID is required.");
+  if (!/^run_[a-f0-9]{24}$/.test(approvedRunId)) throw new Error("An exact approved Gemini Deep Research run ID is required.");
 
   async function broker(path: string, init?: RequestInit): Promise<Interaction> {
     const url = new URL(path, brokerUrl);
@@ -225,13 +225,13 @@ export function createGeminiDeepResearchMaxEngine(configuration: GeminiDeepResea
   return {
     async executeSequence(input: ResearchSequenceRequest): Promise<ResearchPromptOutput[]> {
       if (input.run_id !== approvedRunId) {
-        throw new Error("This exact Gemini Deep Research Max run has not been spend-approved.");
+        throw new Error("This exact Gemini Deep Research run has not been spend-approved.");
       }
       const started = await broker("/v1/providers/gemini/deep-research/interactions", {
         method: "POST",
         body: JSON.stringify({
           run_id: input.run_id,
-          agent: GEMINI_DEEP_RESEARCH_MAX_AGENT,
+          agent: GEMINI_DEEP_RESEARCH_AGENT,
           input: researchPrompt(input),
         }),
       });

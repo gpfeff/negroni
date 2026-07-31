@@ -10,7 +10,7 @@ import type {
   CompetitorBoundaryResult,
   ResearchRunnerDependencies,
 } from "./contracts.ts";
-import { createGeminiDeepResearchMaxEngine } from "./gemini-deep-research.ts";
+import { createGeminiDeepResearchEngine } from "./gemini-deep-research.ts";
 
 const OFFICIAL_BLOCKER = "Official competitor collection is blocked until owner authorization and required commercial-ad coverage pass a bounded proof.";
 
@@ -69,7 +69,7 @@ function blockedCompetitorResult(projectId: string): CompetitorBoundaryResult {
 export function createDefaultResearchRunnerDependencies(): ResearchRunnerDependencies {
   const brokerUrl = process.env.CREDENTIAL_BROKER_URL?.trim() ?? "";
   const brokerToken = process.env.CREDENTIAL_BROKER_TOKEN?.trim() ?? "";
-  const approvedRunId = process.env.NEGRONI_GEMINI_MAX_APPROVED_RUN_ID?.trim() ?? "";
+  const approvedRunId = process.env.NEGRONI_GEMINI_APPROVED_RUN_ID?.trim() ?? "";
   const geminiConfigured = Boolean(brokerUrl && brokerToken && /^run_[a-f0-9]{24}$/.test(approvedRunId));
   return {
     capabilities: {
@@ -85,7 +85,7 @@ export function createDefaultResearchRunnerDependencies(): ResearchRunnerDepende
       },
     },
     research_engine: geminiConfigured
-      ? createGeminiDeepResearchMaxEngine({
+      ? createGeminiDeepResearchEngine({
         broker_url: brokerUrl,
         broker_token: brokerToken,
         approved_run_id: approvedRunId,

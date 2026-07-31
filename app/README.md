@@ -107,11 +107,11 @@ file writes, and commits. Neither mode can bypass explicit approval for
 spending, budget changes, publishing creative, submitting forms, mutating an
 ad account, or launching traffic.
 
-Phase 1's configured Gemini research path defaults to Deep Research Max
-(`deep-research-max-preview-04-2026`) for the one or two foundational research
-projects. It sends all five required research prompts through one brokered
-interaction. Connecting a key does not authorize a paid run; the runner also
-requires an exact owner-scoped approved run ID.
+Phase 1's configured Gemini research path defaults to standard Deep Research
+(`deep-research-preview-04-2026`) for foundational research projects. It sends
+all five required research prompts through one brokered interaction. Connecting
+a key does not authorize a paid run; the runner also requires an exact
+owner-scoped approved run ID.
 
 Google OAuth uses the web-server authorization-code flow with offline access.
 The broker verifies OAuth state, stores refresh tokens securely, and creates or

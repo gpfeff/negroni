@@ -30,12 +30,12 @@ owner-isolated prompt-source client, research provider, and credential broker;
 provider secrets must never enter the browser, site database, source tree, or
 receipts.
 
-Gemini Deep Research Max additionally requires `CREDENTIAL_BROKER_URL`,
+Gemini Deep Research additionally requires `CREDENTIAL_BROKER_URL`,
 `CREDENTIAL_BROKER_TOKEN`, and the exact one-run approval value
-`NEGRONI_GEMINI_MAX_APPROVED_RUN_ID`. The key remains inside the credential
-broker. Changing that run ID is an action-time paid-run approval, not standing
-authorization. One approved Negroni run creates one Max interaction covering
-all five required prompts.
+`NEGRONI_GEMINI_APPROVED_RUN_ID`. The key remains inside the credential broker.
+Changing that run ID is an action-time paid-run approval, not standing
+authorization. One approved Negroni run creates one standard Deep Research
+interaction covering all five required prompts.
 
 The Site receives only:
 

@@ -105,7 +105,7 @@ test("local broker never returns command output in provider status", async () =>
   }
 });
 
-test("local broker keeps the Gemini key server-side and fixes Deep Research to Max", async () => {
+test("local broker keeps the Gemini key server-side and fixes the standard Deep Research agent", async () => {
   const directory = await mkdtemp(join(tmpdir(), "negroni-gemini-broker-"));
   const brokerPort = await unusedPort();
   const token = "local-bridge-test-token";
@@ -144,17 +144,29 @@ test("local broker keeps the Gemini key server-side and fixes Deep Research to M
       headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
       body: JSON.stringify({
         run_id: "run_0123456789abcdef01234567",
-        agent: "deep-research-max-preview-04-2026",
+        agent: "deep-research-preview-04-2026",
         input: "Bounded foundational research request.",
       }),
     });
     assert.equal(response.status, 200, await response.clone().text());
     assert.equal(receivedHeader, apiKey);
     const upstream = JSON.parse(receivedBody);
-    assert.equal(upstream.agent, "deep-research-max-preview-04-2026");
+    assert.equal(upstream.agent, "deep-research-preview-04-2026");
     assert.equal(upstream.agent_config.collaborative_planning, false);
     assert.equal(upstream.background, true);
     assert.equal((await response.text()).includes(apiKey), false);
+
+    const maxResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      body: JSON.stringify({
+        run_id: "run_0123456789abcdef01234567",
+        agent: "deep-research-max-preview-04-2026",
+        input: "This tier must be rejected after the standard-tier switch.",
+      }),
+    });
+    assert.equal(maxResponse.status, 400);
+    assert.equal((await maxResponse.text()).includes(apiKey), false);
   } finally {
     broker.kill("SIGTERM");
     await new Promise<void>((resolvePromise) => broker.once("exit", () => resolvePromise()));

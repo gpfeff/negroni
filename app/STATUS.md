@@ -90,11 +90,12 @@ require the sibling `meta-ads-intelligence` checkout and are explicitly skipped
 when it is absent; all engine-independent contract tests still run.
 
 The local Research runner now also has a provider-neutral sequence seam and a
-brokered Gemini Deep Research Max adapter. One approved run uses one Max
-interaction for all five required prompts, validates section coverage and URL
-citations, and keeps the API key inside the credential broker. Paid execution
-is fail-closed behind an exact run-ID approval. No real Gemini key was changed
-and no paid Deep Research request was executed during this implementation.
+brokered standard Gemini Deep Research adapter. One approved run uses one
+standard interaction for all five required prompts, validates section coverage
+and URL citations, and keeps the API key inside the credential broker. Paid
+execution is fail-closed behind an exact run-ID approval. No real Gemini key was
+changed and no paid Deep Research request was executed during this
+implementation.
 
 Live research remains correctly **blocked** because the Sites runtime has no
 secure research runner variables. Hosted provider connections remain correctly
@@ -105,7 +106,7 @@ fake run, Google file, provider connection, schedule, watch count, finding, or
 parity state is present.
 
 The existing owner-restricted Site and project ID are preserved:
-`https://lead-intelligence-workbench.g-pfeffer.chatgpt.site`.
+`https://negroni-campaign-studio.gpfeff.chatgpt.site`.
 
 The general plugin is skill-backed and exposes seven local, fail-closed MCP
 tools. Three cover Learning Core status, bounded Draper queries, and exact

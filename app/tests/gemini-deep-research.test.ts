@@ -3,8 +3,8 @@ import test from "node:test";
 import { RESEARCH_PROMPTS } from "@/lib/intelligence/contracts";
 import type { ResearchSequenceRequest } from "@/lib/research-runner/contracts";
 import {
-  createGeminiDeepResearchMaxEngine,
-  GEMINI_DEEP_RESEARCH_MAX_AGENT,
+  createGeminiDeepResearchEngine,
+  GEMINI_DEEP_RESEARCH_AGENT,
 } from "@/lib/research-runner/gemini-deep-research";
 
 const RUN_ID = "run_0123456789abcdef01234567";
@@ -59,13 +59,13 @@ function completedInteraction() {
   };
 }
 
-test("Gemini Max runs one brokered interaction and returns five cited outputs", async () => {
+test("Gemini Deep Research runs one brokered interaction and returns five cited outputs", async () => {
   const calls: Array<{ url: string; init?: RequestInit }> = [];
   const responses = [
     { id: "v1_0123456789abcdef", status: "in_progress" },
     completedInteraction(),
   ];
-  const engine = createGeminiDeepResearchMaxEngine({
+  const engine = createGeminiDeepResearchEngine({
     broker_url: "http://127.0.0.1:47831",
     broker_token: BROKER_TOKEN,
     approved_run_id: RUN_ID,
@@ -82,7 +82,7 @@ test("Gemini Max runs one brokered interaction and returns five cited outputs", 
   assert.equal(calls.length, 2);
   assert.equal(calls[0]?.url, "http://127.0.0.1:47831/v1/providers/gemini/deep-research/interactions");
   const started = JSON.parse(String(calls[0]?.init?.body));
-  assert.equal(started.agent, GEMINI_DEEP_RESEARCH_MAX_AGENT);
+  assert.equal(started.agent, GEMINI_DEEP_RESEARCH_AGENT);
   assert.equal(started.run_id, RUN_ID);
   assert.match(started.input, /Non-negotiable runner rules:/);
   assert.match(started.input, /Do not mutate external systems\./);
@@ -92,9 +92,9 @@ test("Gemini Max runs one brokered interaction and returns five cited outputs", 
   assert.equal(String(calls[0]?.init?.body).includes(BROKER_TOKEN), false);
 });
 
-test("Gemini Max fails before network access unless the exact run is approved", async () => {
+test("Gemini Deep Research fails before network access unless the exact run is approved", async () => {
   let networkCalls = 0;
-  const engine = createGeminiDeepResearchMaxEngine({
+  const engine = createGeminiDeepResearchEngine({
     broker_url: "http://127.0.0.1:47831",
     broker_token: BROKER_TOKEN,
     approved_run_id: RUN_ID,
@@ -109,10 +109,10 @@ test("Gemini Max fails before network access unless the exact run is approved", 
   assert.equal(networkCalls, 0);
 });
 
-test("Gemini Max fails closed when any required section lacks a URL citation", async () => {
+test("Gemini Deep Research fails closed when any required section lacks a URL citation", async () => {
   const interaction = completedInteraction();
   interaction.steps[0].content[0].annotations.pop();
-  const engine = createGeminiDeepResearchMaxEngine({
+  const engine = createGeminiDeepResearchEngine({
     broker_url: "http://127.0.0.1:47831",
     broker_token: BROKER_TOKEN,
     approved_run_id: RUN_ID,

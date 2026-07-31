@@ -14,7 +14,7 @@ const brokerToken = process.env.CREDENTIAL_BROKER_TOKEN;
 const brokerPort = Number(process.env.NEGRONI_BROKER_PORT || "47831");
 const geminiInteractionsBaseUrl = new URL(process.env.NEGRONI_GEMINI_INTERACTIONS_BASE_URL
   || "https://generativelanguage.googleapis.com/v1beta/interactions");
-const GEMINI_MAX_AGENT = "deep-research-max-preview-04-2026";
+const GEMINI_DEEP_RESEARCH_AGENT = "deep-research-preview-04-2026";
 
 if (!brokerToken) throw new Error("CREDENTIAL_BROKER_TOKEN is required.");
 
@@ -172,19 +172,19 @@ async function handle(request) {
   }
   if (request.method === "POST" && url.pathname === "/v1/providers/gemini/deep-research/interactions") {
     const body = await request.json();
-    if (body.agent !== GEMINI_MAX_AGENT
+    if (body.agent !== GEMINI_DEEP_RESEARCH_AGENT
       || typeof body.run_id !== "string"
       || !/^run_[a-f0-9]{24}$/.test(body.run_id)
       || typeof body.input !== "string"
       || !body.input.trim()
       || Buffer.byteLength(body.input, "utf8") > 512 * 1024) {
-      return json({ error: "Invalid Gemini Deep Research Max request." }, 400);
+      return json({ error: "Invalid Gemini Deep Research request." }, 400);
     }
     return proxyGeminiInteraction("", {
       method: "POST",
       body: JSON.stringify({
         input: body.input,
-        agent: GEMINI_MAX_AGENT,
+        agent: GEMINI_DEEP_RESEARCH_AGENT,
         agent_config: {
           type: "deep-research",
           thinking_summaries: "none",

@@ -22,7 +22,7 @@ Collect every field below before starting customer research. Ask for every missi
 - Company name
 - Website or public profile URL
 - Service or offer purchased
-- Known competitors, if any
+- Competitor they use (if any)
 - Industry / niche
 - Location or market served
 
