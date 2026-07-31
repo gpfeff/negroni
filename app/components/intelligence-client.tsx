@@ -2,7 +2,6 @@
 
 import { Fragment, useEffect, useState } from "react";
 import { createEmptyIntake } from "@/lib/intelligence/defaults";
-import { ResearchReview } from "@/components/research-review";
 import {
   RESEARCH_PROMPTS,
   type IntelligenceIntake,
@@ -123,16 +122,6 @@ const RESEARCH_TOOLS: ReadonlyArray<{
     marker: "OK",
   },
 ];
-
-function downloadMarkdown(result: RunResult) {
-  const blob = new Blob([result.outputs.markdown.content], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = result.outputs.markdown.filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
 
 export function IntelligenceClient() {
   const [activeView, setActiveView] = useState<AppView>("home");
@@ -750,15 +739,6 @@ export function IntelligenceClient() {
             {result?.limitations.length ? <div className="limitations"><strong>Limitations</strong><p>{result.limitations.join(" ")}</p></div> : <div className="limitations"><strong>Limitations</strong><p>{!capability.available && !checking ? "Live research and native Google-file creation are unavailable until the five-prompt runner and Google Workspace connector are configured." : "Research limitations will appear here after the run."}</p></div>}
           </section>
 
-          <section className="section-card" id="outputs" aria-labelledby="outputs-title">
-            <div className="section-heading"><span>3</span><div><h2 id="outputs-title">Final research</h2><p>One approved brand revision in two synchronized formats.</p></div></div>
-            <div className="output-grid">
-              <a className={result ? "output-card" : "output-card output-disabled"} href={result?.outputs.google_doc.url ?? undefined} target="_blank" rel="noreferrer" aria-disabled={!result} onClick={(event) => { if (!result) event.preventDefault(); }}><span className="output-icon">D</span><div><strong>Open Google Doc</strong><small>{result?.outputs.google_doc.title ?? "Master research report"}</small></div><span aria-hidden="true">↗</span></a>
-              <button className={result ? "output-card" : "output-card output-disabled"} type="button" disabled={!result} onClick={() => result && downloadMarkdown(result)}><span className="output-icon markdown-icon">M</span><div><strong>Download Markdown</strong><small>{result?.outputs.markdown.filename ?? "Portable master research report"}</small></div><span aria-hidden="true">↓</span></button>
-            </div>
-          </section>
-
-          <ResearchReview key={selectedProfileId || "no-profile"} profile={selectedProfile} runResult={result} />
         </div>
       ) : activeView === "draper" ? (
         <div className="content-column draper-column" id="top">
