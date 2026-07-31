@@ -559,7 +559,7 @@ html[data-theme="dark"] .settings-blocker { color: #efb7ae; }
   --studio-line-soft: #1a273b;
   --studio-ink: #f4f6fa;
   --studio-muted: #a5afbe;
-  --studio-faint: #707d90;
+  --studio-faint: #8995a8;
   --negroni-red: #cf4d45;
   --negroni-red-bright: #ef6a5f;
   --negroni-red-soft: #3a2025;
@@ -976,6 +976,23 @@ html[data-theme="dark"] .output-card {
   background: #0d1728;
   color: var(--studio-ink);
 }
+html[data-theme="dark"] .prompt-sequence b,
+html[data-theme="system"] .prompt-sequence b { color: #b8c98d; }
+html[data-theme="dark"] .gemini-readiness,
+html[data-theme="system"] .gemini-readiness {
+  border-color: #3b495f;
+  background: #172337;
+  color: #dbe2ec;
+}
+html[data-theme="dark"] .gemini-readiness > span,
+html[data-theme="system"] .gemini-readiness > span { background: #29364a; color: #dbe2ec; }
+html[data-theme="dark"] .gemini-readiness.gemini-ready,
+html[data-theme="system"] .gemini-readiness.gemini-ready {
+  border-color: #3c5f4b;
+  background: #193027;
+  color: #c5e2cf;
+}
+.gemini-readiness small { font-size: 11px; }
 .status-blocked > p { color: #e5b4ae; }
 .competitor-intelligence-heading > span { background: #26342d; color: #c1d3c5; }
 .provider-card button,
@@ -1078,8 +1095,8 @@ html[data-theme="light"] .tool-copy > span { color: #657083; }
     border-right: 0;
     border-bottom: 1px solid var(--studio-line);
   }
-  .brand { min-height: 0; padding: 0 7px 0 0; }
-  .brand-copy strong { font-size: 13px; }
+  .brand { min-height: 0; padding: 0; }
+  .brand-copy { display: none; }
   .side-nav { display: flex; flex: 1; align-items: center; gap: 3px; }
   .side-nav button { width: auto; min-height: 44px; padding: 0 10px; font-size: 13px; }
   .sidebar-footer { display: block; margin: 0; padding: 0; border: 0; }
@@ -1102,73 +1119,9 @@ html[data-theme="light"] .tool-copy > span { color: #657083; }
   .intro h1 { font-size: 36px; }
 }
 
-.draper-intro { margin-bottom: 28px; }
-.draper-workspace { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(300px, .75fr); gap: 18px; }
-.draper-conversation,
-.draper-evidence-panel,
-.draper-contract-grid article {
-  border: 1px solid var(--studio-line);
-  border-radius: 16px;
-  background: var(--studio-card);
-  color: var(--studio-ink);
-  box-shadow: 0 16px 34px rgb(0 0 0 / 12%);
-}
-.draper-conversation { min-height: 500px; padding: 24px; }
-.draper-agent-heading { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--studio-line); }
-.draper-agent-heading > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 12px; background: linear-gradient(145deg, #b1423b, #70283c); color: white; font-family: var(--font-mono), monospace; font-size: 12px; font-weight: 900; box-shadow: 4px 4px 0 #efb441; }
-.draper-agent-heading > div { display: grid; gap: 2px; }
-.draper-agent-heading strong { font-size: 16px; }
-.draper-agent-heading small { color: var(--studio-muted); font-size: 11px; }
-.draper-agent-heading > b { padding: 5px 8px; border: 1px solid #3c554b; border-radius: 99px; background: #1a2b29; color: #a8cfbd; font-size: 10px; text-transform: uppercase; }
-.draper-message { margin: 30px 34px 20px 0; padding: 20px; border: 1px solid #314158; border-radius: 4px 14px 14px; background: #111d30; }
-.draper-message p { margin: 0; color: var(--studio-ink); font-size: 15px; line-height: 1.65; }
-.draper-message small { display: block; margin-top: 10px; color: var(--studio-muted); font-size: 12px; line-height: 1.55; }
-.draper-examples { display: grid; gap: 8px; margin-top: 24px; }
-.draper-examples > span { color: #8e9bae; font-family: var(--font-mono), monospace; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-.draper-examples code { width: fit-content; max-width: 100%; padding: 9px 11px; border: 1px solid #2e3c51; border-radius: 8px; background: #0a1322; color: #d6dee9; font-family: inherit; font-size: 12px; white-space: normal; }
-.draper-browser-boundary { margin-top: 24px; padding: 15px 17px; border-left: 3px solid #e06b62; background: #241a23; }
-.draper-browser-boundary strong { font-size: 12px; }
-.draper-browser-boundary p { margin: 5px 0 0; color: #b8aeb7; font-size: 12px; line-height: 1.5; }
-.draper-evidence-panel { padding: 24px; }
-.draper-evidence-panel h2 { margin: 8px 0 22px; font-size: 25px; line-height: 1.12; }
-.draper-evidence-panel dl { display: grid; gap: 0; margin: 0; }
-.draper-evidence-panel dl div { display: grid; grid-template-columns: 88px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--studio-line); }
-.draper-evidence-panel dt { color: #8e9bae; font-family: var(--font-mono), monospace; font-size: 10px; text-transform: uppercase; }
-.draper-evidence-panel dd { margin: 0; font-size: 12px; font-weight: 650; }
-.draper-state-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 20px; }
-.draper-state-chain span { padding: 5px 7px; border: 1px solid #38475c; border-radius: 6px; background: #101b2d; color: #d2dae6; font-size: 9px; font-weight: 750; text-transform: uppercase; }
-.draper-state-chain i { color: #e06b62; font-style: normal; }
-.draper-terminal-states { margin: 15px 0 0; color: var(--studio-muted); font-size: 12px; line-height: 1.55; }
-.draper-contract-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
-.draper-contract-grid article { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 18px; }
-.draper-contract-grid article > span { display: grid; width: 30px; height: 30px; place-items: center; border-radius: 8px; background: var(--negroni-red-soft); color: #ff8a81; font-family: var(--font-mono), monospace; font-size: 10px; font-weight: 800; }
-.draper-contract-grid strong { font-size: 13px; }
-.draper-contract-grid p { margin: 5px 0 0; color: var(--studio-muted); font-size: 12px; line-height: 1.5; }
-
-html[data-theme="light"] .draper-conversation,
-html[data-theme="light"] .draper-evidence-panel,
-html[data-theme="light"] .draper-contract-grid article { border-color: #d7dce4; background: #f8fafc; color: #182131; }
-html[data-theme="light"] .draper-message { border-color: #d9dee6; background: #fff; }
-html[data-theme="light"] .draper-message p,
-html[data-theme="light"] .draper-evidence-panel h2 { color: #182131; }
-html[data-theme="light"] .draper-examples code,
-html[data-theme="light"] .draper-state-chain span { border-color: #d7dce4; background: #fff; color: #364255; }
-html[data-theme="light"] .draper-browser-boundary { background: #f6e9eb; }
-html[data-theme="light"] .draper-browser-boundary p { color: #6f5660; }
-
-@media (max-width: 1040px) {
-  .draper-workspace { grid-template-columns: 1fr; }
-  .draper-contract-grid { grid-template-columns: 1fr; }
-}
-
 @media (max-width: 760px) {
   .side-nav button,
-  .settings-nav { padding-right: 8px; padding-left: 8px; font-size: 12px; }
-  .draper-conversation { min-height: 0; padding: 18px; }
-  .draper-agent-heading { grid-template-columns: 40px 1fr; }
-  .draper-agent-heading > b { grid-column: 2; width: fit-content; }
-  .draper-message { margin-right: 0; }
-  .draper-evidence-panel { padding: 20px; }
+  .settings-nav { padding-right: 6px; padding-left: 6px; font-size: 11px; }
 }
 
 .tool-page { min-height: 100vh; }

@@ -79,8 +79,8 @@ Negroni, an open campaign pitchbook, and the tools of the trade:
 
 [`../web/public/negroni-madison-hero.png`](../web/public/negroni-madison-hero.png)
 
-Use it once, at product level. The cocktail-glass mark, print texture, strong
-outlines, and period typography carry the identity elsewhere. The original
+Use it once, at product level. The cocktail-glass mark, strong outlines, and
+period typography carry the identity elsewhere. The original
 five-piece system artwork remains available for process diagrams:
 [`../web/public/negroni-five-phase-loop.png`](../web/public/negroni-five-phase-loop.png).
 
@@ -92,7 +92,7 @@ The top-level UI establishes these reusable patterns:
 - campaign identity and local/live state;
 - five-phase selector;
 - selected phase contract;
-- a Tools area for cross-phase operators such as Draper;
+- a Tools area for Library and Brands;
 - explicit input and output artifacts;
 - next honest action;
 - durable artifact handoff;
@@ -103,11 +103,12 @@ Phase 1 should reuse these patterns rather than inventing a second Negroni
 brand. Its intake may remain focused, but it should visually connect Research
 to the larger five-phase system.
 
-Draper is not a sixth phase. It belongs under Tools as the conversational
-control plane across all five phases. Its screen must distinguish evidence,
-freshness, assumptions, limitations, proposed changes, recorded decisions, and
-completed external actions. A hosted Site must not imply that it can read a
-machine-local database or vault from browser code.
+Draper is not a sixth phase. It remains a plugin-only conversational control
+plane across all five phases and is intentionally absent from Site navigation.
+Its answers must distinguish evidence, freshness, assumptions, limitations,
+proposed changes, recorded decisions, and completed external actions. A hosted
+Site must not imply that it can read a machine-local database or vault from
+browser code.
 
 ## Phase language
 

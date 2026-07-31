@@ -13,24 +13,25 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
 - a branded Home workspace with a focused Phase 1 tool board, factual research
   readiness, runner state, phase progression, and artifact handoffs;
 - persistent navigation using Research, Create, Launch, Iterate, and Loop;
-- nested Phase 1 navigation for Run Research, Client, Customer, Competitors,
-  Competitor Ads, and Review & Approve;
+- focused Phase 1 navigation for Create Brand and Ad Spy;
 - Research tab with owner-scoped saved research sets;
 - interactive, versioned Markdown seeds with direct editing, permanent notes,
   recoverable revision history, optional AI proposals, and explicit Phase 2
   approval;
 - required customer profile: client/customer name, profession/job title, company,
-  public website/profile URL, service/offer purchased, competitor used,
-  industry/niche, and location/market served; plus lead offer/service and
-  target age range for research scope;
+  public website/profile URL, service/offer purchased, industry/niche, and
+  location/market served; plus lead offer/service and target age range for
+  research scope. Known competitors are optional;
 - the fixed five-prompt sequence from the supplied Google Doc;
 - run status, prompt limitations, nightly competitor-monitor receipt, and
-  exactly three output actions;
+  exactly three outward outputs: Google Doc, optional Google Sheet, and
+  Markdown;
 - a compact Competitor Ads Intelligence module with refresh health, watched
   competitors, active/new/changed ads, creative-family counts, coverage
   limitations, and access-controlled artifact links;
-- Draper under Tools as the conversational control plane over an owner-,
-  workspace-, and brand-scoped Learning Core;
+- Library and Brands under Tools, with Draper retained as a plugin-only
+  conversational control plane over an owner-, workspace-, and brand-scoped
+  Learning Core;
 - an authoritative local SQLite catalog, immutable learning versions, FTS5,
   rebuildable non-authoritative vectors, content-addressed media, and guarded
   Obsidian-compatible Markdown projections;
@@ -42,11 +43,11 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
   with owner-only permissions and checks native CLI authentication without
   copying OAuth tokens.
 
-The visual system now follows the supplied AI Ad Lab references: compact Inter
-typography, dark navy dotted workspace, fixed left navigation, two-column
-tool cards, and a persistent `Up next` rail. Negroni red is limited to active
-navigation, primary actions, progress, and glass highlights. The same hierarchy
-collapses to one readable column on mobile.
+The visual system uses compact Inter typography, a flat dark navy workspace,
+fixed left navigation, two-column tool cards, and one state-derived next-action
+panel on Home. Negroni red is limited to active navigation, primary actions,
+progress, and glass highlights. The same hierarchy collapses to one readable
+column on mobile.
 
 Saved sets use the site D1 binding and contain the four research values, owner
 identity, timestamps, Markdown seed revisions, review messages, and approval
@@ -144,12 +145,12 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
 - Plugin contract tests: 4/4 passed
-- Application contract/security tests: 111/111 passed
+- Application contract/security tests: 116/116 passed
 - Vinext production build: passed
 - Install smoke test: global package, local app, and six-provider Settings API passed
-- Visual QA: Home, Research, Draper, and Settings passed at desktop and mobile
-  sizes, 108/108 checks
-- Accessibility: zero serious or critical Axe violations across all eight states
+- Visual QA: Home, Research, Library, Brands, and Settings passed at desktop
+  and mobile sizes, 120/120 checks
+- Accessibility: zero serious or critical Axe violations across all tested states
 - Browser runtime: no unexpected console errors or horizontal overflow
 
 ## Blockers

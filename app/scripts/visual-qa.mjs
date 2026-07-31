@@ -150,7 +150,7 @@ try {
   await browser.close();
 }
 
-const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["home: 1440x1000", "home: 390x844", "research: 1440x1000", "research: 390x844", "draper: 1440x1000", "draper: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
+const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["home: 1440x1000", "home: 390x844", "research: 1440x1000", "research: 390x844", "library: 1440x1000", "library: 390x844", "brands: 1440x1000", "brands: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (!report.passed) process.exitCode = 1;

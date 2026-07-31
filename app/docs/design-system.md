@@ -9,13 +9,15 @@ are not part of this system.
 ## Layout
 
 - A 250-pixel persistent left navigation owns Home, the five ordered phases,
-  Tools (including Draper), and Settings on desktop.
+  Tools (Library and Brands), and Settings on desktop. Draper remains a
+  plugin-only capability.
 - The main workspace uses the full remaining width; there is no global right
   rail, synthetic weekly goal, or duplicate phase pipeline.
 - Home contains one state-derived next-action panel and six compact Research
   action cards. The panel is first in DOM order and stacks before the cards on
   narrow layouts.
-- Research, Draper, and Settings use a main column up to 1160 pixels wide.
+- Research, Library, Brands, and Settings use a main column up to 1160 pixels
+  wide.
 - Mobile keeps a sticky 62-pixel navigation and at least 44-pixel action
   targets. Guidance stacks instead of disappearing.
 
