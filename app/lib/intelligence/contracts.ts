@@ -1,5 +1,6 @@
 import type {
   CompetitorAdsIntelligence,
+  ProviderNeutralCollectionReceipt,
   ResearchArtifactReceipts,
 } from "@/lib/meta-ads/contracts";
 
@@ -15,7 +16,7 @@ export const RESEARCH_PROMPTS = [
 export type ResearchPromptId = (typeof RESEARCH_PROMPTS)[number];
 
 export type CompetitorMonitoringRequest = {
-  enabled: true;
+  enabled: boolean;
   engine: "meta-ads-intelligence";
   cadence: "nightly";
   local_time: "02:17";
@@ -24,11 +25,19 @@ export type CompetitorMonitoringRequest = {
 
 export type IntelligenceIntake = {
   contract: "lead-generation-intelligence-intake";
-  contract_version: "4.0";
+  contract_version: "5.0";
+  client_customer_name: string;
+  profession_job_title: string;
+  company_name: string;
+  website_or_public_profile_url: string;
+  service_or_offer_purchased: string;
+  competitor_used: string;
   offer_or_lead_type: string;
   industry: string;
   country_region: string;
   target_age_range: string;
+  approved_prompt: string;
+  create_competitor_database: boolean;
   allowed_actions: ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"];
   research_engine: "lead-generation-ads-discovery-intelligence";
   prompt_source: {
@@ -92,6 +101,7 @@ export type RunResult = {
   prompt_execution: PromptExecutionReceipt;
   competitor_monitoring: CompetitorMonitoringReceipt;
   competitor_ads: CompetitorAdsIntelligence;
+  competitor_collection?: ProviderNeutralCollectionReceipt;
   research_artifacts: ResearchArtifactReceipts;
   validation: {
     exactly_three_outputs: true;
@@ -113,6 +123,12 @@ export type RunError = { status: "blocked" | "failed"; error: string };
 
 export type ResearchProfile = {
   id: string;
+  client_customer_name: string;
+  profession_job_title: string;
+  company_name: string;
+  website_or_public_profile_url: string;
+  service_or_offer_purchased: string;
+  competitor_used: string;
   offer_or_lead_type: string;
   industry: string;
   country_region: string;

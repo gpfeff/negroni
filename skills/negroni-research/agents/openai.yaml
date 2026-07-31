@@ -1,0 +1,4 @@
+interface:
+  display_name: "Negroni Research"
+  short_description: "Run five-step Gemini lead-generation research"
+  default_prompt: "Use $negroni-research to build editable, brand-scoped research for any lead-generation offer."

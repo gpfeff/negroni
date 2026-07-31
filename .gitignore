@@ -52,6 +52,10 @@ temp/
 # Boundary-routing artifacts and reproducible local build state
 .playwright-cli/
 qa/
+!/app/qa/
+!/app/qa/screenshots/
+!/app/qa/screenshots/draper-desktop.jpg
+!/app/qa/screenshots/draper-mobile.jpg
 conflicts/
 app/.node_modules-incomplete-*/
 app/.vinext-pre-move-*/

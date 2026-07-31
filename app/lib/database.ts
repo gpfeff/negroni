@@ -20,6 +20,16 @@ export type Database = {
   prepare(sql: string): D1Statement;
   batch(statements: D1Statement[]): Promise<D1RunResult[]>;
 };
+const schemaPromises = new WeakMap<Database, Promise<void>>();
+
+const RESEARCH_PROFILE_CONTEXT_COLUMNS = [
+  ["client_customer_name", "TEXT NOT NULL DEFAULT ''"],
+  ["profession_job_title", "TEXT NOT NULL DEFAULT ''"],
+  ["company_name", "TEXT NOT NULL DEFAULT ''"],
+  ["website_or_public_profile_url", "TEXT NOT NULL DEFAULT ''"],
+  ["service_or_offer_purchased", "TEXT NOT NULL DEFAULT ''"],
+  ["competitor_used", "TEXT NOT NULL DEFAULT ''"],
+] as const;
 
 export async function getDatabase(): Promise<Database | null> {
   try {
@@ -33,6 +43,17 @@ export async function getDatabase(): Promise<Database | null> {
 }
 
 export async function ensureResearchSchema(database: Database): Promise<void> {
+  const existing = schemaPromises.get(database);
+  if (existing) return existing;
+  const pending = ensureResearchSchemaOnce(database).catch((error) => {
+    schemaPromises.delete(database);
+    throw error;
+  });
+  schemaPromises.set(database, pending);
+  await pending;
+}
+
+async function ensureResearchSchemaOnce(database: Database): Promise<void> {
   await database.batch([
     database.prepare(CREATE_RESEARCH_PROFILES),
     database.prepare(CREATE_RESEARCH_PROFILES_OWNER_INDEX),
@@ -43,4 +64,10 @@ export async function ensureResearchSchema(database: Database): Promise<void> {
     database.prepare(CREATE_RESEARCH_REVISIONS_PROFILE_INDEX),
     database.prepare(CREATE_RESEARCH_MESSAGES_PROFILE_INDEX),
   ]);
+  const columns = await database.prepare("PRAGMA table_info(research_profiles)").all<{ name: string }>();
+  const existing = new Set((columns.results ?? []).map(({ name }) => name));
+  const additions = RESEARCH_PROFILE_CONTEXT_COLUMNS
+    .filter(([name]) => !existing.has(name))
+    .map(([name, definition]) => database.prepare(`ALTER TABLE research_profiles ADD COLUMN ${name} ${definition}`));
+  if (additions.length) await database.batch(additions);
 }

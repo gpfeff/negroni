@@ -7,19 +7,19 @@ const mono = IBM_Plex_Mono({ variable: "--font-mono", subsets: ["latin"], weight
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://lead-intelligence-workbench.g-pfeffer.chatgpt.site"),
-  title: "Negroni — Paid lead generation, end to end",
-  description: "A five-phase AI system for paid social and display lead generation.",
+  title: "Negroni — Your agent-native advertising workspace",
+  description: "A live Sites workspace for Negroni's five-phase advertising plugin.",
   robots: { index: false, follow: false, nocache: true },
   openGraph: {
-    title: "Negroni — Paid lead generation, end to end",
-    description: "Research, Create, Launch, Iterate, and Loop—one reviewable campaign operating system.",
+    title: "Negroni — Your agent-native advertising workspace",
+    description: "Install the plugin, connect approved data, and work through Research, Creative, Launch, Iteration, and Loop.",
     type: "website",
-    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Negroni campaign studio — What are we making?" }],
+    images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "Negroni agent-native campaign workspace" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Negroni — Paid lead generation, end to end",
-    description: "Five phases. Explicit artifacts. Approval-gated action.",
+    title: "Negroni — Your agent-native advertising workspace",
+    description: "One plugin. Five phases. Explicit artifacts. Approval-gated action.",
     images: ["/og.jpg"],
   },
 };

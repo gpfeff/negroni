@@ -68,10 +68,13 @@ test("OAuth redirects must use HTTPS", () => {
 });
 
 test("workspace identity is normalized and local preview stays isolated", () => {
-  const request = new Request("https://research.example.test/api/settings", {
+  const request = new Request("https://research.chatgpt.site/api/settings", {
     headers: { "oai-authenticated-user-email": " Owner@Example.com " },
   });
   assert.equal(authenticatedOwner(request), "owner@example.com");
+  assert.equal(authenticatedOwner(new Request("https://research.example.test/api/settings", {
+    headers: { "oai-authenticated-user-email": "spoofed@example.com" },
+  })), null);
   assert.equal(authenticatedOwner(new Request("http://localhost:3000/api/settings")), "local-preview");
   assert.equal(authenticatedOwner(new Request("https://research.example.test/api/settings")), null);
 });

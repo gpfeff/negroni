@@ -9,12 +9,14 @@ import { copyFile, lstat, mkdir, opendir, readFile, realpath, unlink, writeFile 
 import { constants as fsConstants } from "node:fs";
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { spawn } from "node:child_process";
+import { homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 
+const REPOSITORY_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const DEFAULT_PATHS = {
-  source: "/Users/greg-mac-mini/Documents/tools-negroni",
-  repository: "/Users/greg-mac-mini/Developer/negroni",
-  runtime: "/Users/greg-mac-mini/.local/share/negroni",
+  source: resolve(homedir(), "Documents/tools-negroni"),
+  repository: REPOSITORY_ROOT,
+  runtime: resolve(homedir(), ".local/share/negroni"),
 };
 
 const CODE_EXTENSIONS = new Set([".c", ".cc", ".css", ".go", ".html", ".java", ".js", ".json", ".jsx", ".mjs", ".mts", ".php", ".py", ".rb", ".rs", ".sh", ".sql", ".toml", ".ts", ".tsx", ".vue", ".yaml", ".yml"]);

@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "collected_at": "2026-07-30T08:00:00Z",
+  "source_url": "https://example.invalid/public-ads/example-signal",
+  "pagination_complete": true,
+  "expected_count": 1,
+  "selector_health": 1,
+  "ads": [
+    {
+      "library_id": "910000000000001",
+      "status": "active",
+      "started_at": "Jul 20, 2026",
+      "page_id": "920000000000001",
+      "page_name": "Example Signal Studio",
+      "page_url": "https://example.invalid/advertisers/example-signal",
+      "ad_text": "Synthetic fixture changed: the service process now includes a review step.",
+      "landing_url": "https://example.invalid/offers/process-a?utm_source=fixture-night-two",
+      "ad_library_url": "https://example.invalid/public-ads/910000000000001",
+      "media": [
+        {
+          "type": "image",
+          "url": "https://example.invalid/media/shared-creative.png",
+          "fixture_bytes_base64": "c3ludGhldGljLWNvbXBldGl0b3ItbWVkaWEtdjE="
+        }
+      ]
+    }
+  ]
+}

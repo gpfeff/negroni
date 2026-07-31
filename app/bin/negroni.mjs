@@ -7,7 +7,29 @@ import { fileURLToPath } from "node:url";
 const packageRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const command = process.argv[2] || "start";
 
-if (command === "doctor") {
+if (command === "research" && process.argv[3] === "competitors" && process.argv[4] === "run") {
+  const child = spawn(process.execPath, [
+    "--experimental-strip-types",
+    resolve(packageRoot, "bin/competitor-research.ts"),
+    ...process.argv.slice(5),
+  ], {
+    stdio: "inherit",
+  });
+  process.once("SIGINT", () => child.kill("SIGINT"));
+  process.once("SIGTERM", () => child.kill("SIGTERM"));
+  child.on("exit", (code) => process.exit(code ?? 5));
+} else if (command === "draper") {
+  const child = spawn(process.execPath, [
+    "--experimental-strip-types",
+    resolve(packageRoot, "bin/draper.ts"),
+    ...process.argv.slice(3),
+  ], {
+    stdio: "inherit",
+  });
+  process.once("SIGINT", () => child.kill("SIGINT"));
+  process.once("SIGTERM", () => child.kill("SIGTERM"));
+  child.on("exit", (code) => process.exit(code ?? 5));
+} else if (command === "doctor") {
   const child = spawn(process.execPath, [resolve(packageRoot, "scripts/local-doctor.mjs")], {
     stdio: "inherit",
   });
@@ -32,6 +54,7 @@ if (command === "doctor") {
       cwd: packageRoot,
       env: childEnvironment,
       stdio: "inherit",
+      shell: process.platform === "win32",
     });
     const stop = () => {
       app.kill("SIGTERM");
@@ -49,6 +72,6 @@ if (command === "doctor") {
     if (code) process.exit(code);
   });
 } else {
-  console.error("Usage: negroni [start|doctor]");
+  console.error("Usage: negroni [start|doctor|draper|research competitors run]");
   process.exit(1);
 }

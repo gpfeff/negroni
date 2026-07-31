@@ -7,16 +7,19 @@ public, deployment names, domains, or product copy.
 
 ## Hosting model
 
-The GitHub repository is the canonical source. Negroni must remain
-harness-agnostic and portable across hosting environments.
+The GitHub repository is the canonical public source. Negroni is plugin-first,
+harness-agnostic at its contracts, and portable across compatible agents.
 
-- Negroni is one React product, not separate local and hosted interfaces.
+- The Codex/ChatGPT plugin is the primary distribution and onboarding surface.
+- Portable phase skills and stable Negroni tool contracts define shared agent
+  behavior; Gemini and other distributions wrap those same contracts.
+- The React project is the live Sites workspace, not a separate product.
 - Local/self-hosted and managed-hosted deployments must use the same phase,
   artifact, runner, storage, and provider contracts.
-- Self-hosting is a first-class supported option, not an afterthought.
-- Codex Sites is an optional hosted deployment target for demos, evaluation,
-  or a compatible thin client. It must not define Negroni's architecture.
-- Operators may choose another compatible host.
+- Self-hosting remains an optional supported fallback.
+- Codex Sites is the primary hosted workspace for the ChatGPT/Codex
+  distribution. Another agent distribution may provide a compatible workspace
+  without changing the phase contracts.
 - The browser interface must keep credentials server-side and communicate with
   the secure runner through the documented stable contract.
 - Scheduled research, Google Workspace publishing, Meta Ads Intelligence, and
@@ -32,16 +35,16 @@ hosting environment.
 
 ## Product and provider boundary
 
-The Negroni interface owns the five-phase workflow, project state, artifact
-review, approvals, and provenance. Infrastructure choices stay behind stable
-adapters so the interface and phase contracts do not fork by deployment mode.
+The plugin owns discovery and orchestration. Phase skills own the workflow.
+The Site owns project state, artifact review, approvals, and provenance.
+Infrastructure choices stay behind stable tool and provider adapters.
 
-| Capability | Local or self-hosted | Managed hosted |
+| Capability | Agent/plugin layer | Workspace/runtime layer |
 |---|---|---|
-| Product interface | Same React application | Same React application |
-| Durable state | Local database and filesystem-compatible storage | Managed database and object storage |
-| Secure execution | Local or operator-managed runner | Managed isolated runner |
-| Creative generation | Optional local or LAN provider | Optional managed or cloud provider |
+| Product entry | Codex/ChatGPT plugin or compatible agent package | Private live Site |
+| Workflow | Portable five-phase skills | Durable artifacts and approvals |
+| Live data/actions | Stable Negroni tool contracts | Authorized broker and isolated runner |
+| Local fallback | Same contracts through contributor tooling | Local database and private runtime state |
 
 ComfyUI should be the first supported Creative image/video adapter, not a
 required Negroni dependency and not a replacement for the product interface.
@@ -57,12 +60,11 @@ Research, artifact review, or other locally available work.
 
 ## Implementation sequence
 
-1. Unify the five-phase workspace and Research experience into one React
-   application and shared visual system.
-2. Stabilize storage, runner, and provider contracts without deployment-specific
-   UI branches.
-3. Ship a reproducible self-hosted package with health checks and persistent
-   state documentation.
-4. Deploy the same application and contracts as the managed hosted product.
-5. Add ComfyUI through the Creative provider contract with local, network, and
-   hosted configuration paths.
+1. Ship the repository as a validated Codex/ChatGPT plugin with portable phase
+   skills.
+2. Keep the existing owner-scoped Site as the live workspace.
+3. Implement the authenticated Negroni MCP/tool boundary for campaign data and
+   provider actions without weakening approval gates.
+4. Package the same skills and tool contracts for Gemini and other compatible
+   agents.
+5. Retain local/self-hosted tooling as a contributor and fallback path.

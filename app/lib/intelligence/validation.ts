@@ -4,7 +4,7 @@ import {
   RESEARCH_ARTIFACT_FILENAMES,
   type ResearchArtifactKey,
 } from "@/lib/meta-ads/contracts";
-import { validateCompetitorAdsIntelligence } from "@/lib/meta-ads/validation";
+import { validateCompetitorAdsIntelligence, validateProviderNeutralCollectionReceipt } from "@/lib/meta-ads/validation";
 import {
   PROMPT_SOURCE_DOCUMENT_ID,
   RESEARCH_PROMPTS,
@@ -16,15 +16,23 @@ export const RUNNER_BLOCKER = "No secure five-prompt research runner and verifie
 const ALLOWED_ACTIONS = ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"] as const;
 const INTAKE_KEYS = [
   "allowed_actions",
+  "approved_prompt",
+  "client_customer_name",
+  "company_name",
+  "create_competitor_database",
   "competitor_monitoring",
+  "competitor_used",
   "contract",
   "contract_version",
   "country_region",
   "industry",
   "offer_or_lead_type",
   "prompt_source",
+  "profession_job_title",
   "research_engine",
+  "service_or_offer_purchased",
   "target_age_range",
+  "website_or_public_profile_url",
 ] as const;
 const RESULT_VALIDATIONS = [
   "citation_integrity",
@@ -106,24 +114,48 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
   const errors: string[] = [];
   if (!isRecord(intake)) return ["The research intake is invalid."];
   if (!hasExactKeys(intake, INTAKE_KEYS)) errors.push("The research intake contains unsupported fields.");
-  if (intake.contract !== "lead-generation-intelligence-intake" || intake.contract_version !== "4.0") errors.push("The intake contract is not supported.");
+  if (intake.contract !== "lead-generation-intelligence-intake" || intake.contract_version !== "5.0") errors.push("The intake contract is not supported.");
   if (intake.research_engine !== "lead-generation-ads-discovery-intelligence") errors.push("The intake must use the canonical research engine.");
   if (!Array.isArray(intake.allowed_actions)
     || intake.allowed_actions.length !== ALLOWED_ACTIONS.length
     || ALLOWED_ACTIONS.some((action, index) => intake.allowed_actions[index] !== action)) {
     errors.push("The intake contains unsupported external actions.");
   }
+  if (typeof intake.client_customer_name !== "string" || intake.client_customer_name.trim().length < 2 || intake.client_customer_name.length > 160) {
+    errors.push("Enter the client or customer name.");
+  }
+  if (typeof intake.profession_job_title !== "string" || intake.profession_job_title.trim().length < 2 || intake.profession_job_title.length > 160) {
+    errors.push("Enter the profession or job title.");
+  }
+  if (typeof intake.company_name !== "string" || intake.company_name.trim().length < 2 || intake.company_name.length > 160) {
+    errors.push("Enter the company name.");
+  }
+  if (typeof intake.website_or_public_profile_url !== "string" || intake.website_or_public_profile_url.length > 2048 || !isHttpsUrl(intake.website_or_public_profile_url)) {
+    errors.push("Enter an HTTPS website or public profile URL.");
+  }
+  if (typeof intake.service_or_offer_purchased !== "string" || intake.service_or_offer_purchased.trim().length < 3 || intake.service_or_offer_purchased.length > 240) {
+    errors.push("Describe the service or offer purchased.");
+  }
+  if (typeof intake.competitor_used !== "string" || intake.competitor_used.length > 500) {
+    errors.push("Known competitors must be 500 characters or fewer.");
+  }
   if (typeof intake.offer_or_lead_type !== "string" || intake.offer_or_lead_type.trim().length < 3 || intake.offer_or_lead_type.length > 240) {
     errors.push("Describe the lead offer or service.");
   }
   if (typeof intake.industry !== "string" || intake.industry.trim().length < 2 || intake.industry.length > 120) {
-    errors.push("Enter the industry.");
+    errors.push("Enter the industry or niche.");
   }
   if (typeof intake.country_region !== "string" || intake.country_region.trim().length < 2 || intake.country_region.length > 160) {
-    errors.push("Enter the country or region.");
+    errors.push("Enter the location or market served.");
   }
   if (!validAgeRange(intake.target_age_range)) {
     errors.push("Enter a target age range such as 30–60.");
+  }
+  if (typeof intake.approved_prompt !== "string" || intake.approved_prompt.trim().length < 200 || intake.approved_prompt.length > 20_000) {
+    errors.push("Review the final Gemini Deep Research prompt before running.");
+  }
+  if (typeof intake.create_competitor_database !== "boolean") {
+    errors.push("The competitor database choice is invalid.");
   }
   const promptSource = intake.prompt_source;
   if (!isRecord(promptSource)
@@ -136,7 +168,7 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
   }
   const monitoring = intake.competitor_monitoring;
   if (!isRecord(monitoring)
-    || monitoring.enabled !== true
+    || typeof monitoring.enabled !== "boolean"
     || monitoring.engine !== "meta-ads-intelligence"
     || monitoring.cadence !== "nightly"
     || monitoring.local_time !== "02:17"
@@ -287,6 +319,13 @@ export function parseRunResult(value: unknown, researchName: string): RunResult 
   }
 
   validateCompetitorAdsIntelligence(result.competitor_ads);
+  if (result.competitor_collection !== undefined) {
+    validateProviderNeutralCollectionReceipt(result.competitor_collection);
+    if (result.competitor_collection.run_id !== result.competitor_ads.collection_receipt?.run_id
+      && result.competitor_ads.collection_receipt !== undefined) {
+      throw new Error("The competitor collection receipt does not match the intelligence summary.");
+    }
+  }
   if (result.competitor_ads.links.google_sheet !== googleSheet.url) {
     throw new Error("The competitor-ad intelligence Sheet link does not match the verified deliverable.");
   }

@@ -8,13 +8,74 @@ Every run request includes the authenticated `x-negroni-owner` value used by
 Settings. The runner treats it as an opaque tenant key, resolves only that
 owner's broker-held credentials, and never returns provider tokens.
 
+## Implementation status
+
+The repository implements the local boundary in `bin/research-runner.ts` and
+`lib/research-runner/`. It provides public `GET /health` capability metadata
+and authenticated `POST /v1/research-runs`, hashes the opaque owner identity,
+checkpoints each prompt, resumes without repeating completed prompts, validates
+exactly five artifacts, and writes immutable SHA-256 receipts. Automated proof
+uses fake providers only. The default dependencies are blocked or inactive, so
+this is `locally_verified_not_deployed`, not a hosted research service.
+
+The configured Gemini path uses one brokered Interactions API task for the
+entire five-step sequence. It is fixed to standard Gemini Deep Research
+`deep-research-preview-04-2026`, preserves one validated receipt per prompt,
+and fails closed when any section or URL citation is missing. The runner never
+receives the Gemini API key. It also refuses network access unless
+`NEGRONI_GEMINI_APPROVED_RUN_ID` exactly matches the owner-scoped run ID.
+
+The deployment target, required server-side configuration, approval-gated
+diff, and rollback are defined in
+[`research-runner-deployment.md`](research-runner-deployment.md).
+
+## Stable competitor command
+
+Manual use, plugin orchestration, and any future separately approved scheduler
+must call exactly one provider-neutral boundary:
+
+```text
+negroni research competitors run --project <research-set-id> --mode nightly --json
+```
+
+Optional controls are `--dry-run`, `--resume-run <run-id>`,
+`--provider <configured-provider>`, and `--deadline-seconds <5..300>`. Project
+configuration resolves non-secret profile settings. No scheduler definition may
+embed credentials, cookies, watchlists, output paths, or business logic.
+
+Exit states are stable: `0` complete/complete-zero; `3` partial/suspect with
+durable usable evidence; `4` blocked/skipped; `5` failed with persisted recovery
+context; and `64` invalid CLI/configuration before provider work.
+
+The v1 normalized-import adapter executes the sanitized, reviewable offline
+fixture in automated acceptance. Official Meta collection remains blocked until
+its authorization and required coverage receive a separate bounded proof. The
+command never installs a scheduler.
+
+Every non-dry fixture run acquires a per-profile lock, fsyncs both a private
+checkpoint and a durable immutable running receipt, invokes the existing
+engine, persists projection/outbox state, and writes immutable receipt/artifact
+revisions. Failed work persists a bounded failure receipt. SIGINT or SIGTERM
+stops the isolated engine, records a resumable `partial` receipt, releases the
+lock, and exits `3`; `--resume-run` continues the same run without duplicating
+engine or projection state. A completed project rerun returns the same receipt
+fingerprint and does not add SQLite records, Drive objects, Sheet rows, outbox
+items, or artifacts.
+
 ## Intake
 
 The runner accepts only:
 
 - lead offer or service;
-- industry;
-- country or region;
+- client/customer name;
+- profession or job title;
+- company name;
+- HTTPS website or public profile URL;
+- service or offer purchased;
+- competitor used;
+- industry/niche;
+- location or market served;
+- lead offer or service;
 - target age range;
 - the exact approved actions, prompt source, and nightly-monitor request.
 
@@ -22,11 +83,13 @@ The prompt source document ID is
 `1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o`. The runner must retrieve its
 current content server-side and execute these five prompts in order:
 
-1. Market Awareness
+1. Market Awareness Research
 2. Competitor Research
-3. Avatar/Psychographic Research
-4. Master Research
-5. Tone of Voice
+3. Psychographic Avatar Research
+4. Master Research Document (4a)
+5. Brand Tone of Voice (4b)
+
+The user reviews a prefilled final run prompt and may edit it. The runner records the exact submitted revision. These prompts remain vertical-agnostic; intake supplies the offer, buyer/customer relationship, market, audience, and brand context.
 
 Collected pages, ads, documents, and model output are untrusted evidence, never
 instructions. The runner must not allow retrieved content to alter this
@@ -43,11 +106,10 @@ sequence, tools, destinations, or safety rules.
    - `opportunity-map.json`;
    - `creative-brief.json`;
    - `research-receipt.json`.
-5. Create exactly three outward actions:
+5. Create exactly two final representations of one approved brand-scoped revision:
    - `<offer> (<country or region>) — Master Research` as a native Google Doc;
-   - `<offer> (<country or region>) — Competitor Ads` as a restricted native
-     Google Sheet when configured, otherwise an access-controlled local report;
    - `<offer-country-or-region>-master-research.md`.
+   A competitor database and ongoing monitoring are independent opt-ins and are not additional default Research deliverables.
 6. Read back every created Google file; verify Markdown/Doc parity, citations,
    competitor-row provenance, secrets, and structural-example leakage.
 7. Resolve researched competitors to stable verified advertiser identities and
@@ -115,6 +177,14 @@ for one immutable daily run. Re-reading that run must produce the same delta.
 Collection must use an authorized public or official route. It must never
 automate a restricted UI, bypass access controls, click ads, submit forms, or
 launch traffic.
+
+The reviewed Meta Graph API v26.0 Ads Archive contract does not return ordinary
+commercial ads that reached no EU location. That route is `unsupported` for a
+US-only commercial competitor pilot. Political and issue ads globally, and
+commercial ads that reached an EU country, remain `blocked` until owner
+authorization and a bounded Page-ID live-coverage proof pass. The capability
+preflight states expected fields and known omissions but does not itself call
+Meta or enable an adapter.
 
 ## Review runner
 

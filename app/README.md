@@ -1,12 +1,18 @@
-# Negroni application
+# Negroni Sites workspace
 
-This directory is the canonical Negroni application. The deployed application
+This directory is the live workspace used by the Negroni plugin. It is not a
+separate product users are expected to install or operate. The deployed Site
 opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
 Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
 and Review & Approve. A factual guidance rail shows research readiness, the
 next honest action, runner availability, and spend protection. Research is the
 first executable section; later phases remain visibly planned.
+
+Tools also includes Draper, Negroni's conversational control plane. The Site
+explains its scope and safety boundary but does not expose a machine-local
+SQLite database or private vault to browser code. Actual Draper queries run
+through the installed plugin's validated MCP and stable CLI contracts.
 
 A focused Negroni interface for saving a reusable research set, running the
 five approved research prompts in order, and producing five durable Research
@@ -26,11 +32,13 @@ authoritative.
 The Research tab asks only:
 
 - Lead offer or service
-- Industry
-- Country or region
-- Target age range
+- Client/customer name, profession or job title, and company
+- Public website or profile URL
+- Service or offer purchased and a competitor they use
+- Industry/niche and location or market served
+- Lead offer or service and target age range for the campaign research scope
 
-Those four inputs feed three visible research streams: Client, Customer, and
+The required profile and research-scope inputs feed three visible research streams: Client, Customer, and
 Competitors. Competitor Ads remains one public-evidence source inside the
 Competitors stream rather than a substitute for the full research method.
 
@@ -71,10 +79,10 @@ authorization is persisted as blocked. The adapter never creates a scheduler.
 
 ## Settings and secrets
 
-Settings provides:
+Settings provides the workspace-side connection and preference surface:
 
 - one home for all preferences and connection setup
-- Codex CLI login
+- Codex or ChatGPT plugin readiness
 - Claude Code login
 - Gemini API key or Google OAuth through Application Default Credentials
 - Kie.ai API key for image and video generation
@@ -82,9 +90,9 @@ Settings provides:
 - light, dark, or system appearance
 - Safety or YOLO local operating mode
 
-The sidebar stays navigation-only. Appearance, approval behavior, API-key
-fields, provider status, storage, and the local `negroni start` setup steps all
-live in Settings.
+The sidebar stays navigation-only. Appearance, approval behavior, provider
+status, and storage live in Settings. Local launcher setup remains an optional
+developer fallback and must not be presented as the default product path.
 
 The installed edition uses each agent CLI's native login. Negroni checks
 `codex login status` or `claude auth status`; it never reads, copies, or
@@ -98,6 +106,12 @@ Safety mode asks before every Git commit. YOLO mode may automate local drafts,
 file writes, and commits. Neither mode can bypass explicit approval for
 spending, budget changes, publishing creative, submitting forms, mutating an
 ad account, or launching traffic.
+
+Phase 1's configured Gemini research path defaults to standard Deep Research
+(`deep-research-preview-04-2026`) for foundational research projects. It sends
+all five required research prompts through one brokered interaction. Connecting
+a key does not authorize a paid run; the runner also requires an exact
+owner-scoped approved run ID.
 
 Google OAuth uses the web-server authorization-code flow with offline access.
 The broker verifies OAuth state, stores refresh tokens securely, and creates or
@@ -127,6 +141,30 @@ Without the credential broker, Settings is visibly blocked. The app never
 falls back to fixtures or invents Google IDs, output URLs, research findings,
 or monitoring state.
 
+The repository includes a deployable local runner boundary at
+`bin/research-runner.ts`. It authenticates a server bearer token plus opaque
+owner identity, accepts only the strict customer-profile and research-scope intake, fetches the approved
+prompt source server-side, checkpoints the exact five-prompt sequence, calls
+the stable competitor boundary, and writes immutable five-artifact receipts.
+Its default provider set is intentionally blocked, so starting this process
+does not create a live research capability. Deployment and provider wiring are
+described in [`docs/research-runner-deployment.md`](docs/research-runner-deployment.md).
+
+The installed plugin also provides a local, provider-neutral MCP. It wraps the
+stable CLI for dry-run-default competitor execution and resume, plus sanitized
+capability, Learning Core, Draper, decision, and artifact contracts. It does
+not expose a generic command or SQL tool, raw stdout/stderr, credentials,
+runtime paths, account mutation, publishing, or scheduler activation.
+
+## Draper and Learning Core
+
+The local Learning Core keeps the relational catalog and learning history in
+authoritative SQLite, full-text retrieval in FTS5, optional rebuildable vector
+entries, SHA-256 content-addressed media references, and an
+Obsidian-compatible generated Markdown vault. The first warehouse adapter and
+complete Draper flow are sanitized fixtures only. See
+[`docs/draper-learning-core.md`](docs/draper-learning-core.md).
+
 The connector follows Google's narrow-scope and server-side token guidance:
 [Drive scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
 and
@@ -147,25 +185,38 @@ npm run qa:visual
 Dependencies are runtime state and should live outside the synced Documents
 tree.
 
-## Install locally
+For contributor development and the optional self-hosted fallback, see
+[`docs/LOCAL-AND-REMOTE-SETUP.md`](../docs/LOCAL-AND-REMOTE-SETUP.md).
 
-Negroni packages as a normal local web app. Install the generated package, then
-run it from any directory:
+From a checkout, `npm run dev:local` starts the same loopback app-and-bridge
+pair as the installed launcher. Use it when developing the complete local
+experience; `npm run dev` remains the UI-only contributor server.
+
+## Optional local developer package
+
+The local package supports development and self-hosted diagnostics. It is not
+Negroni's primary distribution. Build it from a trusted checkout, then run it
+from any directory:
 
 ```bash
-npm install --global ./release/negroni-local-0.9.0.tgz
+package_dir="$(mktemp -d)"
+npm pack --pack-destination "$package_dir"
+npm install --global "$package_dir"/negroni-local-*.tgz
+negroni doctor
 negroni start
 ```
 
 Open `http://127.0.0.1:3000`. The launcher starts the private loopback
 credential bridge and the web interface together. Run `negroni doctor` to see
-which local agent and Google logins are ready.
-
-Build a fresh installable package with:
-
-```bash
-mkdir -p release
-npm pack --pack-destination release
-```
+which local agent and Google logins are ready; unavailable or signed-out
+providers are readiness findings, not a reason to publish credentials.
 
 The package is local-only until an explicit npm publishing decision is made.
+The launcher is a development runtime, not a production deployment service.
+
+To only build a package without installing it:
+
+```bash
+package_dir="$(mktemp -d)"
+npm pack --pack-destination "$package_dir"
+```

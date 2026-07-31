@@ -1,0 +1,4 @@
+interface:
+  display_name: "Negroni Loop"
+  short_description: "Compound campaign learning with guarded actions"
+  default_prompt: "Use $negroni-loop to identify the next honest campaign action."

@@ -170,6 +170,11 @@ test("the server adapter records skipped collection honestly and never creates a
   assert.equal(receipt.state, "skipped");
   assert.equal(receipt.google_action, "not_requested");
   assert.equal(receipt.scheduler_action, "none");
+  assert.equal(receipt.provider_receipt.contract, "negroni-competitor-collection-receipt");
+  assert.equal(receipt.provider_receipt.project_id, projectId);
+  assert.equal(receipt.provider_receipt.run_id, "nightly-fixture");
+  assert.equal(receipt.provider_receipt.status, "skipped");
+  assert.deepEqual(receipt.provider_receipt.external_actions, []);
   assert.ok(calls.every((argv) => argv.includes(profile)));
   assert.ok(!calls.some((argv) => argv.includes("schedule")));
   assert.ok(!calls.some((argv) => argv.includes("publish")));

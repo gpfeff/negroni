@@ -19,14 +19,14 @@
   <img alt="Live actions: approval gated" src="https://img.shields.io/badge/live_actions-approval_gated-e8dfcf">
 </p>
 
-Negroni helps a person and their preferred AI harness move from market
-understanding to launched, measured, and continuously improved lead-generation
-campaigns.
+Negroni is an open-source, agent-native advertising system. Install it as a
+plugin, connect the data sources you authorize, and use a private live Site as
+the durable campaign workspace.
 
-Negroni is designed for paid social, in-app, and programmatic advertising. It
-supports image and video creative and is intended to work with Codex, Claude
-Code, or any other harness that can read the repository, invoke its tools, and
-preserve its project artifacts.
+The Codex and ChatGPT plugin is the primary distribution. The same phase skills
+and stable tool contracts are designed for Gemini and other compatible agent
+harnesses. The React application in [`app/`](app/) is the Sites workspace, not
+a separate product users must install and operate.
 
 The product is organized around five connected phases:
 
@@ -51,11 +51,13 @@ giving an agent silent authority over spend, customer data, or live accounts.
 
 ## What works today
 
-Negroni is in beta. [`app/`](app/) is the canonical product source and the
-top-level product interface currently includes:
+Negroni is in beta. The repository is now a validated Codex plugin with a
+portable onboarding skill, one skill for each phase, and Draper as the
+conversational control plane. [`app/`](app/) is the live Sites workspace and
+currently includes:
 
 - an interactive view of all five phases and their artifact handoffs;
-- a local-only project draft flow with explicit external-action boundaries;
+- an owner-scoped project draft flow with explicit external-action boundaries;
 - responsive desktop and mobile layouts.
 
 Phase 1 currently includes:
@@ -67,21 +69,49 @@ Phase 1 currently includes:
 - a server-only Meta Ads Intelligence adapter with project-isolated profiles,
   deterministic daily deltas, five durable Research artifact receipts, and a
   compact competitor-ad results module;
-- a separate local-first Meta Ads Intelligence engine linked at
-  [`meta-ads-intelligence/`](meta-ads-intelligence/).
+- a separate local-first Meta Ads Intelligence engine provided as a local
+  companion checkout at `meta-ads-intelligence/` (not included in this repository).
+- a provider-neutral competitor-research CLI with sanitized two-night fixtures,
+  isolated SQLite, immutable receipts, fake Sheets/Drive projections,
+  deterministic recovery, and an approval-locked Creative handoff;
+- a cache-portable Negroni MCP with seven fail-closed tools for capability and
+  Learning Core status, Draper queries and local decisions, competitor runs,
+  resume, and immutable artifact inspection;
+- a fixture-backed central Learning Core with an authoritative SQLite catalog,
+  FTS5, rebuildable vectors, SHA-256 media references, immutable learning
+  versions, and a generated private Markdown vault; and
+- an owner-scoped local research-runner boundary with strict five-prompt
+  execution, resumable checkpoints, and immutable five-artifact receipts.
 
-The Research interface is validated, but live research remains intentionally
-blocked until a secure runner and verified Google Workspace output path are
-configured. Creative, Launch, Iteration, and Loop currently have defined
-contracts and implementation roadmaps.
+The plugin, Research interface, MCP, and local runner contract are validated.
+The runner is not deployed and its default providers fail closed. Live
+research remains blocked until an owner-controlled runner, research provider,
+and verified Google Workspace output path are configured. Creative, Launch,
+Iteration, and Loop currently have installable skills and implementation
+contracts, but no live account adapter is claimed.
 
 <p align="center">
   <img src="app/qa/screenshots/thin-client-desktop.jpg" alt="Negroni Phase 1 Research interface" width="880">
 </p>
 
-## Quick start
+## Product surfaces
 
-Requirements: Node.js 22.13 or newer and npm 11.
+| Surface | Role |
+| --- | --- |
+| **Negroni plugin** | Primary install and agent workflow |
+| **Phase skills** | Portable Research, Creative, Launch, Iteration, and Loop playbooks |
+| **Draper** | Conversational control plane over brand-scoped evidence, learnings, freshness, and reviewable proposals |
+| **Negroni tools** | Seven installed local MCP tools wrap Draper, the Learning Core, and the stable competitor boundary; hosted provider actions remain blocked until deployment and authorization |
+| **Sites workspace** | Private campaign data, artifacts, review, and approvals |
+| **Local launcher** | Contributor development and an optional self-hosted fallback |
+
+The source is public-compatible. Credentials, provider state, customer data,
+collected media, and private campaign artifacts are not part of the plugin or
+Git repository.
+
+## Quick start for contributors
+
+Requirements: Node.js 22.16 or newer and npm 11.
 
 ```bash
 git clone https://github.com/gpfeff/negroni.git
@@ -91,6 +121,21 @@ npm run dev
 ```
 
 Open the local URL printed by the development server.
+
+### Development with the canonical local URL
+
+For live development against this checkout, run:
+
+```bash
+npm run dev:local
+```
+
+Then open [http://127.0.0.1:3000/](http://127.0.0.1:3000/). This starts the
+repository's watcher and the private credential broker together, so saved
+source changes reload at that same URL. Only one Negroni local instance can
+own ports 3000 and 47831 at a time: stop `negroni start` before switching to
+`npm run dev:local`, and use `Ctrl-C` to stop the development instance before
+switching back.
 
 To run the older five-phase interface prototype instead:
 
@@ -104,9 +149,60 @@ Run the top-level UI build and full Phase 1 validation suite:
 npm run validate
 ```
 
+The stable competitor-research boundary is:
+
+```bash
+negroni research competitors run --project <research-set-id> --mode nightly --json
+```
+
+It also accepts `--dry-run`, `--resume-run <run-id>`,
+`--provider <configured-provider>`, and a bounded `--deadline-seconds`. Exit 0
+means complete/complete-zero; 3 means partial/suspect; 4 blocked/skipped; 5 a
+persisted local failure; and 64 invalid CLI/configuration. The checked-in
+vertical slice is sanitized and offline. It does not prove a live Meta, Google,
+BrowserOS, paid collector, or scheduler capability.
+Engine-backed tests require the local companion `meta-ads-intelligence` checkout
+and are reported as skipped when it is absent; engine-independent tests always run.
+
+The reviewed official Meta Graph API v26.0 boundary accepts up to 10 Page IDs
+per Ads Archive request. Ordinary ads that reached no EU location are not
+returned unless they are political or issue ads, so Negroni treats coverage—not
+the number 10—as the live capability gate and requires a 2–3 Page-ID proof
+before enabling an official adapter.
+
+The installed plugin also exposes these bounded MCP tools:
+
+- `capability_status`;
+- `learning_core_status`;
+- `draper_query`;
+- `draper_record_decision`;
+- `competitor_research` (dry-run by default);
+- `resume_competitor_research`; and
+- `inspect_research_artifact`.
+
+They return sanitized receipts rather than raw process output or private paths,
+and none can publish, spend, launch traffic, mutate an ad account, or install a
+scheduler.
+
+The local Draper rehearsal is:
+
+```bash
+negroni draper fixture rehearse --json
+```
+
+It uses only the sanitized fixture warehouse. The relational database remains
+authoritative, the Obsidian-compatible vault is generated, and vector entries
+can be rebuilt. See
+[`app/docs/draper-learning-core.md`](app/docs/draper-learning-core.md) and the
+[`Draper/Learning Core architecture decision`](docs/decisions/2026-07-30-draper-learning-core-architecture.md).
+
 This starts and validates the local interface. A real Research run additionally
 requires the server-side runner documented in
 [`app/README.md`](app/README.md).
+
+The local launcher is not the primary user experience. Contributors who need
+the self-hosted fallback can follow
+[local and private remote setup](docs/LOCAL-AND-REMOTE-SETUP.md).
 
 ## Workspace ownership
 
@@ -173,7 +269,7 @@ Current Phase 1 implementations:
 
 - [`app/`](app/) — canonical Negroni application, with Research currently
   executable and the later phases visibly planned.
-- [`meta-ads-intelligence/`](meta-ads-intelligence/) — local-first intelligence
+- `meta-ads-intelligence/` — optional local companion checkout for intelligence
   from public Meta Ad Library observations. SQLite, media, lifecycle, human
   overrides, local reports, and optional cloud projection remain engine-owned.
 

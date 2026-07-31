@@ -4,7 +4,7 @@
 Authenticated browser
   |
   +-- Research tab
-  |     +-- four inputs
+  |     +-- required customer profile + research scope
   |     +-- owner-scoped saved sets -> D1
   |     +-- versioned Markdown seed review -> D1
   |     |     +-- direct edits and permanent notes
@@ -24,6 +24,12 @@ Authenticated browser
   |                 +-- SQLite-owned lifecycle/media/ratings
   |                 +-- scheduler-neutral daily refresh
   |                 +-- deterministic snapshot and daily delta
+  |           +-- provider-neutral competitor runner
+  |                 +-- stable nightly CLI and exit states
+  |                 +-- Meta engine-owned isolated SQLite
+  |                 +-- v2 public durability signal
+  |                 +-- immutable receipts and resume checkpoint
+  |                 +-- optional projection contract
   |           +-- strict result receipt
   |
   +-- Settings tab
@@ -31,6 +37,41 @@ Authenticated browser
         +-- Gemini API key -----+-> server-side credential broker
         +-- Google OAuth -------+
 ```
+
+```text
+Installed Negroni plugin
+  +-- capability_status
+  +-- learning_core_status
+  +-- draper_query (validated intents only)
+  +-- draper_record_decision (local record only)
+  +-- competitor_research (dry-run default)
+  +-- resume_competitor_research
+  +-- inspect_research_artifact
+        |
+        +-- strict JSON schemas and serialized execution
+        +-- stable provider-neutral CLI only
+        +-- sanitized receipts; no raw process output or private paths
+        +-- no publishing, spend, account mutation, traffic, or scheduling
+```
+
+```text
+Draper (control plane)
+  +-- LearningCoreStorage contract
+        +-- SQLite relational catalog (authoritative data + knowledge)
+        +-- FTS5 full-text index + retrieval receipts
+        +-- replaceable vector index (non-authoritative, rebuildable)
+        +-- SHA-256 media references -> private content-addressed files
+        +-- generated Obsidian-compatible vault (readable projection)
+  +-- WarehouseAdapter
+        +-- sanitized fixture adapter in the current milestone
+        +-- future live warehouse adapter behind the same normalized contract
+```
+
+The local Learning Core is plugin runtime, not hosted Site storage. It remains
+owner-, workspace-, and brand-scoped and creates an immutable version for each
+learning transition. The browser shows Draper under Tools but receives no
+SQLite handle, private vault path, generic SQL boundary, or machine-local data.
+See [`draper-learning-core.md`](draper-learning-core.md).
 
 The browser receives no runner or provider token. Research sets contain the
 four intake values, owner/timestamp metadata, versioned Markdown seeds, review
@@ -57,3 +98,52 @@ watches, and never installs a scheduler. Missing normalized input produces a
 durable `skipped` run; unavailable official API credentials produce `blocked`.
 Google publishing is optional and does not change local collection, storage,
 analysis, or report availability.
+
+## Competitor-research runtime boundary
+
+The existing Negroni plugin calls the same deterministic boundary available to
+other compatible harnesses:
+
+```text
+negroni research competitors run --project <research-set-id> --mode nightly --json
+```
+
+Negroni validates provider-neutral inputs and maps evidence into the five
+canonical Research artifacts. The linked Meta Ads Intelligence engine owns its
+SQLite schema, append-only observations and content versions, lifecycle, media,
+and families. Private engine state and checkpoints stay under
+`~/.local/share/negroni`; durable non-secret artifact revisions and collection
+receipts stay under `~/Documents/tools-negroni`.
+
+Sheets and Drive are projections, never authoritative storage. Publication is
+an outbox state machine (`pending` → `drive_uploaded` → `sheet_linked` →
+`complete`) with stable keys and readback hashes. The checked-in proof uses
+fakes only and records zero external actions.
+
+Engine-backed runtime tests require the optional sibling
+`meta-ads-intelligence` checkout and skip explicitly when it is unavailable.
+
+## Hosted identity trust boundary
+
+The `oai-authenticated-user-email` header is trusted only on hostnames beneath
+`NEGRONI_TRUSTED_INGRESS_SUFFIX` (default `.chatgpt.site`) or during localhost
+preview. The Worker must not expose a `workers.dev` route or any direct ingress
+that can bypass the authenticated ChatGPT hosting proxy.
+
+## Local runner versus hosted capability
+
+`bin/research-runner.ts` is the smallest locally verified HTTP boundary. It
+requires a server bearer token, hashes the opaque owner key for isolation,
+permits only `GET /health` and `POST /v1/research-runs`, and stores private
+checkpoints separately from durable non-secret artifacts. Completed prompts
+are not rerun after a partial attempt, and identical requests replay the same
+final receipt. Each owner-scoped run uses a recoverable state lock; overlapping
+requests fail explicitly with HTTP 409 instead of colliding on immutable
+receipts. The default prompt, research, Google, and official collection
+providers are blocked; no hosted runner is claimed.
+
+Meta Graph API v26.0 capability is evaluated before any adapter is enabled.
+Political and issue ads are eligible globally, and commercial ads are eligible
+only when they reached an EU country. Ordinary non-EU commercial-ad collection
+is therefore unsupported through the official endpoint. Eligible routes still
+require owner authorization and a bounded live Page-ID coverage proof.

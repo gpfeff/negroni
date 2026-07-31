@@ -1,0 +1,224 @@
+{
+  "fixture_id": "fixture_desert_ember_v1",
+  "fixture_only": true,
+  "scope": {
+    "owner_id": "owner_fixture",
+    "workspace_id": "workspace_fixture",
+    "brand_id": "brand_desert_ember"
+  },
+  "brand": {
+    "id": "brand_desert_ember",
+    "name": "Desert Ember HVAC",
+    "description": "A fictional home-services brand used only for sanitized Negroni tests."
+  },
+  "offers": [
+    {
+      "id": "offer_same_day_diagnostic",
+      "name": "Same-day AC diagnostic",
+      "description": "Fixture offer with a disclosed diagnostic fee and no live booking path.",
+      "status": "fixture_only"
+    }
+  ],
+  "audiences": [
+    {
+      "id": "audience_phoenix_homeowners",
+      "name": "Phoenix-area homeowners",
+      "definition": "Sanitized fixture audience; no people, lists, or private audience data."
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "campaign_fixture_ac_repair",
+      "offer_id": "offer_same_day_diagnostic",
+      "name": "Fixture AC repair lead generation",
+      "platform": "fixture_network",
+      "status": "completed_simulation"
+    }
+  ],
+  "ad_sets": [
+    {
+      "id": "adset_fixture_homeowners",
+      "campaign_id": "campaign_fixture_ac_repair",
+      "audience_id": "audience_phoenix_homeowners",
+      "name": "Fixture homeowners",
+      "status": "completed_simulation"
+    }
+  ],
+  "ads": [
+    {
+      "id": "ad_generic_urgency",
+      "ad_set_id": "adset_fixture_homeowners",
+      "name": "Generic urgency control",
+      "headline": "AC out? Get help today",
+      "primary_text": "Fixture-only control copy centered on urgent service availability.",
+      "status": "completed_simulation"
+    },
+    {
+      "id": "ad_availability_fee",
+      "ad_set_id": "adset_fixture_homeowners",
+      "name": "Availability and fee variant",
+      "headline": "Same-day diagnostic — fee shown up front",
+      "primary_text": "Fixture-only variant combining availability with diagnostic-fee transparency.",
+      "status": "completed_simulation"
+    },
+    {
+      "id": "ad_financing_proof",
+      "ad_set_id": "adset_fixture_homeowners",
+      "name": "Financing proof exploratory",
+      "headline": "Know your repair options before work begins",
+      "primary_text": "Fixture-only exploratory copy about written options and financing availability.",
+      "status": "not_tested"
+    }
+  ],
+  "creative_assets": [
+    {
+      "id": "asset_generic_urgency",
+      "ad_id": "ad_generic_urgency",
+      "name": "Generic urgency card",
+      "asset_type": "static_fixture",
+      "mime_type": "text/plain",
+      "media_content": "SANITIZED FIXTURE ASSET: generic urgency card"
+    },
+    {
+      "id": "asset_availability_fee",
+      "ad_id": "ad_availability_fee",
+      "name": "Availability and fee card",
+      "asset_type": "static_fixture",
+      "mime_type": "text/plain",
+      "media_content": "SANITIZED FIXTURE ASSET: same-day availability and fee transparency card"
+    },
+    {
+      "id": "asset_financing_proof",
+      "ad_id": "ad_financing_proof",
+      "name": "Financing proof card",
+      "asset_type": "static_fixture",
+      "mime_type": "text/plain",
+      "media_content": "SANITIZED FIXTURE ASSET: financing proof card"
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "hypothesis_transparency_quality",
+      "statement": "Combining same-day availability with diagnostic-fee transparency may improve qualified lead efficiency versus generic urgency.",
+      "status": "tested_once_fixture"
+    }
+  ],
+  "experiments": [
+    {
+      "id": "experiment_transparency_fixture",
+      "hypothesis_id": "hypothesis_transparency_quality",
+      "name": "Fixture transparency versus urgency",
+      "status": "completed",
+      "control_ad_id": "ad_generic_urgency",
+      "variant_ad_id": "ad_availability_fee",
+      "started_at": "2026-07-23T00:00:00.000Z",
+      "ended_at": "2026-07-29T23:00:00.000Z"
+    }
+  ],
+  "outcomes": [
+    {
+      "owner_id": "owner_fixture",
+      "workspace_id": "workspace_fixture",
+      "brand_id": "brand_desert_ember",
+      "outcome_id": "outcome_control_fixture",
+      "experiment_id": "experiment_transparency_fixture",
+      "ad_id": "ad_generic_urgency",
+      "period_start": "2026-07-23T00:00:00.000Z",
+      "period_end": "2026-07-29T23:00:00.000Z",
+      "currency": "USD",
+      "spend": 1200,
+      "impressions": 40000,
+      "clicks": 640,
+      "conversions": 30,
+      "leads": 30,
+      "qualified_leads": 12,
+      "lead_quality_score": 0.4,
+      "attribution_model": "fixture_last_click_7d",
+      "freshness_as_of": "2026-07-29T23:00:00.000Z",
+      "source_type": "sanitized_fixture_warehouse",
+      "fixture_only": true
+    },
+    {
+      "owner_id": "owner_fixture",
+      "workspace_id": "workspace_fixture",
+      "brand_id": "brand_desert_ember",
+      "outcome_id": "outcome_variant_fixture",
+      "experiment_id": "experiment_transparency_fixture",
+      "ad_id": "ad_availability_fee",
+      "period_start": "2026-07-23T00:00:00.000Z",
+      "period_end": "2026-07-29T23:00:00.000Z",
+      "currency": "USD",
+      "spend": 1280,
+      "impressions": 42000,
+      "clicks": 730,
+      "conversions": 40,
+      "leads": 40,
+      "qualified_leads": 16,
+      "lead_quality_score": 0.4,
+      "attribution_model": "fixture_last_click_7d",
+      "freshness_as_of": "2026-07-29T23:00:00.000Z",
+      "source_type": "sanitized_fixture_warehouse",
+      "fixture_only": true
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "evidence_fixture_experiment",
+      "kind": "experiment",
+      "source_type": "sanitized_fixture",
+      "source_ref": "fixture://desert-ember/experiment/transparency",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "observed_at": "2026-07-29T23:00:00.000Z",
+      "freshness_as_of": "2026-07-29T23:00:00.000Z",
+      "fixture_only": true,
+      "metadata": {
+        "experiment_id": "experiment_transparency_fixture",
+        "status": "completed_simulation"
+      }
+    },
+    {
+      "evidence_id": "evidence_fixture_outcome",
+      "kind": "outcome",
+      "source_type": "sanitized_fixture_warehouse",
+      "source_ref": "fixture://desert-ember/outcomes/qualified-cpl",
+      "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "observed_at": "2026-07-29T23:00:00.000Z",
+      "freshness_as_of": "2026-07-29T23:00:00.000Z",
+      "fixture_only": true,
+      "metadata": {
+        "control_qualified_cpl": 100,
+        "variant_qualified_cpl": 80,
+        "attribution": "fixture_last_click_7d"
+      }
+    }
+  ],
+  "observation": {
+    "observation_id": "observation_fixture_cpl_gap",
+    "statement": "The fixture variant recorded a lower qualified CPL than the fixture control during one simulated experiment.",
+    "evidence_id": "evidence_fixture_outcome"
+  },
+  "learning": {
+    "learning_id": "learning_fixture_transparency",
+    "state": "candidate",
+    "statement": "For this fixture brand, pairing same-day availability with diagnostic-fee transparency is associated with lower qualified CPL than generic urgency creative.",
+    "provenance": "Derived from one sanitized simulated experiment and retained as a candidate rather than promoted automatically.",
+    "confidence": 0.68,
+    "applicability": "Desert Ember HVAC fixture brand, Phoenix homeowner audience, same-day diagnostic offer, static fixture creative.",
+    "limitations": [
+      "Simulated fixture evidence from one experiment is not causal proof.",
+      "The variant changed two message elements, so the responsible element is unresolved.",
+      "No live platform delivery, lead validation, or warehouse connector was used."
+    ],
+    "approval_state": "not_requested",
+    "supporting_evidence_ids": [
+      "evidence_fixture_experiment",
+      "evidence_fixture_outcome"
+    ]
+  },
+  "next_experiment": {
+    "summary": "Isolate fee transparency from availability while holding offer, audience, and format constant.",
+    "field": "creative.variable",
+    "before": "availability plus fee transparency",
+    "after": "fee transparency isolated against matched control"
+  }
+}

@@ -52,3 +52,11 @@ support a documented pause or rollback path.
 Launch is complete only when desired state, approved state, and platform
 readback agree—or when a partial or failed state is preserved with exact
 recovery instructions. Platform acceptance never implies campaign performance.
+
+## Learning Core input and output
+
+Launch consumes evidence-backed hypotheses and reviewable proposals, then
+writes back only verified preflight, tracking, approval, and readback receipts.
+A decision recorded by Draper is local governance evidence, not authorization
+to execute an account mutation. Publishing, spend, traffic, and budget changes
+still require approval for the exact Launch diff.

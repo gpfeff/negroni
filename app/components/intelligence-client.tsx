@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { createEmptyIntake } from "@/lib/intelligence/defaults";
-import { ResearchReview } from "@/components/research-review";
 import {
   RESEARCH_PROMPTS,
   type IntelligenceIntake,
@@ -15,9 +14,10 @@ import {
   type SettingsResponse,
 } from "@/lib/intelligence/contracts";
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
+import { deriveHomeNextAction } from "@/lib/intelligence/next-action";
 import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
 
-type AppView = "home" | "research" | "settings";
+type AppView = "home" | "research" | "draper" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
 type Appearance = "light" | "dark" | "system";
 
@@ -68,8 +68,8 @@ const PROMPT_LABELS: Record<(typeof RESEARCH_PROMPTS)[number], string> = {
   market_awareness: "Market awareness",
   competitor_research: "Competitor research",
   customer_avatar_psychographics: "Customer psychology",
-  master_marketing_intelligence: "Master research",
-  brand_tone_of_voice: "Tone of voice",
+  master_marketing_intelligence: "4A · Master research",
+  brand_tone_of_voice: "4B · Brand tone",
 };
 
 const RESEARCH_TOOLS: ReadonlyArray<{
@@ -83,7 +83,7 @@ const RESEARCH_TOOLS: ReadonlyArray<{
     id: "run",
     eyebrow: "Start here",
     name: "Run Research",
-    description: "Give Negroni four facts. The research skill builds the first evidence-backed draft.",
+    description: "Start with the customer profile, then define the research scope for an evidence-backed draft.",
     marker: "GO",
   },
   {
@@ -122,16 +122,6 @@ const RESEARCH_TOOLS: ReadonlyArray<{
     marker: "OK",
   },
 ];
-
-function downloadMarkdown(result: RunResult) {
-  const blob = new Blob([result.outputs.markdown.content], { type: "text/markdown;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = result.outputs.markdown.filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
 
 export function IntelligenceClient() {
   const [activeView, setActiveView] = useState<AppView>("home");
@@ -200,7 +190,7 @@ export function IntelligenceClient() {
       if (!active) return;
       const searchParams = new URLSearchParams(window.location.search);
       const requestedView = searchParams.get("view");
-      if (requestedView === "research" || requestedView === "settings") setActiveView(requestedView);
+      if (requestedView === "research" || requestedView === "draper" || requestedView === "settings") setActiveView(requestedView);
       const requestedTool = searchParams.get("tool");
       if (RESEARCH_TOOLS.some((tool) => tool.id === requestedTool)) {
         setActiveResearchSection(requestedTool as ResearchSection);
@@ -248,7 +238,18 @@ export function IntelligenceClient() {
     window.localStorage.setItem("negroni.operating-mode", operatingMode);
   }, [operatingMode]);
 
-  function updateIntake(field: "offer_or_lead_type" | "industry" | "country_region" | "target_age_range", value: string) {
+  function updateIntake(field:
+    | "client_customer_name"
+    | "profession_job_title"
+    | "company_name"
+    | "website_or_public_profile_url"
+    | "service_or_offer_purchased"
+    | "competitor_used"
+    | "offer_or_lead_type"
+    | "industry"
+    | "country_region"
+    | "target_age_range"
+    | "approved_prompt", value: string) {
     setIntake((current) => ({ ...current, [field]: value }));
   }
 
@@ -259,6 +260,12 @@ export function IntelligenceClient() {
     if (!profile) return;
     setIntake((current) => ({
       ...current,
+      client_customer_name: profile.client_customer_name,
+      profession_job_title: profile.profession_job_title,
+      company_name: profile.company_name,
+      website_or_public_profile_url: profile.website_or_public_profile_url,
+      service_or_offer_purchased: profile.service_or_offer_purchased,
+      competitor_used: profile.competitor_used,
       offer_or_lead_type: profile.offer_or_lead_type,
       industry: profile.industry,
       country_region: profile.country_region,
@@ -397,6 +404,12 @@ export function IntelligenceClient() {
   const kieStatus = providerStatus("kie_ai");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
+  const nextAction = deriveHomeNextAction({
+    checking,
+    capability,
+    hasProfile: selectedProfile !== null,
+    resultStatus: result?.status ?? null,
+  });
 
   function navigate(view: AppView) {
     setActiveView(view);
@@ -423,6 +436,30 @@ export function IntelligenceClient() {
     }, activeView === "research" ? 0 : 50);
   }
 
+  function followHomeNextAction() {
+    switch (nextAction.action?.destination) {
+      case "settings":
+        navigate("settings");
+        break;
+      case "research":
+        openResearchSection("run");
+        break;
+      case "run":
+        openResearchSection("run");
+        void runResearch();
+        break;
+      case "status":
+        openResearchSection("run");
+        window.setTimeout(() => document.getElementById("run-status")?.scrollIntoView({ behavior: "smooth", block: "start" }), 75);
+        break;
+      case "review":
+        openResearchSection("review");
+        break;
+      default:
+        break;
+    }
+  }
+
   return (
     <div className="app-shell">
       <aside className="app-sidebar">
@@ -435,36 +472,39 @@ export function IntelligenceClient() {
           <button className={activeView === "home" ? "nav-active" : ""} type="button" onClick={() => navigate("home")}><span>⌂</span>Home</button>
           <span className="nav-label">Campaign phases</span>
           {PHASES.map((phase) => (
-            <button
-              className={phase.number === "01" && activeView === "research" ? "nav-active" : ""}
-              key={phase.number}
-              type="button"
-              disabled={phase.number !== "01"}
-              onClick={() => phase.number === "01" && navigate("research")}
-            >
-              <span>{phase.number}</span>{phase.name}{phase.number !== "01" ? <small>Planned</small> : null}
-            </button>
+            <Fragment key={phase.number}>
+              <button
+                className={phase.number === "01" && activeView === "research" ? "nav-active" : ""}
+                type="button"
+                disabled={phase.number !== "01"}
+                onClick={() => phase.number === "01" && navigate("research")}
+              >
+                <span>{phase.number}</span>{phase.name}{phase.number !== "01" ? <small>Planned</small> : null}
+              </button>
+              {phase.number === "01" && activeView === "research" ? (
+                <div className="research-subnav" aria-label="Research tools">
+                  {RESEARCH_TOOLS.map((tool) => (
+                    <button
+                      className={activeResearchSection === tool.id ? "research-subnav-active" : ""}
+                      key={tool.id}
+                      type="button"
+                      onClick={() => openResearchSection(tool.id)}
+                      aria-current={activeResearchSection === tool.id ? "page" : undefined}
+                      aria-label={tool.id === "run" ? "Open research intake" : `Open ${tool.name}`}
+                    >
+                      <span>{tool.marker}</span>{tool.name}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </Fragment>
           ))}
-          {activeView === "research" ? (
-            <div className="research-subnav" aria-label="Research tools">
-              {RESEARCH_TOOLS.map((tool) => (
-                <button
-                  className={activeResearchSection === tool.id ? "research-subnav-active" : ""}
-                  key={tool.id}
-                  type="button"
-                  onClick={() => openResearchSection(tool.id)}
-                  aria-current={activeResearchSection === tool.id ? "page" : undefined}
-                  aria-label={tool.id === "run" ? "Open research intake" : `Open ${tool.name}`}
-                >
-                  <span>{tool.marker}</span>{tool.name}
-                </button>
-              ))}
-            </div>
-          ) : null}
+          <span className="nav-label">Tools</span>
+          <button className={activeView === "draper" ? "nav-active" : ""} type="button" onClick={() => navigate("draper")} aria-label="Draper"><span>DR</span>Draper</button>
         </nav>
         <div className="sidebar-footer">
           <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
-          <div className="connection-state"><i /> Workspace ready · Negroni v0.9 beta</div>
+          <div className="connection-state"><i /> Plugin workspace · Negroni v0.9 beta</div>
         </div>
       </aside>
 
@@ -473,16 +513,22 @@ export function IntelligenceClient() {
           <button className="campaign-switcher" type="button" onClick={() => navigate("research")}>
             <span>Campaign</span><strong>New lead-generation campaign</strong><b>⌄</b>
           </button>
-          <div className="topbar-state"><span><i /> No live spend</span><b aria-label="User account">GP</b></div>
+          <div className="topbar-state"><span><i /> Private Site · No live spend</span><b aria-label="User account">GP</b></div>
         </header>
 
       {activeView === "home" ? (
         <div className="dashboard" id="top">
           <section className="dashboard-heading" aria-labelledby="home-title">
-            <div><p className="utility-label">Negroni campaign studio</p><h1 id="home-title">What are we making?</h1><p>Pick a tool to get started. Working on <strong>{selectedProfile?.offer_or_lead_type ?? "your next lead campaign"}</strong>.</p></div>
+            <div><p className="utility-label">Negroni agent workspace</p><h1 id="home-title">What should Negroni do next?</h1><p>Work with your agent or choose a phase here. Current campaign: <strong>{selectedProfile?.offer_or_lead_type ?? "your next lead campaign"}</strong>.</p></div>
           </section>
 
           <section className="research-home-layout" aria-label="Research workspace">
+            <article className={`home-next-action home-next-${nextAction.tone}`} data-testid="next-action-panel" aria-live="polite">
+              <span className="next-action-status">{nextAction.eyebrow}</span>
+              <h2>{nextAction.title}</h2>
+              <p>{nextAction.description}</p>
+              {nextAction.action ? <button type="button" onClick={followHomeNextAction}>{nextAction.action.label}<span aria-hidden="true">→</span></button> : null}
+            </article>
             <div className="research-tool-board">
               <div className="research-board-heading">
                 <div><span>01</span><i /><h2>Research</h2></div>
@@ -511,21 +557,9 @@ export function IntelligenceClient() {
 
           </section>
 
-          <section className="pipeline-card" aria-labelledby="pipeline-title">
-            <div className="section-title-row"><div><p className="utility-label">Campaign pipeline</p><h2 id="pipeline-title">Five phases, one evidence trail</h2></div><small>1 ready · 4 planned</small></div>
-            <ol className="dashboard-phases" aria-label="Campaign phases" tabIndex={0}>
-              {PHASES.map((phase) => (
-                <li className={phase.number === "01" ? "dashboard-phase-ready" : ""} key={phase.number}>
-                  <div><span>{phase.number}</span><small>{phase.state}</small></div>
-                  <strong>{phase.name}</strong><p>{phase.verb}</p><code>{phase.artifact}</code>
-                </li>
-              ))}
-            </ol>
-          </section>
-
           <section className="dashboard-lower">
             <article className="activity-card">
-              <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Local workspace</small></div>
+              <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Live Site</small></div>
               <div className="empty-state"><span>●</span><div><strong>No runs yet</strong><p>Start Research to create the first prompt receipts and campaign artifact.</p></div></div>
             </article>
             <article className="artifacts-card">
@@ -539,7 +573,7 @@ export function IntelligenceClient() {
           <section className="intro" aria-labelledby="page-title">
             <p className="kicker">Phase 01 · Find the signal</p>
             <h1 id="page-title">Tell us the business. We’ll find the signal.</h1>
-            <p>Four inputs start one governed research skill. You get editable client, customer, and competitor intelligence—not a black-box answer.</p>
+            <p>Start with a required customer profile, then set the research scope. You get editable client, customer, and competitor intelligence—not a black-box answer.</p>
           </section>
 
           <section className="section-card" id="intake" aria-labelledby="intake-title">
@@ -553,7 +587,7 @@ export function IntelligenceClient() {
               <select id="saved-profile" value={selectedProfileId} onChange={(event) => chooseProfile(event.target.value)} disabled={!profiles.available}>
                 <option value="">{profiles.available ? "New research set" : "Saved records unavailable"}</option>
                 {profiles.records.map((profile: ResearchProfile) => (
-                  <option key={profile.id} value={profile.id}>{profile.offer_or_lead_type} · {profile.country_region}</option>
+                  <option key={profile.id} value={profile.id}>{profile.company_name} · {profile.country_region}</option>
                 ))}
               </select>
               <button type="button" onClick={newProfile}>New</button>
@@ -565,27 +599,75 @@ export function IntelligenceClient() {
             {profileMessage ? <p className="inline-message" role="status">{profileMessage}</p> : null}
 
             <div className="intake-grid">
+              <div className="intake-group-title input-wide">
+                <h3>Required customer profile</h3>
+                <p id="profile-privacy">Use business context or a public profile only. Do not enter contact details, credentials, or other sensitive personal information.</p>
+              </div>
+              <div className="input-group">
+                <label htmlFor="client-customer-name">Client or customer name <strong>Required</strong></label>
+                <input id="client-customer-name" value={intake.client_customer_name} onChange={(event) => updateIntake("client_customer_name", event.target.value)} placeholder="Jordan Lee" autoComplete="off" aria-describedby="profile-privacy" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="profession-job-title">Profession or job title <strong>Required</strong></label>
+                <input id="profession-job-title" value={intake.profession_job_title} onChange={(event) => updateIntake("profession_job_title", event.target.value)} placeholder="Operations director" autoComplete="organization-title" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="company-name">Company name <strong>Required</strong></label>
+                <input id="company-name" value={intake.company_name} onChange={(event) => updateIntake("company_name", event.target.value)} placeholder="Regional Repair Co." autoComplete="organization" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="public-profile-url">Website or public profile URL <strong>Required</strong></label>
+                <input id="public-profile-url" type="url" value={intake.website_or_public_profile_url} onChange={(event) => updateIntake("website_or_public_profile_url", event.target.value)} placeholder="https://example.com" autoComplete="url" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="service-purchased">Service or offer purchased <strong>Required</strong></label>
+                <input id="service-purchased" value={intake.service_or_offer_purchased} onChange={(event) => updateIntake("service_or_offer_purchased", event.target.value)} placeholder="Emergency repair membership" autoComplete="off" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="competitor-used">Known competitors <span>Optional</span></label>
+                <input id="competitor-used" value={intake.competitor_used} onChange={(event) => updateIntake("competitor_used", event.target.value)} placeholder="Names or URLs, if known" autoComplete="off" />
+              </div>
+              <div className="input-group">
+                <label htmlFor="industry">Industry / niche <strong>Required</strong></label>
+                <input id="industry" value={intake.industry} onChange={(event) => updateIntake("industry", event.target.value)} placeholder="Finance" autoComplete="organization-title" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="country-region">Location or market served <strong>Required</strong></label>
+                <input id="country-region" value={intake.country_region} onChange={(event) => updateIntake("country_region", event.target.value)} placeholder="United States" autoComplete="country-name" required />
+              </div>
+              <div className="intake-group-title input-wide">
+                <h3>Research scope</h3>
+                <p>These questions keep the customer profile grounded in the campaign and market you want to study.</p>
+              </div>
               <div className="input-group input-wide">
                 <label htmlFor="offer-type">Lead offer or service <strong>Required</strong></label>
-                <textarea id="offer-type" rows={3} value={intake.offer_or_lead_type} onChange={(event) => updateIntake("offer_or_lead_type", event.target.value)} placeholder="Example: Business loans for small businesses—or business-loan leads for lenders" />
+                <textarea id="offer-type" rows={3} value={intake.offer_or_lead_type} onChange={(event) => updateIntake("offer_or_lead_type", event.target.value)} placeholder="Example: Business loans for small businesses—or business-loan leads for lenders" required />
                 <small>Describe what the customer receives, or the lead product a buyer receives.</small>
               </div>
               <div className="input-group">
-                <label htmlFor="industry">Industry <strong>Required</strong></label>
-                <input id="industry" value={intake.industry} onChange={(event) => updateIntake("industry", event.target.value)} placeholder="Finance" autoComplete="organization-title" />
-              </div>
-              <div className="input-group">
-                <label htmlFor="country-region">Country or region <strong>Required</strong></label>
-                <input id="country-region" value={intake.country_region} onChange={(event) => updateIntake("country_region", event.target.value)} placeholder="United States" autoComplete="country-name" />
-              </div>
-              <div className="input-group">
                 <label htmlFor="target-age">Target age range <strong>Required</strong></label>
-                <input id="target-age" value={intake.target_age_range} onChange={(event) => updateIntake("target_age_range", event.target.value)} placeholder="30–60" inputMode="numeric" />
+                <input id="target-age" value={intake.target_age_range} onChange={(event) => updateIntake("target_age_range", event.target.value)} placeholder="30–60" inputMode="numeric" required />
               </div>
             </div>
 
             <div className="prompt-sequence" aria-label="Five research prompts">
-              {RESEARCH_PROMPTS.map((prompt, index) => <span key={prompt}><b>{index + 1}</b>{PROMPT_LABELS[prompt]}</span>)}
+              {RESEARCH_PROMPTS.map((prompt, index) => <span key={prompt}><b>{index < 3 ? index + 1 : index === 3 ? "4A" : "4B"}</b>{PROMPT_LABELS[prompt]}</span>)}
+            </div>
+
+            <div className="input-grid research-run-options">
+              <div className="input-group input-wide">
+                <label htmlFor="approved-prompt">Final Gemini Deep Research prompt <strong>Review before running</strong></label>
+                <textarea id="approved-prompt" rows={12} value={intake.approved_prompt} onChange={(event) => updateIntake("approved_prompt", event.target.value)} required />
+                <small>Use the prefilled prompt as-is or edit it. The exact submitted version is persisted and bound to the run receipt.</small>
+              </div>
+              <label className="research-choice">
+                <input type="checkbox" checked={intake.create_competitor_database} onChange={(event) => setIntake((current) => ({ ...current, create_competitor_database: event.target.checked }))} />
+                <span><strong>Create competitor database</strong><small>Save structured competitor evidence for later review.</small></span>
+              </label>
+              <label className="research-choice">
+                <input type="checkbox" checked={intake.competitor_monitoring.enabled} onChange={(event) => setIntake((current) => ({ ...current, competitor_monitoring: { ...current.competitor_monitoring, enabled: event.target.checked } }))} />
+                <span><strong>Enable ongoing monitoring</strong><small>Separate opt-in; no schedule is claimed until verified.</small></span>
+              </label>
             </div>
 
             <div className="three-c-grid" aria-label="The three research streams">
@@ -603,7 +685,7 @@ export function IntelligenceClient() {
             {errors.length ? <div className="validation-box" role="alert"><strong>Check the research setup</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div> : null}
             <div className="run-row">
               <button className="run-button" type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available}>{running ? "Running five research prompts…" : checking ? "Checking research access…" : "Run research"}</button>
-              <p>Public research, three requested files, and one nightly competitor monitor. No outreach, forms, purchases, campaigns, or account changes.</p>
+              <p>Gemini Deep Research creates a polished Google Doc and matching brand Markdown. Competitor storage and monitoring run only when selected.</p>
             </div>
           </section>
 
@@ -611,7 +693,7 @@ export function IntelligenceClient() {
             <div className="section-heading"><span>2</span><div><h2 id="status-title">Run status</h2><p>All five prompt receipts, limitations, and monitoring state remain visible.</p></div></div>
             <div className={`status-panel ${result?.status === "complete" ? "status-complete" : result?.status === "partial" ? "status-partial" : runError || (!checking && !capability.available) ? "status-blocked" : ""}`} aria-live="polite">
               <div><span className="status-dot" /><strong>{running ? "Researching" : result?.status === "complete" ? "Complete" : result?.status === "partial" ? "Complete with limitations" : runError || (!checking && !capability.available) ? "Blocked" : "Not started"}</strong></div>
-              <p>{running ? "Running the five-prompt research sequence and creating the three deliverables." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the four research inputs when you are ready."}</p>
+              <p>{running ? "Running 1 → 2 → 3 → 4A → 4B and creating the two final representations." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the questions and review the final prompt when you are ready."}</p>
             </div>
             <div className="monitoring-receipt">
               <strong>Nightly competitor ads</strong>
@@ -657,30 +739,62 @@ export function IntelligenceClient() {
             {result?.limitations.length ? <div className="limitations"><strong>Limitations</strong><p>{result.limitations.join(" ")}</p></div> : <div className="limitations"><strong>Limitations</strong><p>{!capability.available && !checking ? "Live research and native Google-file creation are unavailable until the five-prompt runner and Google Workspace connector are configured." : "Research limitations will appear here after the run."}</p></div>}
           </section>
 
-          <section className="section-card" id="outputs" aria-labelledby="outputs-title">
-            <div className="section-heading"><span>3</span><div><h2 id="outputs-title">Outputs</h2><p>The master Google Doc, matching Markdown, and competitor-ad Google Sheet.</p></div></div>
-            <div className="output-grid">
-              <a className={result ? "output-card" : "output-card output-disabled"} href={result?.outputs.google_doc.url ?? undefined} target="_blank" rel="noreferrer" aria-disabled={!result} onClick={(event) => { if (!result) event.preventDefault(); }}><span className="output-icon">D</span><div><strong>Open Google Doc</strong><small>{result?.outputs.google_doc.title ?? "Master research report"}</small></div><span aria-hidden="true">↗</span></a>
-              <a
-                className={result && (result.outputs.google_sheet.status === "published" || result.competitor_ads.links.report_markdown) ? "output-card" : "output-card output-disabled"}
-                href={result?.outputs.google_sheet.status === "published" ? result.outputs.google_sheet.url : result?.competitor_ads.links.report_markdown ?? undefined}
-                target="_blank"
-                rel="noreferrer"
-                aria-disabled={!result || (result.outputs.google_sheet.status !== "published" && !result.competitor_ads.links.report_markdown)}
-                onClick={(event) => { if (!result || (result.outputs.google_sheet.status !== "published" && !result.competitor_ads.links.report_markdown)) event.preventDefault(); }}
-              ><span className="output-icon sheet-icon">S</span><div><strong>{result?.outputs.google_sheet.status === "not_configured" ? "Open local competitor report" : "Open Google Sheet"}</strong><small>{result?.outputs.google_sheet.status === "not_configured" ? result.outputs.google_sheet.message : result?.outputs.google_sheet.title ?? "Competitor-ad archive · refreshed nightly"}</small></div><span aria-hidden="true">↗</span></a>
-              <button className={result ? "output-card" : "output-card output-disabled"} type="button" disabled={!result} onClick={() => result && downloadMarkdown(result)}><span className="output-icon markdown-icon">M</span><div><strong>Download Markdown</strong><small>{result?.outputs.markdown.filename ?? "Portable master research report"}</small></div><span aria-hidden="true">↓</span></button>
-            </div>
+        </div>
+      ) : activeView === "draper" ? (
+        <div className="content-column draper-column" id="top">
+          <section className="intro draper-intro" aria-labelledby="draper-title">
+            <p className="kicker">Tools · Conversational control plane</p>
+            <h1 id="draper-title">Ask Draper what the evidence says.</h1>
+            <p>Draper turns natural-language questions into validated, brand-scoped Negroni tools. Every answer keeps evidence, freshness, assumptions, limitations, and proposed changes visible.</p>
           </section>
 
-          <ResearchReview key={selectedProfileId || "no-profile"} profile={selectedProfile} runResult={result} />
+          <section className="draper-workspace" aria-label="Draper workspace">
+            <article className="draper-conversation">
+              <div className="draper-agent-heading"><span>DR</span><div><strong>Draper</strong><small>Negroni conversational agent</small></div><b>Local plugin</b></div>
+              <div className="draper-message">
+                <p>Ask me to inspect a brand, find ads, compare creative, analyze normalized performance, explain the current Loop, retrieve learnings, find stale data, or prepare a reviewable experiment.</p>
+                <small>I use validated intents—not arbitrary SQL—and I cannot publish, spend, launch traffic, change budgets, or mutate an ad account.</small>
+              </div>
+              <div className="draper-examples" aria-label="Example Draper questions">
+                <span>Try asking your Negroni agent</span>
+                <code>How is this brand&apos;s loop doing?</code>
+                <code>What evidence supports our next creative test?</code>
+                <code>What is stale, blocked, or missing?</code>
+              </div>
+              <div className="draper-browser-boundary">
+                <strong>Continue in the installed Negroni plugin</strong>
+                <p>This Site does not expose your machine-local database or private vault to the browser. Draper runs through the installed plugin&apos;s local tools.</p>
+              </div>
+            </article>
+
+            <aside className="draper-evidence-panel" aria-label="Learning Core boundaries">
+              <p className="utility-label">Learning Core</p>
+              <h2>One truth, two ways to read it.</h2>
+              <dl>
+                <div><dt>Authority</dt><dd>Local relational database</dd></div>
+                <div><dt>Readable layer</dt><dd>Generated Markdown vault</dd></div>
+                <div><dt>Retrieval</dt><dd>FTS5 + rebuildable vectors</dd></div>
+                <div><dt>Warehouse</dt><dd>Fixture adapter in this milestone</dd></div>
+              </dl>
+              <div className="draper-state-chain" aria-label="Learning lifecycle">
+                <span>Observation</span><i>→</i><span>Candidate</span><i>→</i><span>Supported</span><i>→</i><span>Trusted</span>
+              </div>
+              <p className="draper-terminal-states">Contradicted and superseded records remain visible. Model output never promotes itself.</p>
+            </aside>
+          </section>
+
+          <section className="draper-contract-grid" aria-label="Draper operating contracts">
+            <article><span>01</span><div><strong>Data plane</strong><p>Brands, offers, audiences, campaigns, ads, assets, experiments, and normalized outcomes.</p></div></article>
+            <article><span>02</span><div><strong>Knowledge plane</strong><p>Versioned learnings, evidence, counterevidence, retrieval receipts, and readable projections.</p></div></article>
+            <article><span>03</span><div><strong>Control plane</strong><p>Plain-language answers and proposed diffs, with decisions separate from external execution.</p></div></article>
+          </section>
         </div>
       ) : (
         <div className="content-column settings-column" id="top">
           <section className="intro" aria-labelledby="settings-title">
-            <p className="kicker">Your Negroni, your engines</p>
-            <h1 id="settings-title">Choose how the work gets made.</h1>
-            <p>Use Codex or Claude Code as the local operator, connect the media engines you trust, and decide how often Negroni pauses for approval. Secrets stay behind the browser.</p>
+            <p className="kicker">Your Negroni, your agents</p>
+            <h1 id="settings-title">Connect the tools behind your workspace.</h1>
+            <p>Use the Negroni plugin from ChatGPT or Codex, connect the data and media providers you authorize, and keep every live action behind an explicit approval. Secrets stay behind the workspace.</p>
           </section>
 
           <section className="section-card settings-section" id="preferences">
@@ -716,12 +830,12 @@ export function IntelligenceClient() {
           <section className="section-card settings-section" id="operators">
             <div className="settings-heading">
               <span>02</span>
-              <div><h2>Agent operator</h2><p>Pick either one. Negroni checks the login already owned by the installed command-line tool.</p></div>
+              <div><h2>Agent access</h2><p>The plugin is the primary experience. Local agent checks remain available for contributor and self-hosted fallback use.</p></div>
             </div>
             <div className="settings-grid">
               <article className="provider-card agent-card">
-                <div><span className={`provider-dot provider-${codexStatus.status}`} /><strong>Codex</strong><span className="provider-badge">Local CLI</span></div>
-                <p>Use your existing ChatGPT or API login. Negroni never reads or copies the OAuth token.</p>
+                <div><span className={`provider-dot provider-${codexStatus.status}`} /><strong>ChatGPT / Codex</strong><span className="provider-badge">Primary plugin</span></div>
+                <p>Install Negroni once and use the same five phase skills from your agent. This status checks the optional local CLI until hosted tools are connected.</p>
                 <small>{codexStatus.status === "connected" ? codexStatus.detail ?? "Signed in" : codexStatus.blocker ?? codexStatus.detail ?? "Login not detected"}</small>
                 <button type="button" onClick={() => void connectProvider("codex_cli")} disabled={!settingsAvailable || settingsBusy}>{codexStatus.status === "connected" ? "Check Codex connection" : "Connect Codex"}</button>
               </article>
@@ -799,17 +913,17 @@ export function IntelligenceClient() {
           <section className="section-card settings-section" id="local-setup">
             <div className="settings-heading">
               <span>04</span>
-              <div><h2>Local app setup</h2><p>The installed app is the secure bridge between this screen and your command-line logins or API-key vault.</p></div>
+              <div><h2>Developer fallback</h2><p>The local launcher is optional infrastructure for contributors and self-hosted testing, not the normal Negroni experience.</p></div>
             </div>
             <div className={`local-setup-card ${settingsAvailable ? "local-setup-ready" : ""}`}>
               <div className="local-setup-state">
                 <span className={`provider-dot provider-${settingsAvailable ? "connected" : "blocked"}`} />
-                <div><strong>{settingsAvailable ? "Secure bridge ready" : "Secure bridge not connected"}</strong><small>{settingsAvailable ? "Provider controls and key fields are available." : "Start the installed Negroni app to unlock provider controls."}</small></div>
+                <div><strong>{settingsAvailable ? "Local bridge ready" : "Hosted tools not connected"}</strong><small>{settingsAvailable ? "Local provider controls and key fields are available." : "Live provider actions stay blocked until the hosted broker exists; use the launcher only for local development."}</small></div>
               </div>
               <ol className="setup-steps">
-                <li><span>1</span><div><strong>Start Negroni</strong><p>Open Terminal and run <code>negroni start</code>.</p></div></li>
-                <li><span>2</span><div><strong>Return to Settings</strong><p>Your Codex or Claude login status and API-key fields will become available.</p></div></li>
-                <li><span>3</span><div><strong>Add connections here</strong><p>Keys are stored under <code>~/.negroni</code> with owner-only permissions—not in the browser or project.</p></div></li>
+                <li><span>1</span><div><strong>Use only for local development</strong><p>Run <code>negroni start</code> from a trusted checkout.</p></div></li>
+                <li><span>2</span><div><strong>Return to Settings</strong><p>Local agent status and development-only key fields become available.</p></div></li>
+                <li><span>3</span><div><strong>Keep credentials private</strong><p>Local keys stay under <code>~/.negroni</code> with owner-only permissions—not in the browser or project.</p></div></li>
               </ol>
               {settingsBlocker ? <div className="settings-blocker"><strong>Connection setup needed</strong><p>{settingsBlocker}</p></div> : null}
             </div>
@@ -822,37 +936,6 @@ export function IntelligenceClient() {
       )}
 
       </main>
-      <aside className="app-right-rail" aria-label="Up next">
-        <section className="weekly-goal">
-          <div><span>This week</span><button type="button" disabled title="Goal editing is planned">Edit goal</button></div>
-          <strong><b>0</b> / 20 ads</strong>
-          <progress max={20} value={0}>0 of 20 ads</progress>
-          <p>Build the research foundation, then ship the first campaign assets.</p>
-          <small>Resets in 5 days</small>
-        </section>
-        <section className="up-next">
-          <h2>Up next</h2>
-          <div className="next-rail-list">
-            <article className="next-rail-primary">
-              <span>Do this next</span>
-              <strong>{selectedProfile ? "Continue customer research" : "Run customer research"}</strong>
-              <p>Mine what your customers actually say—it fuels every ad you make.</p>
-              <button type="button" onClick={() => openResearchSection("run")}>Start →</button>
-            </article>
-            <article>
-              <strong>Complete the client brief</strong>
-              <p>Capture the offer, economics, proof, and campaign boundaries.</p>
-              <button type="button" onClick={() => openResearchSection("client")}>Start →</button>
-            </article>
-            <article>
-              <strong>Spy on competitor ads</strong>
-              <p>See what is already winning in your niche.</p>
-              <button type="button" onClick={() => openResearchSection("competitor-ads")}>Start →</button>
-            </article>
-          </div>
-        </section>
-        <button className="jarvis-pill" type="button" onClick={() => navigate("settings")}><span className="brand-mark" aria-hidden="true" /> Negroni</button>
-      </aside>
     </div>
   );
 }

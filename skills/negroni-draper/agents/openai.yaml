@@ -1,0 +1,4 @@
+interface:
+  display_name: "Draper"
+  short_description: "Ask Negroni what the evidence says"
+  default_prompt: "Use $negroni-draper to explain how this brand's campaign loop is doing."

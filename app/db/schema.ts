@@ -2,6 +2,12 @@ export const CREATE_RESEARCH_PROFILES = `
   CREATE TABLE IF NOT EXISTS research_profiles (
     id TEXT PRIMARY KEY,
     owner_email TEXT NOT NULL,
+    client_customer_name TEXT NOT NULL,
+    profession_job_title TEXT NOT NULL,
+    company_name TEXT NOT NULL,
+    website_or_public_profile_url TEXT NOT NULL,
+    service_or_offer_purchased TEXT NOT NULL,
+    competitor_used TEXT NOT NULL,
     offer_or_lead_type TEXT NOT NULL,
     industry TEXT NOT NULL,
     country_region TEXT NOT NULL,

@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Negroni Meta Visible Capture",
+  "version": "0.1.0",
+  "description": "Export rendered public Meta Ad Library cards as a partial, reviewable Negroni research input.",
+  "permissions": [
+    "downloads"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.facebook.com/ads/library/*"
+      ],
+      "js": [
+        "capture-core.js",
+        "content-script.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Capture visible Meta ads for Negroni",
+    "default_popup": "popup.html"
+  }
+}
