@@ -27,6 +27,8 @@ test("the Research UI asks required profile questions and keeps competitors opti
   assert.match(source, /Final Gemini Deep Research prompt/);
   assert.match(source, /Create competitor database/);
   assert.match(source, /Enable ongoing monitoring/);
+  assert.match(source, /Gemini API ready/);
+  assert.match(source, /API key saved in Settings/);
   assert.match(source, /4A · Master research/);
   assert.match(source, /4B · Brand tone/);
 });
