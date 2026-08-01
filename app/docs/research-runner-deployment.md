@@ -4,7 +4,7 @@ Updated: 2026-07-31
 
 ## Capability state
 
-The owner-only Site interface is deployed as version 13. Its private runner and
+The owner-only Site interface is privately deployed. Its private runner and
 credential-broker bindings are not deployed, so hosted research correctly
 remains blocked. The owner-scoped private-service contract is implemented and
 locally verified: `npm run check:private` validates its ports and stable secrets,
@@ -102,7 +102,7 @@ remain separate approval boundaries.
 
 ## Current blockers
 
-- The owner-only Site interface is live as version 13, but no authenticated
+- The owner-only Site interface is live, but no authenticated
   production save/reload has verified its D1 record binding.
 - The local broker has a verified Google Drive path through Application Default
   Credentials, but no new authenticated Cloudflare route, persistent private

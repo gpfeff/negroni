@@ -2,7 +2,7 @@
 
 This directory is the Site source workspace used by the Negroni plugin. It is
 not a separate product users are expected to install or operate. The owner-only
-interface is deployed as Sites version 13; private runner and credential-broker
+interface is privately deployed through Sites; private runner and credential-broker
 bindings remain unconfigured, so hosted execution stays visibly blocked. The
 Site opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the

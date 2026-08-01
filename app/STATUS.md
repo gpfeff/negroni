@@ -128,8 +128,8 @@ link, and then removed the synthetic profile and moved its exact validation
 brand folder to Drive trash. No paid model was called.
 
 These checks prove the local execution and Drive boundaries, not a paid Gemini
-run or hosted research execution. The owner-only Site interface was privately
-published as version 13 on 2026-07-31, and production bundle readback verified
+run or hosted research execution. The owner-only Site interface is privately
+published, and production bundle readback verified
 the lean Create Brand flow, single competitor-database control, Integrations,
 Drive completion link, and current social preview. Hosted research remains
 correctly **blocked** until the Sites runtime has the private runner and
@@ -185,7 +185,7 @@ browser and continues to report unavailable hosted capabilities as blocked.
   Settings passed at desktop and mobile sizes, 151/151 checks
 - Accessibility: zero serious or critical Axe violations across all tested states
 - Browser runtime: no unexpected console errors or horizontal overflow
-- Private Sites deployment: version 13 succeeded with one allowed owner, no
+- Private Sites deployment: succeeded with one allowed owner, no
   groups, and production bundle readback of the current Research UI and social
   preview
 
@@ -233,5 +233,8 @@ external route; the final hosted Google OAuth callback also remains absent.
   No real key was entered and no paid generation request was made.
 - D1 record persistence needs one production authenticated save/reload check
   after the deployed binding is provisioned.
+- The unused legacy `NEGRONI_SECRET_ENCRYPTION_KEY` Site variable remains
+  configured but is no longer read; deleting that unrecoverable secret remains
+  a separate configuration approval.
 - Edited seed revisions do not yet regenerate the Google Doc or Markdown
   output; those remain run snapshots.
