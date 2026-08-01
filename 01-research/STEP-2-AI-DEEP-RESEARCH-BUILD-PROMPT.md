@@ -1,5 +1,10 @@
 # Negroni Phase 1 build prompt — Step 2 AI Deep Research
 
+> Historical implementation prompt. The current product contract is
+> authoritative in `README.md`, `../app/AGENTS.md`, and
+> `../app/docs/product-decision.md`: the Research page has one optional
+> customer-competitor-database control and no monitoring or scheduler control.
+
 Build Negroni Phase 1: Research around Step #2, “AI Deep Research,” from the
 Pay Per Lead Nation Pro `$250K/mo Playbook`.
 

@@ -98,8 +98,27 @@ try {
   checks.push({ name: "mobile next action stacks before Research cards", passed: Boolean(mobilePanel && mobileBoard && mobilePanel.y < mobileBoard.y) });
   checks.push({ name: "mobile retains exactly one next-action panel", passed: await page.getByTestId("next-action-panel").count() === 1 });
   await inspect(page, "home-mobile");
+  const mobileIntegrationsNav = await page.getByRole("button", { name: "Integrations", exact: true }).boundingBox();
+  const mobileSettingsNav = await page.getByRole("button", { name: "Settings", exact: true }).boundingBox();
+  checks.push({
+    name: "mobile navigation exposes Integrations without a hidden horizontal-scroll target",
+    passed: Boolean(mobileIntegrationsNav
+      && mobileSettingsNav
+      && mobileIntegrationsNav.x >= 0
+      && mobileIntegrationsNav.x + mobileIntegrationsNav.width <= mobileSettingsNav.x),
+  });
   await page.getByRole("button", { name: "Run Research" }).first().click();
-  checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Tell us the business. We’ll find the signal." }).isVisible() });
+  checks.push({ name: "home enters Research", passed: await page.getByRole("heading", { name: "Create brand" }).isVisible() });
+  await page.waitForFunction(() => window.scrollY === 0);
+  const mobileResearchHeading = await page.getByRole("heading", { name: "Create brand" }).boundingBox();
+  const mobileNavigation = await page.locator(".app-sidebar").boundingBox();
+  checks.push({
+    name: "mobile Research navigation lands on the unobscured page heading",
+    passed: Boolean(mobileResearchHeading
+      && mobileNavigation
+      && mobileResearchHeading.y >= mobileNavigation.y + mobileNavigation.height
+      && mobileResearchHeading.y < 844),
+  });
 
   await page.setViewportSize({ width: 1440, height: 1000 });
   const researchTabs = page.locator(".side-nav > button.nav-active + .research-subnav");
@@ -109,11 +128,14 @@ try {
       && await researchTabs.getByRole("button", { name: "Ad Spy", exact: true }).count() === 1,
   });
   checks.push({ name: "Research tabs use distinct icons", passed: await researchTabs.locator("svg").count() === 2 });
-  for (const text of ["Run Research", "Required customer profile", "Client or customer name", "Profession or job title", "Company name", "Website or public profile URL", "Service or offer purchased", "Known competitors", "Industry / niche", "Location or market served", "Research scope", "Lead offer or service", "Target age range", "Final Gemini Deep Research prompt", "Create competitor database", "Enable ongoing monitoring", "Client", "Customer", "Competitors", "Market awareness", "Competitor research", "Customer psychology", "4A · Master research", "4B · Brand tone", "Gemini Connection error", "Run status", "Nightly competitor ads", "Competitor Ads", "No secure five-prompt research runner"]) {
+  for (const text of ["Create brand", "Fill in the information", "Brand information", "Profession", "Job title", "Company name", "Website or public profile URL", "Known competitors", "Industry / niche", "Location or market served", "Offer information", "Lead offer or service", "Target age range", "Create customer competitor database", "Run status"]) {
     checks.push({ name: `visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
   }
+  for (const text of ["Client or customer name", "Service or offer purchased", "Final Gemini Deep Research prompt", "Enable ongoing monitoring", "Market awareness", "Customer psychology", "4A · Master research", "4B · Brand tone", "Nightly competitor ads"]) {
+    checks.push({ name: `Research omits clutter: ${text}`, passed: await page.getByText(text, { exact: false }).count() === 0 });
+  }
   checks.push({ name: "removed final-research output cards", passed: (await page.locator(".output-card").count()) === 0 });
-  checks.push({ name: "paid run is disabled while execution is blocked", passed: await page.getByRole("button", { name: "Review paid run", exact: true }).isDisabled() });
+  checks.push({ name: "Research exposes one optional database choice", passed: await page.getByRole("checkbox").count() === 1 });
   await inspect(page, "thin-client-desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -121,8 +143,14 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   checks.push({ name: "Draper is removed from navigation", passed: await page.getByRole("button", { name: "Draper", exact: true }).count() === 0 });
   await page.getByRole("button", { name: "Library", exact: true }).click();
-  for (const text of ["Everything made for every brand.", "Research", "Competitor ads", "Static creative", "Video creative", "Copy & scripts", "Campaign files"]) {
+  for (const text of ["Everything made for every brand.", "Research", "Competitor ads", "Campaign files"]) {
     checks.push({ name: `Library visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  }
+  for (const label of ["Filter library by brand", "Filter library by offer", "Filter library by asset type", "Filter library by platform", "Filter library by status", "Filter library by date"]) {
+    checks.push({ name: `Library control: ${label}`, passed: await page.getByLabel(label, { exact: true }).isVisible() });
+  }
+  for (const text of ["Static creative", "Video creative", "Copy & scripts"]) {
+    checks.push({ name: `Library does not invent empty asset: ${text}`, passed: await page.getByRole("article").filter({ hasText: text }).count() === 0 });
   }
   await inspect(page, "library-desktop");
   await page.setViewportSize({ width: 390, height: 844 });
@@ -134,14 +162,34 @@ try {
   await page.setViewportSize({ width: 390, height: 844 });
   await inspect(page, "brands-mobile");
   await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.getByRole("button", { name: "Settings" }).click();
-  for (const text of ["Connect the tools behind your workspace.", "Appearance & approvals", "Commit approvals", "Codex", "Claude Code", "API keys & storage", "Kie.ai API key", "Gemini API key", "Apify API token", "Google Drive", "Developer fallback", "Connection setup needed"]) {
-    checks.push({ name: `settings visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  const openBrandButton = page.getByRole("button", { name: "Open brand file", exact: true }).first();
+  if (await openBrandButton.count()) {
+    await openBrandButton.click();
+    for (const text of ["Permanent brand file", "Research stays separate by offer.", "Brand library", "Research packages", "Creative assets", "Campaigns", "Learnings"]) {
+      checks.push({ name: `Brand detail visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+    }
+    await inspect(page, "brand-detail-desktop");
+    await page.setViewportSize({ width: 390, height: 844 });
+    await inspect(page, "brand-detail-mobile");
+    await page.setViewportSize({ width: 1440, height: 1000 });
   }
-  checks.push({ name: "Codex connection disabled without broker", passed: await page.getByRole("button", { name: "Connect Codex" }).isDisabled() });
-  checks.push({ name: "Google OAuth disabled without broker", passed: await page.getByRole("button", { name: "Connect Google Drive" }).isDisabled() });
+  await page.getByRole("button", { name: "Integrations", exact: true }).click();
+  for (const text of ["Integrations", "Codex", "Claude Code", "API keys & storage", "Kie.ai API key", "Gemini API key", "Apify API token", "Google Drive", "Negroni / Brand / Offer", "Developer fallback"]) {
+    checks.push({ name: `integrations visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  }
+  checks.push({ name: "Codex exposes one explicit connection control", passed: await page.getByRole("button", { name: /Codex/ }).count() === 1 });
+  checks.push({ name: "Google Drive exposes one explicit connection control", passed: await page.getByRole("button", { name: /Google Drive/ }).count() === 1 });
   checks.push({ name: "Gemini key uses password input", passed: await page.getByLabel("Gemini API key").getAttribute("type") === "password" });
   checks.push({ name: "Apify token uses password input", passed: await page.getByLabel("Apify API token").getAttribute("type") === "password" });
+  await inspect(page, "integrations-desktop");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await inspect(page, "integrations-mobile");
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  for (const text of ["Settings", "Appearance & approvals", "Commit approvals"]) {
+    checks.push({ name: `settings visible: ${text}`, passed: await page.getByText(text, { exact: false }).first().isVisible() });
+  }
+  checks.push({ name: "Settings omits provider credentials", passed: await page.getByLabel("Gemini API key").count() === 0 });
   await inspect(page, "settings-desktop");
   await page.setViewportSize({ width: 390, height: 844 });
   await inspect(page, "settings-mobile");
@@ -151,7 +199,7 @@ try {
   await browser.close();
 }
 
-const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["home: 1440x1000", "home: 390x844", "research: 1440x1000", "research: 390x844", "library: 1440x1000", "library: 390x844", "brands: 1440x1000", "brands: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
+const report = { generated_at: new Date().toISOString(), base_url: baseUrl, viewport_states: ["home: 1440x1000", "home: 390x844", "research: 1440x1000", "research: 390x844", "library: 1440x1000", "library: 390x844", "brands: 1440x1000", "brands: 390x844", "brand-detail: 1440x1000", "brand-detail: 390x844", "integrations: 1440x1000", "integrations: 390x844", "settings: 1440x1000", "settings: 390x844"], checks, axe: axeResults, console_errors: consoleErrors, passed: checks.every((check) => check.passed) };
 await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
 process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 if (!report.passed) process.exitCode = 1;

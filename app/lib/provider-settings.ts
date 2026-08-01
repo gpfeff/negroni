@@ -10,7 +10,7 @@ export const PROVIDERS = [
   "google_drive",
 ] as const;
 export const GOOGLE_DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
-export const GOOGLE_DRIVE_FOLDER_NAME = "Negroni Research";
+export const GOOGLE_DRIVE_FOLDER_NAME = "Negroni";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -48,7 +48,6 @@ function parseProviderStatus(value: unknown): ProviderStatus {
     provider,
     status,
     blocker,
-    account_email: accountEmail,
     folder_id: folderId,
     folder_name: folderName,
     auto_store: autoStore,

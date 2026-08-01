@@ -2,9 +2,9 @@ import type {
   CompetitorAdsIntelligence,
   MetaAdsProjectSnapshot,
   ProviderNeutralCollectionReceipt,
-} from "./contracts";
-import { PROVIDER_NAMES } from "../competitor-research/contracts";
-import { validateProfileId } from "./profile-id";
+} from "./contracts.ts";
+import { PROVIDER_NAMES } from "../competitor-research/contracts.ts";
+import { validateProfileId } from "./profile-id.ts";
 
 const REFRESH_STATES = new Set([
   "complete",

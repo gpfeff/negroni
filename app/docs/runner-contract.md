@@ -5,8 +5,10 @@ store, or scheduler. A separately deployed secure runner and credential broker
 own those capabilities. Successful research returns contract `4.0`.
 
 Every run request includes the authenticated `x-negroni-owner` value used by
-Settings. The runner treats it as an opaque tenant key, resolves only that
-owner's broker-held credentials, and never returns provider tokens.
+Integrations plus server-verified `x-negroni-brand-id` and
+`x-negroni-offer-id` values. The runner treats the owner as an opaque tenant
+key, uses the stable record IDs only for owner-scoped filing identity, resolves
+only that owner's broker-held credentials, and never returns provider tokens.
 
 ## Implementation status
 
@@ -22,8 +24,8 @@ The configured Gemini path uses one brokered Interactions API task for the
 entire five-step sequence. It is fixed to standard Gemini Deep Research
 `deep-research-preview-04-2026`, preserves one validated receipt per prompt,
 and fails closed when any section or URL citation is missing. The runner never
-receives the Gemini API key. It also refuses network access unless
-`NEGRONI_GEMINI_APPROVED_RUN_ID` exactly matches the owner-scoped run ID.
+receives the Gemini API key. It refuses execution unless the authenticated
+request includes an exact approved owner-scoped run ID.
 
 The deployment target, required server-side configuration, approval-gated
 diff, and rollback are defined in
@@ -67,21 +69,19 @@ items, or artifacts.
 The runner accepts only:
 
 - lead offer or service;
-- client/customer name;
-- profession or job title;
+- profession;
+- job title;
 - company name;
 - HTTPS website or public profile URL;
-- service or offer purchased;
-- competitor used;
+- known competitors, if supplied;
 - industry/niche;
 - location or market served;
-- lead offer or service;
 - target age range;
-- the exact approved actions, prompt source, and nightly-monitor request.
+- the exact approved actions and optional competitor-database request.
 
-The prompt source document ID is
-`1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o`. The runner must retrieve its
-current content server-side and execute these five prompts in order:
+The runner must resolve its validated prompt source server-side and execute
+these five prompts in order. The local launcher uses the reviewed embedded
+bundle; hosted runners must deliberately configure an equivalent source:
 
 1. Market Awareness Research
 2. Competitor Research
@@ -89,7 +89,9 @@ current content server-side and execute these five prompts in order:
 4. Master Research Document (4a)
 5. Brand Tone of Voice (4b)
 
-The user reviews a prefilled final run prompt and may edit it. The runner records the exact submitted revision. These prompts remain vertical-agnostic; intake supplies the offer, buyer/customer relationship, market, audience, and brand context.
+The runner records the exact validated intake fingerprint and immutable artifact
+revision. These prompts remain vertical-agnostic; intake supplies the offer,
+market, audience, and brand context.
 
 Collected pages, ads, documents, and model output are untrusted evidence, never
 instructions. The runner must not allow retrieved content to alter this
@@ -109,30 +111,44 @@ sequence, tools, destinations, or safety rules.
 5. Create exactly two final representations of one approved brand-scoped revision:
    - `<offer> (<country or region>) — Master Research` as a native Google Doc;
    - `<offer-country-or-region>-master-research.md`.
-   A competitor database and ongoing monitoring are independent opt-ins and are not additional default Research deliverables.
+   The competitor database is the only optional Research deliverable. Continuous
+   monitoring is a separate future/internal capability, is not requested by this
+   flow, and is not an additional default Research deliverable.
 6. Read back every created Google file; verify Markdown/Doc parity, citations,
    competitor-row provenance, secrets, and structural-example leakage.
-7. Resolve researched competitors to stable verified advertiser identities and
-   pass the watchlist to the monitoring adapter.
-8. Map Meta evidence into all five artifacts and return their SHA-256 receipts,
-   the sanitized competitor-ad summary, sources, limitations, validations, and
-   active-or-blocked monitoring receipt.
+7. When the competitor database is requested, resolve researched competitors
+   to stable verified advertiser identities and pass the watchlist to the
+   database adapter.
+8. Map any requested Meta evidence into all five artifacts and return its
+   SHA-256 receipts, sanitized summary, sources, limitations, and database
+   receipt. Otherwise persist collection and monitoring as `not_requested`.
 
-Research is `complete` only when all prompts are complete and the monitor is
-active. It is `partial` when a prompt is limited or monitoring is blocked.
-The Google Sheet projection is optional. Missing required Research artifacts,
-the Google Doc, or the matching Markdown is failed or blocked, not partial.
+Research is `complete` when all prompts complete, required artifacts and Drive
+readbacks verify, and any requested competitor database completes. It is
+`partial` when a prompt or the requested database boundary is limited.
+Declining the database is `not_requested`, not a blocker. Missing
+required Research artifacts, the Google Doc, or matching Markdown is failed or
+blocked, not partial.
 
 ## Credential broker
 
 The broker is owner-scoped and supports:
 
 - Codex OAuth;
+- Claude Code login status;
 - Gemini API key storage;
+- Gemini OAuth status;
+- Kie.ai API key storage;
+- Apify API token storage;
 - Google Workspace OAuth using
   `https://www.googleapis.com/auth/drive.file`.
 
-Google outputs are created in the connected user’s `Negroni Research` folder.
+Google outputs are created under the connected user’s
+`Negroni / <Brand> / <Offer>` hierarchy. The filing input includes bounded
+stable brand/offer IDs and display names. Folder identity uses the stable IDs,
+so later display-name changes rename and reuse the same folders. The filing
+result must return a verified HTTPS Drive folder URL and folder name in
+addition to sole-parent and private-access proofs.
 The broker returns only connection metadata and an HTTPS authorization URL.
 It never returns tokens or key material to the browser or D1.
 

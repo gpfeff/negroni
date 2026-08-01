@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-31T08:40:48.008Z",
+  "generated_at": "2026-08-01T04:17:36.754Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
     "home: 1440x1000",
@@ -10,6 +10,10 @@
     "library: 390x844",
     "brands: 1440x1000",
     "brands: 390x844",
+    "brand-detail: 1440x1000",
+    "brand-detail: 390x844",
+    "integrations: 1440x1000",
+    "integrations: 390x844",
     "settings: 1440x1000",
     "settings: 390x844"
   ],
@@ -135,7 +139,15 @@
       "passed": true
     },
     {
+      "name": "mobile navigation exposes Integrations without a hidden horizontal-scroll target",
+      "passed": true
+    },
+    {
       "name": "home enters Research",
+      "passed": true
+    },
+    {
+      "name": "mobile Research navigation lands on the unobscured page heading",
       "passed": true
     },
     {
@@ -151,19 +163,23 @@
       "passed": true
     },
     {
-      "name": "visible: Run Research",
+      "name": "visible: Create brand",
       "passed": true
     },
     {
-      "name": "visible: Required customer profile",
+      "name": "visible: Fill in the information",
       "passed": true
     },
     {
-      "name": "visible: Client or customer name",
+      "name": "visible: Brand information",
       "passed": true
     },
     {
-      "name": "visible: Profession or job title",
+      "name": "visible: Profession",
+      "passed": true
+    },
+    {
+      "name": "visible: Job title",
       "passed": true
     },
     {
@@ -172,10 +188,6 @@
     },
     {
       "name": "visible: Website or public profile URL",
-      "passed": true
-    },
-    {
-      "name": "visible: Service or offer purchased",
       "passed": true
     },
     {
@@ -191,7 +203,7 @@
       "passed": true
     },
     {
-      "name": "visible: Research scope",
+      "name": "visible: Offer information",
       "passed": true
     },
     {
@@ -203,51 +215,7 @@
       "passed": true
     },
     {
-      "name": "visible: Final Gemini Deep Research prompt",
-      "passed": true
-    },
-    {
-      "name": "visible: Create competitor database",
-      "passed": true
-    },
-    {
-      "name": "visible: Enable ongoing monitoring",
-      "passed": true
-    },
-    {
-      "name": "visible: Client",
-      "passed": true
-    },
-    {
-      "name": "visible: Customer",
-      "passed": true
-    },
-    {
-      "name": "visible: Competitors",
-      "passed": true
-    },
-    {
-      "name": "visible: Market awareness",
-      "passed": true
-    },
-    {
-      "name": "visible: Competitor research",
-      "passed": true
-    },
-    {
-      "name": "visible: Customer psychology",
-      "passed": true
-    },
-    {
-      "name": "visible: 4A · Master research",
-      "passed": true
-    },
-    {
-      "name": "visible: 4B · Brand tone",
-      "passed": true
-    },
-    {
-      "name": "visible: Gemini Connection error",
+      "name": "visible: Create customer competitor database",
       "passed": true
     },
     {
@@ -255,15 +223,39 @@
       "passed": true
     },
     {
-      "name": "visible: Nightly competitor ads",
+      "name": "Research omits clutter: Client or customer name",
       "passed": true
     },
     {
-      "name": "visible: Competitor Ads",
+      "name": "Research omits clutter: Service or offer purchased",
       "passed": true
     },
     {
-      "name": "visible: No secure five-prompt research runner",
+      "name": "Research omits clutter: Final Gemini Deep Research prompt",
+      "passed": true
+    },
+    {
+      "name": "Research omits clutter: Enable ongoing monitoring",
+      "passed": true
+    },
+    {
+      "name": "Research omits clutter: Market awareness",
+      "passed": true
+    },
+    {
+      "name": "Research omits clutter: Customer psychology",
+      "passed": true
+    },
+    {
+      "name": "Research omits clutter: 4A · Master research",
+      "passed": true
+    },
+    {
+      "name": "Research omits clutter: 4B · Brand tone",
+      "passed": true
+    },
+    {
+      "name": "Research omits clutter: Nightly competitor ads",
       "passed": true
     },
     {
@@ -271,7 +263,7 @@
       "passed": true
     },
     {
-      "name": "paid run is disabled while execution is blocked",
+      "name": "Research exposes one optional database choice",
       "passed": true
     },
     {
@@ -323,19 +315,43 @@
       "passed": true
     },
     {
-      "name": "Library visible: Static creative",
-      "passed": true
-    },
-    {
-      "name": "Library visible: Video creative",
-      "passed": true
-    },
-    {
-      "name": "Library visible: Copy & scripts",
-      "passed": true
-    },
-    {
       "name": "Library visible: Campaign files",
+      "passed": true
+    },
+    {
+      "name": "Library control: Filter library by brand",
+      "passed": true
+    },
+    {
+      "name": "Library control: Filter library by offer",
+      "passed": true
+    },
+    {
+      "name": "Library control: Filter library by asset type",
+      "passed": true
+    },
+    {
+      "name": "Library control: Filter library by platform",
+      "passed": true
+    },
+    {
+      "name": "Library control: Filter library by status",
+      "passed": true
+    },
+    {
+      "name": "Library control: Filter library by date",
+      "passed": true
+    },
+    {
+      "name": "Library does not invent empty asset: Static creative",
+      "passed": true
+    },
+    {
+      "name": "Library does not invent empty asset: Video creative",
+      "passed": true
+    },
+    {
+      "name": "Library does not invent empty asset: Copy & scripts",
       "passed": true
     },
     {
@@ -407,7 +423,155 @@
       "passed": true
     },
     {
-      "name": "settings visible: Connect the tools behind your workspace.",
+      "name": "Brand detail visible: Permanent brand file",
+      "passed": true
+    },
+    {
+      "name": "Brand detail visible: Research stays separate by offer.",
+      "passed": true
+    },
+    {
+      "name": "Brand detail visible: Brand library",
+      "passed": true
+    },
+    {
+      "name": "Brand detail visible: Research packages",
+      "passed": true
+    },
+    {
+      "name": "Brand detail visible: Creative assets",
+      "passed": true
+    },
+    {
+      "name": "Brand detail visible: Campaigns",
+      "passed": true
+    },
+    {
+      "name": "Brand detail visible: Learnings",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-desktop: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "brand-detail-mobile: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Integrations",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Codex",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Claude Code",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: API keys & storage",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Kie.ai API key",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Gemini API key",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Apify API token",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Google Drive",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Negroni / Brand / Offer",
+      "passed": true
+    },
+    {
+      "name": "integrations visible: Developer fallback",
+      "passed": true
+    },
+    {
+      "name": "Codex exposes one explicit connection control",
+      "passed": true
+    },
+    {
+      "name": "Google Drive exposes one explicit connection control",
+      "passed": true
+    },
+    {
+      "name": "Gemini key uses password input",
+      "passed": true
+    },
+    {
+      "name": "Apify token uses password input",
+      "passed": true
+    },
+    {
+      "name": "integrations-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "integrations-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "integrations-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "integrations-desktop: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "integrations-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "integrations-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "integrations-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "integrations-mobile: no serious or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "settings visible: Settings",
       "passed": true
     },
     {
@@ -419,55 +583,7 @@
       "passed": true
     },
     {
-      "name": "settings visible: Codex",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Claude Code",
-      "passed": true
-    },
-    {
-      "name": "settings visible: API keys & storage",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Kie.ai API key",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Gemini API key",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Apify API token",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Google Drive",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Developer fallback",
-      "passed": true
-    },
-    {
-      "name": "settings visible: Connection setup needed",
-      "passed": true
-    },
-    {
-      "name": "Codex connection disabled without broker",
-      "passed": true
-    },
-    {
-      "name": "Google OAuth disabled without broker",
-      "passed": true
-    },
-    {
-      "name": "Gemini key uses password input",
-      "passed": true
-    },
-    {
-      "name": "Apify token uses password input",
+      "name": "Settings omits provider credentials",
       "passed": true
     },
     {
@@ -538,6 +654,22 @@
     },
     {
       "name": "brands-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "brand-detail-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "brand-detail-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "integrations-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "integrations-mobile",
       "material_violations": []
     },
     {

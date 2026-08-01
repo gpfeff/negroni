@@ -279,8 +279,10 @@ async function capabilityStatus(args) {
   };
 }
 
+let draperQueue = Promise.resolve();
+
 async function invokeDraperCli(command, input = null) {
-  return new Promise((resolveResult, rejectResult) => {
+  const invocation = draperQueue.then(() => new Promise((resolveResult, rejectResult) => {
     const child = spawn(process.execPath, [cliPath, "draper", command, "--json"], {
       cwd: pluginRoot,
       env: process.env,
@@ -311,7 +313,9 @@ async function invokeDraperCli(command, input = null) {
       }
     });
     child.stdin.end(input === null ? "" : `${JSON.stringify(input)}\n`);
-  });
+  }));
+  draperQueue = invocation.then(() => undefined, () => undefined);
+  return invocation;
 }
 
 async function learningCoreStatus(args) {

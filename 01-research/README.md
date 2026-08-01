@@ -59,20 +59,24 @@ For legal or other regulated work, use authoritative jurisdiction-specific
 sources, preserve uncertainty, and do not turn research into advice or an
 eligibility promise.
 
-### Required active-Meta competitor coverage
+### Optional active-Meta competitor database coverage
 
-A full Research package requires at least 10 distinct competitors whose ads are
-verified active in the requested country at research time through Meta Ad
-Library or an authorized provider. Each counted competitor needs a stable
-advertiser/Page identity, evidence URL or provider record, observed-active
-timestamp, and bounded creative observations. Websites, Facebook Pages,
-historical examples, agency claims, inactive ads, duplicates, and unverified
-candidates do not count.
+When Create customer competitor database is selected, its full database target
+is at least 10 distinct competitors whose ads are verified active in the
+requested country at research time through Meta Ad Library or an authorized
+provider. Each counted competitor needs a stable advertiser/Page identity,
+evidence URL or provider record, observed-active timestamp, and bounded
+creative observations. Websites, Facebook Pages, historical examples, agency
+claims, inactive ads, duplicates, and unverified candidates do not count.
 
-If live collection is unavailable, unsupported, throttled, or produces fewer
-than 10 verified active advertisers, Research remains `partial` or `blocked`
-with the exact shortfall and recovery action. General competitor research never
-silently substitutes for this requirement.
+If that option is selected and live collection is unavailable, unsupported,
+throttled, or produces fewer than 10 verified active advertisers, the run is
+`partial` or `blocked` with the exact shortfall and recovery action. When the
+option is not selected, database collection is `not_requested` and does not
+block the core Research package. Continuous monitoring is not a second intake
+choice and this flow installs no scheduler. General competitor research still runs as
+part of the internal evidence sequence and never silently substitutes for the
+requested database.
 
 ## Inputs
 
@@ -93,7 +97,7 @@ The initial Research contract will produce:
 4. `creative-brief.json` — approved inputs for Phase 2;
 5. `research-receipt.json` — scope, tools, limitations, and completion state.
 
-The approved brand revision has exactly two user-facing representations: a polished Google Doc for humans and content-equivalent Markdown stored against the brand for Draper, the Learning Core, and Creative. Both share revision, model, submitted-prompt, citation, limitation, timestamp, and SHA-256 metadata. Competitor database creation and ongoing monitoring are separate explicit opt-ins, not default deliverables.
+The approved brand revision has exactly two user-facing representations: a polished Google Doc for humans and content-equivalent Markdown stored against the brand for Draper, the Learning Core, and Creative. Both share revision, model, submitted-prompt, citation, limitation, timestamp, and SHA-256 metadata. Create customer competitor database is the only optional action on the Research page; continuous monitoring is not part of this intake flow.
 
 These names define the implemented runner-side artifact contract. Phase 1
 validates one SHA-256 receipt for each file before accepting a result.
@@ -101,18 +105,30 @@ validates one SHA-256 receipt for each file before accepting a result.
 exact immutable revision and SHA-256. It is the only competitor-research input
 Creative may consume; the collection receipt is not a sixth Research artifact.
 
-The interface first saves a required customer profile: client/customer name,
-profession or job title, company, public website or profile URL, service or
-offer purchased, known competitors when available, industry/niche, and location or market
-served. It then adds the lead offer or service and target age range needed to
-scope the research. It generates a prefilled final prompt that the user can accept or edit. The two final representations are the master Google Doc and matching brand-scoped Markdown. An explicitly requested competitor database uses authoritative SQLite and may have a restricted Sheet or local review projection.
+The interface creates a permanent brand file with company, public website or
+profile URL, industry/niche, and location or market served. Each offer adds
+profession, job title, known competitors when available, lead offer or service,
+and an optional target age range. The internal sequence uses all of this intake
+without exposing prompt editing on the primary page. Each offer has one current
+versioned research package; multiple offers share the brand foundation without
+mixing offer research. The two final representations are the master Google Doc
+and matching brand-scoped Markdown. An explicitly requested competitor database
+uses authoritative SQLite and may have a restricted Sheet or local review
+projection.
+
+The latest Drive receipt retains the exact intake basis used by its run. Later
+brand or offer edits preserve that historical package and mark it as needing
+refresh. Stable owner-scoped brand and offer IDs keep the private
+`Negroni / Brand / Offer` folders attached to the same records across
+display-name changes; those IDs cross only the authenticated Site-to-runner
+boundary.
 
 ## Current modules
 
 ### Research intake and deliverables
 
-[`../app/`](../app/) owns the required customer-profile intake and research scope,
-owner-scoped saved research sets, provider settings, run status, strict
+[`../app/`](../app/) owns the brand-and-offer intake, owner-scoped brand files,
+offer-scoped research packages, provider settings, run status, strict
 response validation, and output links for general lead-generation research.
 
 ### Meta Ads Intelligence
@@ -178,8 +194,9 @@ Negroni product and not an ad-account operator.
   state machines, and five artifact receipts are implemented.
 - Keep the Meta Ads Intelligence adapter storage-neutral without weakening
   profile isolation or evidence rules.
-- Require one idempotent scheduler owner and an active-or-blocked monitoring
-  receipt; never infer that a requested schedule is running.
+- Keep any future continuous-monitoring activation behind a separate explicit
+  approval, one idempotent scheduler owner, and an active-or-blocked receipt;
+  never infer that a schedule is running.
 - Deploy the locally verified owner-scoped runner only after its server-side
   providers and secret store are configured and the exact deployment diff is
   approved.
@@ -192,6 +209,8 @@ Negroni product and not an ad-account operator.
 Competitor monitoring is provider-neutral internally, while the selected live
 plan uses only the official Meta Ad Library route. See the
 [provider strategy](../docs/decisions/2026-07-29-competitor-monitoring-provider-strategy.md).
+This is a future/internal capability, not a second Research-page option, and
+the current flow does not install or activate it.
 
 The reviewed Meta Graph API v26.0 Ads Archive boundary can return political and
 issue ads globally and commercial ads that reached an EU country. It does not

@@ -1,4 +1,4 @@
-import type { ProviderName } from "../competitor-research/contracts";
+import type { ProviderName } from "../competitor-research/contracts.ts";
 
 export const RESEARCH_ARTIFACT_FILENAMES = {
   research_brief: "research-brief.md",

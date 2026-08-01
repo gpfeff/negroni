@@ -1,6 +1,6 @@
 # Negroni application — Status
 
-Updated: 2026-07-30
+Updated: 2026-07-31
 
 Repository path: `app/`
 
@@ -14,37 +14,41 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
   readiness, runner state, phase progression, and artifact handoffs;
 - persistent navigation using Research, Create, Launch, Iterate, and Loop;
 - focused Phase 1 navigation for Create Brand and Ad Spy;
-- Research tab with owner-scoped saved research sets;
+- Research tab with permanent owner-scoped brand files and offer-scoped
+  research packages;
 - interactive, versioned Markdown seeds with direct editing, permanent notes,
   recoverable revision history, optional AI proposals, and explicit Phase 2
   approval;
-- required customer profile: client/customer name, profession/job title, company,
-  public website/profile URL, service/offer purchased, industry/niche, and
-  location/market served; plus lead offer/service and target age range for
-  research scope. Known competitors are optional;
-- the fixed five-prompt sequence from the supplied Google Doc;
-- run status, prompt limitations, nightly competitor-monitor receipt, and
-  exactly three outward outputs: Google Doc, optional Google Sheet, and
-  Markdown;
+- complete intake for profession, job title, company, public website/profile,
+  industry/niche, known competitors, location/market, lead offer/service, and
+  optional target age range; no customer-name field;
+- one canonical internal five-prompt sequence, hidden from the primary form;
+- one optional Create customer competitor database control, minimal run
+  status, verified Drive folder and Doc links, optional Sheet, and Markdown;
 - a compact Competitor Ads Intelligence module with refresh health, watched
   competitors, active/new/changed ads, creative-family counts, coverage
   limitations, and access-controlled artifact links;
-- Library and Brands under Tools, with Draper retained as a plugin-only
+- Library and Brands under Tools; Library defaults to a real brand/offer and
+  filters Drive-backed outputs by offer, asset type, platform, status, and date,
+  with run and offer provenance on every result; Draper remains a plugin-only
   conversational control plane over an owner-, workspace-, and brand-scoped
   Learning Core;
 - an authoritative local SQLite catalog, immutable learning versions, FTS5,
   rebuildable non-authoritative vectors, content-addressed media, and guarded
   Obsidian-compatible Markdown projections;
-- Settings tab for Codex CLI, Claude Code, Gemini API key or OAuth, Kie.ai, Apify,
-  Google Drive, appearance, and Safety/YOLO mode;
-- owner-scoped Gemini, Kie.ai, and Apify credentials encrypted with AES-GCM in
-  D1 using a server-only runtime key; verification is non-generative and
-  plaintext credentials never return to the browser;
+- Integrations under Tools for Codex CLI, Claude Code, Gemini API key or OAuth,
+  Kie.ai, Apify, and Google Drive; Settings retains appearance and Safety/YOLO;
+- owner-scoped Gemini, Kie.ai, and Apify credentials accepted only through the
+  server-side credential broker; no API-key value is stored in D1 or returned
+  to the browser;
 - an optional developer `@negroni/local` package with the `negroni start` and
   `negroni doctor` commands; and
-- a loopback-only credential bridge that keeps API keys under `~/.negroni`
-  with owner-only permissions and checks native CLI authentication without
-  copying OAuth tokens.
+- a loopback-only, owner-isolated credential bridge that keeps pasted API keys
+  in process memory only, supports scoped 1Password environment injection,
+  enforces explicit save/replace/disconnect confirmations, and checks native
+  CLI authentication without copying OAuth tokens; and
+- fail-closed `check:private` and `serve:private` commands that validate distinct
+  stable secrets and start only the authenticated loopback broker and runner.
 
 The visual system uses compact Inter typography, a flat dark navy workspace,
 fixed left navigation, two-column tool cards, and one state-derived next-action
@@ -52,24 +56,24 @@ panel on Home. Negroni red is limited to active navigation, primary actions,
 progress, and glass highlights. The same hierarchy collapses to one readable
 column on mobile.
 
-Saved sets use the site D1 binding and contain the four research values, owner
-identity, timestamps, Markdown seed revisions, review messages, and approval
-fingerprints. Duplicate combinations are reused instead of creating another
-record. Provider secrets stay outside D1 and the browser; the server forwards
-them only to an owner-scoped credential broker.
+Brand files and offer records use the site D1 binding and contain the complete
+non-secret intake, owner identity, timestamps, Markdown seed revisions, review
+messages, and approval fingerprints. Duplicate offer combinations are reused
+instead of creating another record. Provider secrets stay outside D1 and the
+browser; the server forwards them only to an owner-scoped credential broker.
 
 The current draft and approved Phase 2 seed are separate. Editing after
 approval creates `draft_changes`; it does not silently change the approved
 revision or ads already tied to an older revision. AI output remains proposed
 until explicitly applied.
 
-Contract `4.0` requires exact source document
-`1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o`, the five prompts in order,
-one receipt per prompt, receipts for all five durable Research artifacts, one
-verified Google Doc, one matching Markdown report, a competitor archive action,
-and an active-or-blocked monitoring receipt. Google Sheet projection is
-optional; an access-controlled local report remains available when it is not
-configured.
+Contract `4.0` requires the exact validated prompt source, five prompts in
+order, one receipt per prompt, receipts for all five durable Research artifacts,
+one verified Google Doc, and one matching Markdown report. Competitor database
+creation is the only user-facing optional action; when selected it requires a
+verified Sheet or explicit limitation. When declined, database collection is
+`not_requested` and does not block the core package. Monitoring is not a second
+user-facing choice and this flow installs no scheduler.
 
 The server-only Meta Ads Intelligence adapter now:
 
@@ -104,16 +108,34 @@ closed. Saving or checking a key cannot start research. No real Gemini key was
 changed and no paid Deep Research request was executed during this
 implementation.
 
-Live research remains correctly **blocked** because the Sites runtime has no
-secure research runner variables. Hosted Gemini connection remains correctly
-**blocked** because no encrypted hosted `SecretStore` adapter is wired; the
-test-only in-memory adapter cannot run in production. Other hosted provider
-connections remain correctly **blocked** because there are no credential-broker
-variables. The installed
-edition verifies Codex as connected on this machine; Claude Code is installed
-but logged out, and Gemini OAuth is blocked until `gcloud` is installed. No
-fake run, Google file, provider connection, schedule, watch count, finding, or
-parity state is present.
+The local launcher now starts the Site, owner-scoped runner, and credential
+broker as one loopback-only stack. A deterministic no-paid-model research
+upstream has exercised the full five-step run through real private Google Drive
+filing, including a verified native Google Doc, Markdown file, optional native
+Sheet, and `Negroni / Brand / Offer` folder link. The checked competitor-
+database run completed honestly as `partial` because official public-ad
+collection was not authorized. Temporary validation files were moved to Drive
+trash after readback; the permanent `Negroni` root remains.
+
+The latest verified Drive receipt now persists on the exact owner-scoped offer
+with its immutable intake basis. A later brand or offer edit preserves that
+receipt and marks it as needing refresh. Stable brand and offer IDs travel only
+over the authenticated server-to-runner boundary and keep Drive folders attached
+to the same permanent records even when their display names change.
+A second live local rehearsal completed with the database option declined,
+returned `complete`, survived a profile reload with the same run and folder
+link, and then removed the synthetic profile and moved its exact validation
+brand folder to Drive trash. No paid model was called.
+
+These checks prove the local execution and Drive boundaries, not a paid Gemini
+run or hosted research execution. The owner-only Site interface is privately
+published, and production bundle readback verified
+the lean Create Brand flow, single competitor-database control, Integrations,
+Drive completion link, and current social preview. Hosted research remains
+correctly **blocked** until the Sites runtime has the private runner and
+credential-broker bindings. No paid Deep Research request, official Meta
+collection, scheduler, traffic, creative publishing, or ad-account mutation was
+performed.
 
 The existing owner-restricted Site and project ID are preserved:
 `https://negroni-campaign-studio.gpfeff.chatgpt.site`.
@@ -131,7 +153,7 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - Seed review: `components/research-review.tsx`, `app/api/review/route.ts`,
   `lib/research-seed.ts`
 - Research endpoint: `app/api/run/route.ts`
-- Saved-set endpoint and D1 schema: `app/api/profiles/route.ts`, `db/`, `drizzle/`
+- Brand-and-offer endpoint and D1 schema: `app/api/profiles/route.ts`, `db/`, `drizzle/`
 - Provider endpoint and safe response parsing: `app/api/settings/route.ts`,
   `lib/provider-settings.ts`
 - Local launcher and credential bridge: `bin/negroni.mjs`,
@@ -144,7 +166,7 @@ browser and continues to report unavailable hosted capabilities as blocked.
   warehouse fixture, migration, and fixture: `lib/learning-core/`,
   `bin/draper.ts`, `migrations/learning-core/`, `fixtures/learning-core/`
 - Cache-portable MCP boundary: `bin/negroni-mcp.mjs`
-- Runner and monitoring contract: `docs/runner-contract.md`
+- Research runner and competitor-archive contract: `docs/runner-contract.md`
 - Contract tests: `tests/`
 - Responsive QA: `qa/visual-qa-report.json`, `qa/screenshots/`
 - Plugin manifest and portable workflows: `../.codex-plugin/`, `../skills/`
@@ -154,13 +176,18 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - `npm run validate`: passed
 - TypeScript and scoped ESLint: passed
 - Plugin contract tests: 4/4 passed
-- Application contract/security tests: 122/122 passed
+- Public capture-boundary tests: 6/6 passed
+- Application contract/security tests: 159/159 passed
 - Vinext production build: passed
-- Install smoke test: global package, local app, and seven-provider Settings API passed
-- Visual QA: Home, Research, Library, Brands, and Settings passed at desktop
-  and mobile sizes, 121/121 checks
+- Separate web application production build: passed
+- Install smoke test: global package, local app, and seven-provider Integrations API passed
+- Visual QA: Home, Research, Library, Brands, Brand detail, Integrations, and
+  Settings passed at desktop and mobile sizes, 151/151 checks
 - Accessibility: zero serious or critical Axe violations across all tested states
 - Browser runtime: no unexpected console errors or horizontal overflow
+- Private Sites deployment: succeeded with one allowed owner, no
+  groups, and production bundle readback of the current Research UI and social
+  preview
 
 ## Blockers
 
@@ -172,23 +199,28 @@ Configure these server-side values with their real services:
 - `CREDENTIAL_BROKER_URL`
 - `CREDENTIAL_BROKER_TOKEN`
 
-The runner must invoke the implemented Meta Ads Intelligence adapter, expose
-access-controlled report URLs, and provide an authorized collection route.
-The hosted broker must implement the seven-provider contract, including Apify and an
-encrypted Gemini `SecretStore` plus non-generative Google verifier. The local
-bridge still needs a Google OAuth client ID before Google Drive can connect.
+The hosted runner must invoke the implemented Meta Ads Intelligence adapter,
+expose access-controlled report URLs, and provide an authorized collection
+route. The reviewed local broker implements the seven-provider status and
+owner-scoped session-credential contract, Gemini proxy, disconnect boundary,
+and verified Google Drive filing through Application Default Credentials. It is
+not installed as a persistent service or exposed through an authenticated
+external route; the final hosted Google OAuth callback also remains absent.
 
 ## Remaining risks
 
-- A real five-prompt run cannot be verified before the runner exists.
+- The five-step runner and checkpoint/replay behavior are locally verified with
+  a deterministic no-paid-model upstream; no real paid Gemini run has been
+  approved or executed.
 - Live official Meta API collection cannot be verified before profile
   authorization and credentials exist.
 - No Foreplay, Firecrawl, BrowserOS collection, or Cloudflare scraper is
   selected for competitor collection.
 - No Negroni scheduler owner is configured; the adapter intentionally did not
   create one. The existing `pay-per-call` Hermes owner was not changed.
-- Google projection remains unverified and optional; no Google action was
-  performed by this integration.
+- Private Google Drive folder, Doc, Markdown, optional Sheet, formula safety,
+  readback parity, and idempotent replay are locally verified. Hosted Google
+  OAuth and production filing remain unverified.
 - Learning Core warehouse measurements and Draper's end-to-end answer are
   fixture-only. PostgreSQL, live warehouse ingestion, continuous learning,
   hosted persistence, and ad-account mutation are not implemented.
@@ -196,9 +228,13 @@ bridge still needs a Google OAuth client ID before Google Drive can connect.
   the storage contract isolates that implementation for a later adapter.
 - The hosted Site credential vault is implemented; live provider verification
   still depends on each provider accepting the submitted user credential.
-- The local Kie.ai and Gemini key vault is implemented, but no real key was
-  entered and no paid generation request was made.
+- Local pasted Kie.ai, Gemini, and Apify credentials are process-memory only;
+  persistent local injection requires a scoped 1Password Developer Environment.
+  No real key was entered and no paid generation request was made.
 - D1 record persistence needs one production authenticated save/reload check
   after the deployed binding is provisioned.
+- The unused legacy `NEGRONI_SECRET_ENCRYPTION_KEY` Site variable remains
+  configured but is no longer read; deleting that unrecoverable secret remains
+  a separate configuration approval.
 - Edited seed revisions do not yet regenerate the Google Doc or Markdown
   output; those remain run snapshots.

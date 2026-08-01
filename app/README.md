@@ -1,23 +1,30 @@
 # Negroni Sites workspace
 
-This directory is the live workspace used by the Negroni plugin. It is not a
-separate product users are expected to install or operate. The deployed Site
-opens on a branded campaign workspace with persistent
+This directory is the Site source workspace used by the Negroni plugin. It is
+not a separate product users are expected to install or operate. The owner-only
+interface is privately deployed through Sites; private runner and credential-broker
+bindings remain unconfigured, so hosted execution stays visibly blocked. The
+Site opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
 Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
 and Review & Approve. A factual guidance rail shows research readiness, the
-next honest action, runner availability, and spend protection. Research is the
-first executable section; later phases remain visibly planned.
+next honest action, runner availability, and spend protection. Research and
+the Create → Quiz Funnels editor are executable; later phases remain visibly
+planned.
 
-Tools includes Library and Brands. Brands is the organizing parent for each
-central brand file and its offers, research, ads, and creative. Library is the
-brand-aware view of generated and collected assets. Draper remains available
+Tools includes Library, Brands, and Integrations. Brands is the organizing
+parent for each permanent brand file and its offers, research, ads, creative,
+campaigns, and learnings. Library defaults to the first available brand and
+offer and filters real Drive-backed assets by offer, asset type, platform,
+status, and date. Every result names the offer and exact research run that
+produced it. Integrations contains API keys, agents,
+providers, and Google Drive. Draper remains available
 through the installed plugin contracts but is intentionally not shown in the
 Site navigation.
 
-A focused Negroni interface for saving a reusable research set, running the
-five approved research prompts in order, and producing five durable Research
-artifacts:
+A focused Negroni interface for creating a permanent brand file, adding
+multiple offers beneath it, running the approved research workflow for the
+current offer, and producing five durable Research artifacts:
 
 1. `research-brief.md`
 2. `evidence-index.json`
@@ -30,22 +37,51 @@ Markdown, and competitor archive. The archive opens a restricted Google Sheet
 when configured, otherwise an access-controlled local report. SQLite remains
 authoritative.
 
-The Research tab asks only:
+The Research page keeps the workflow deliberately short: create a brand, fill
+in the complete information needed for the first offer, optionally create the
+customer competitor database, and read the run status. The internal prompt
+sequence and receipts remain enforced without occupying the primary form.
+After a validated run, the latest compact Drive receipt and exact intake basis
+are stored against that offer, so its status and folder link return after
+reload in Research, Brands, and Library without exposing the report body in
+the profile response. Later edits preserve the older package but mark it as
+needing refresh instead of silently treating it as current.
 
-- Lead offer or service
-- Client/customer name, profession or job title, and company
+## Create: Quiz Funnels
+
+Quiz Funnels is an editable, local-only Phase 2 workspace for a one-question-
+at-a-time lead-capture experience. It starts with a safe default path from an
+intro through qualification, ZIP capture, contact capture, and a result. The
+editor supports changing copy and answer choices, adding and reordering
+questions, and viewing the active screen in phone or desktop frames.
+
+The editor saves only the funnel draft in the current browser. It does not
+submit a lead, connect a CRM, publish a funnel, start analytics, or launch
+traffic. It records the planned attribution contract—an explicit allowlist for
+UTMs and click IDs plus vendor-neutral quiz events—without placing lead PII in
+analytics. A future approved Launch adapter must validate the flow, attach a
+delivery destination, and make publishing an explicit approval-gated action.
+
+The initial brand form asks for:
+
+- Profession, job title, and company
 - Public website or profile URL
-- Service or offer purchased and a competitor they use
+- Known competitors
 - Industry/niche and location or market served
-- Lead offer or service and target age range for the campaign research scope
+- Lead offer or service, with target age range optional
 
-The required profile and research-scope inputs feed three visible research streams: Client, Customer, and
-Competitors. Competitor Ads remains one public-evidence source inside the
-Competitors stream rather than a substitute for the full research method.
+Each offer has one current versioned research package. Multiple offers share
+the same permanent `brand_id`, while the existing profile/workspace ID remains
+the offer-scoped research boundary. Existing records are backfilled with a
+stable brand identity during migration.
 
-Each authenticated user can save, reopen, update, and delete combinations of
-those inputs. Records are owner-scoped in the site database. The app never puts
-provider credentials in those records.
+Each authenticated user can save, reopen, and update brands, then use **New
+offer** to retain brand information while starting a clean offer intake.
+Company, website, industry, and market edits intentionally update the shared
+brand foundation; offer fields remain scoped to the current offer. Existing
+research receipts and approved revisions remain immutable snapshots.
+Records are owner-scoped in the site database. The app never puts provider
+credentials in those records.
 
 ## Review and Phase 2 seed
 
@@ -66,11 +102,12 @@ Reapprove the new revision when it should become authoritative. Google Doc,
 Markdown, and competitor archive outputs remain snapshots of the original run
 until a future export-sync integration regenerates them.
 
-The five-prompt source is the approved Google Doc
-`1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o` and the sequence is fixed:
-Market Awareness, Competitor Research, Avatar/Psychographic Research, Master
-Research, and Tone of Voice. The secure runner must return a receipt for every
-prompt.
+The runner owns one canonical internal sequence: Market Awareness, Competitor
+Research, Avatar/Psychographic Research, Master Research, and Tone of Voice.
+The local launcher uses the reviewed embedded prompt bundle; a hosted runner
+must provide the same validated source contract. The primary Research form
+does not expose these internal steps. The secure runner returns a receipt for
+every prompt.
 
 After competitor research verifies a Page-ID watchlist, the runner creates one
 isolated Meta Ads Intelligence project profile. Its scheduler-neutral daily
@@ -78,32 +115,34 @@ operation supports normalized imports and an authorized official Meta API
 adapter. Missing inputs are persisted as skipped; missing official API
 authorization is persisted as blocked. The adapter never creates a scheduler.
 
-## Settings and secrets
+## Integrations, settings, and secrets
 
-Settings provides the workspace-side connection and preference surface:
+Tools → Integrations provides the workspace-side connection surface:
 
-- one home for all preferences and connection setup
 - Codex or ChatGPT plugin readiness
 - Claude Code login
 - Gemini API-key connection status, deliberate save/replace/disconnect actions,
   and an exact paid-run approval step
 - Kie.ai API key for image and video generation
 - Google Workspace OAuth with the minimum `drive.file` scope
-- light, dark, or system appearance
-- Safety or YOLO local operating mode
 
-The sidebar stays navigation-only. Appearance, approval behavior, provider
-status, and storage live in Settings. Local launcher setup remains an optional
-developer fallback and must not be presented as the default product path.
+Settings contains light, dark, or system appearance plus Safety or YOLO local
+operating mode. Provider credentials never appear there.
+
+The sidebar stays navigation-only. Provider status and storage live in
+Integrations; appearance and approval behavior live in Settings. Local launcher
+setup remains an optional developer fallback and must not be presented as the
+default product path.
 
 The installed edition uses each agent CLI's native login. Negroni checks
 `codex login status` or `claude auth status`; it never reads, copies, or
-re-saves their OAuth credentials. Kie.ai and installed-edition Gemini keys are
-sent directly to the local credential bridge, stored under `~/.negroni` with
-owner-only file permissions, and cleared from the form. The hosted Site uses
+re-saves their OAuth credentials. Keys pasted into the installed edition are
+held only in the local broker process and cleared from the form. Persistent
+local injection uses a scoped 1Password Developer Environment; Negroni never
+writes local keys to plaintext files. The hosted Site uses
 `/api/connections/gemini` for owner-scoped connection metadata and deliberate
 save, replace, and disconnect requests. Production fails closed until that
-route is backed by an encrypted hosted secret store; the repository's in-memory
+route is backed by the owner-scoped credential broker; the repository's in-memory
 adapter is limited to tests and explicit non-production local previews. Negroni
 does not persist secret values in the browser, site database, repository, logs,
 or research payload.
@@ -122,10 +161,14 @@ owner-scoped approved run ID. The browser first records that exact ID at
 `/api/research/runs/:runId/start`. Direct browser POSTs to `/api/run` fail
 closed.
 
-Google OAuth uses the web-server authorization-code flow with offline access.
-The broker verifies OAuth state, stores refresh tokens securely, and creates or
-reuses one app-owned `Negroni Research` folder. Each connected owner's Doc,
-Sheet, and matching Markdown file are filed there automatically. The app
+The production Google OAuth broker must use the web-server authorization-code
+flow with offline access, verify OAuth state, and keep refresh tokens outside
+D1. The local developer broker uses pre-authorized Application Default
+Credentials and does not implement the production callback. Either broker
+creates or reuses one app-owned `Negroni` folder. Each run files its Doc, Sheet, Markdown,
+and later assets under `Negroni / <Brand> / <Offer>`. A successful filing
+receipt includes the verified offer folder name and HTTPS Drive URL; Run Status,
+Brands, and Library show that link only after verification. The app
 forwards only the authenticated owner identity to the broker and runner.
 
 Configure these server-side values in the hosting environment:
@@ -146,7 +189,7 @@ The runner additionally configures `META_ADS_INTELLIGENCE_CLI`,
 Documents.
 
 Without the runner, research is visibly blocked.
-Without the credential broker, Settings is visibly blocked. The app never
+Without the credential broker, Integrations is visibly blocked. The app never
 falls back to fixtures or invents Google IDs, output URLs, research findings,
 or monitoring state.
 
@@ -155,9 +198,10 @@ The Gemini broker contract, deployment gate, and rollback boundary are in
 
 The repository includes a deployable local runner boundary at
 `bin/research-runner.ts`. It authenticates a server bearer token plus opaque
-owner identity, accepts only the strict customer-profile and research-scope intake, fetches the approved
-prompt source server-side, checkpoints the exact five-prompt sequence, calls
-the stable competitor boundary, and writes immutable five-artifact receipts.
+owner identity and exact approved run ID, accepts only the strict brand-and-offer
+intake, resolves its validated prompt source server-side, checkpoints the exact
+five-prompt sequence, conditionally calls the stable competitor boundary, and
+writes immutable five-artifact receipts.
 Its default provider set is intentionally blocked, so starting this process
 does not create a live research capability. Deployment and provider wiring are
 described in [`docs/research-runner-deployment.md`](docs/research-runner-deployment.md).
@@ -182,7 +226,7 @@ The connector follows Google's narrow-scope and server-side token guidance:
 and
 [OAuth for web-server apps](https://developers.google.com/identity/protocols/oauth2/web-server).
 
-The exact runner and monitoring requirements are in
+The exact runner and competitor-archive requirements are in
 [`docs/runner-contract.md`](docs/runner-contract.md).
 
 ## Commands
@@ -190,6 +234,8 @@ The exact runner and monitoring requirements are in
 ```bash
 npm install
 npm run dev
+npm run check:private
+npm run serve:private
 npm run validate
 npm run qa:visual
 ```
@@ -203,6 +249,10 @@ For contributor development and the optional self-hosted fallback, see
 From a checkout, `npm run dev:local` starts the same loopback app-and-bridge
 pair as the installed launcher. Use it when developing the complete local
 experience; `npm run dev` remains the UI-only contributor server.
+`npm run check:private` validates distinct stable broker and runner secrets plus
+available loopback ports without starting a service. `npm run serve:private`
+starts only the authenticated broker and runner; it does not install a service,
+change DNS, add a tunnel route, or expose either listener beyond loopback.
 
 ## Optional local developer package
 

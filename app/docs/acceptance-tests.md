@@ -2,14 +2,21 @@
 
 Automated tests cover:
 
-- all required customer-profile and research-scope values, including HTTPS public-profile URL and target-age validation;
+- permanent brand identity, multiple offer records, all required intake values,
+  HTTPS public-profile URL validation, and optional target-age validation;
+- owner-scoped persistence and readback of the latest verified Drive receipt
+  and intake basis against the exact offer, with mismatched-offer attachment
+  rejected and later edits marked as needing refresh;
+- server-bound stable brand/offer IDs, idempotent Drive filing, and folder reuse
+  across brand and offer display-name changes;
 - deterministic research naming;
 - canonical engine and exact external-action authorization;
 - exact prompt source, five-prompt order, and five execution receipts;
 - complete-or-limited prompt receipts and partial-result consistency;
-- active monitoring receipts and honest monitoring blockers;
-- exactly one verified Google Doc, one Markdown output, and one competitor
-  archive action with either a verified restricted Sheet or local report;
+- `not_requested` competitor collection with zero boundary calls when declined,
+  plus honest requested-database limitations;
+- exactly one verified Google Doc and matching Markdown output, with a verified
+  restricted Sheet only when the competitor database is requested;
 - all five durable Research artifact receipts;
 - project-profile isolation across databases, watches, and cloud destinations;
 - identical observations without duplicate content versions;
@@ -70,10 +77,12 @@ Automated tests cover:
 - deterministic non-installed schedule planning with one owner, overlap lock,
   bounded runtime, exit receipts, resume command, exposure, and rollback.
 
-Visual QA covers Home, Research, Library, Brands, and Settings at desktop/mobile;
+Visual QA covers Home, Research, Library, Brands, Brand detail, Integrations,
+and Settings at desktop/mobile;
 one local next-action panel; all six Research cards; no global right rail,
 synthetic goals, duplicate pipeline, Draper Site navigation, textured canvas, or
-unsupported performance language; the complete customer profile and research
-scope; the five prompt labels; the visible runner and Gemini broker blockers;
-disabled paid-run actions when blocked; desktop/mobile overflow; browser errors;
-and material accessibility violations.
+unsupported performance language; the complete brand-and-offer intake; the
+single optional competitor-database control; minimal run status; separate
+Settings and Integrations responsibilities; disabled paid-run actions when
+blocked; desktop/mobile heading visibility and overflow; browser errors; and
+material accessibility violations.

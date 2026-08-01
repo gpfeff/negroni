@@ -25,11 +25,10 @@ function completePromptReceipts(): RunResult["prompt_execution"]["prompts"] {
 
 function validIntake(): IntelligenceIntake {
   const intake = createEmptyIntake("America/Los_Angeles");
-  intake.client_customer_name = "Jordan Lee";
-  intake.profession_job_title = "Operations director";
+  intake.profession = "HVAC contractor";
+  intake.job_title = "Operations director";
   intake.company_name = "Regional Repair Co.";
   intake.website_or_public_profile_url = "https://regional-repair.example";
-  intake.service_or_offer_purchased = "Emergency repair membership";
   intake.competitor_used = "Local repair marketplace";
   intake.offer_or_lead_type = "Regional repair leads";
   intake.industry = "Home services";
@@ -46,6 +45,12 @@ function validResult(researchName = RESEARCH_NAME): RunResult {
     status: "complete",
     research_engine: "lead-generation-ads-discovery-intelligence",
     completed_at: "2026-07-29T20:00:00.000Z",
+    brand_library: {
+      status: "stored",
+      folder_name: "Regional Repair Co. / Regional repair leads",
+      folder_url: "https://drive.google.com/drive/folders/brand-folder-123",
+      verified: true,
+    },
     outputs: {
       google_doc: {
         title: `${researchName} — Master Research`,
@@ -138,24 +143,27 @@ test("the intake requires the customer profile before research scope", () => {
   const intake = createEmptyIntake();
   assert.equal(intake.create_competitor_database, false);
   assert.equal(intake.competitor_monitoring.enabled, false);
+  assert.deepEqual(intake.allowed_actions, ["public_research", "create_google_doc", "create_google_sheet"]);
   assert.match(intake.approved_prompt, /1\).*Market Awareness[\s\S]*4A\).*Master Research[\s\S]*4B\).*Brand Tone/i);
   assert.deepEqual(validateIntake(intake), [
-    "Enter the client or customer name.",
-    "Enter the profession or job title.",
+    "Enter the profession.",
+    "Enter the job title.",
     "Enter the company name.",
     "Enter an HTTPS website or public profile URL.",
-    "Describe the service or offer purchased.",
     "Describe the lead offer or service.",
     "Enter the industry or niche.",
     "Enter the location or market served.",
-    "Enter a target age range such as 30–60.",
   ]);
   assert.deepEqual(validateIntake(validIntake()), []);
+
+  const hiddenMonitoringAttempt = validIntake();
+  hiddenMonitoringAttempt.competitor_monitoring.enabled = true;
+  assert.ok(validateIntake(hiddenMonitoringAttempt).some((error) => error.includes("not available from this Research flow")));
 });
 
-test("target age range accepts common delimiters and rejects invalid bounds", () => {
+test("target age range is optional, accepts common delimiters, and rejects invalid bounds", () => {
   const intake = validIntake();
-  for (const range of ["30-60", "30–60", "30 to 60"]) {
+  for (const range of ["", "30-60", "30–60", "30 to 60"]) {
     intake.target_age_range = range;
     assert.deepEqual(validateIntake(intake), []);
   }
@@ -192,6 +200,15 @@ test("Google Sheet projection is optional while local competitor reports remain 
   const parsed = parseRunResult(localOnly, RESEARCH_NAME);
   assert.equal(parsed.outputs.google_sheet.status, "not_configured");
   assert.ok(parsed.competitor_ads.links.report_markdown);
+});
+
+test("completed research exposes only a verified Google Drive brand folder", () => {
+  const parsed = parseRunResult(validResult(), RESEARCH_NAME);
+  assert.equal(parsed.brand_library.folder_url, "https://drive.google.com/drive/folders/brand-folder-123");
+
+  const unverified = validResult();
+  (unverified.brand_library as { verified: boolean }).verified = false;
+  assert.throws(() => parseRunResult(unverified, RESEARCH_NAME), /brand folder/i);
 });
 
 test("the exact source document and five-prompt order are enforced", () => {

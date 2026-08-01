@@ -13,6 +13,8 @@ import {
   researchSeedLengthError,
   researchSeedSha256,
 } from "@/lib/research-seed";
+import { boundedJson, mutationAllowed } from "@/lib/request-security";
+import { safeServiceUrl } from "@/lib/safe-service-url";
 
 const STORAGE_BLOCKER = "Research review is unavailable until the site database is configured.";
 
@@ -58,7 +60,7 @@ async function loadReview(database: Database, owner: string, profileId: string):
   const configuration = reviewConfiguration();
   return {
     available: true,
-    ai_available: Boolean(configuration.url && configuration.token),
+    ai_available: Boolean(safeServiceUrl(configuration.url) && configuration.token),
     workspace: workspaceResult.results?.[0] ?? null,
     revisions: revisions.results ?? [],
     messages: messages.results ?? [],
@@ -137,7 +139,7 @@ export async function GET(request: Request): Promise<Response> {
   const owner = authenticatedOwner(request);
   if (!owner) return Response.json({ error: "Authentication is required." }, { status: 401 });
   const profileId = new URL(request.url).searchParams.get("profile_id")?.trim() ?? "";
-  if (!profileId) return Response.json({ error: "Choose a saved research set." }, { status: 400 });
+  if (!profileId) return Response.json({ error: "Choose an offer research package." }, { status: 400 });
   const database = await getDatabase();
   if (!database) {
     const response: ResearchReviewResponse = {
@@ -158,6 +160,7 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  if (!mutationAllowed(request)) return Response.json({ error: "A same-origin request is required." }, { status: 403 });
   const owner = authenticatedOwner(request);
   if (!owner) return Response.json({ error: "Authentication is required." }, { status: 401 });
   const database = await getDatabase();
@@ -166,7 +169,7 @@ export async function POST(request: Request): Promise<Response> {
 
   let body: Record<string, unknown>;
   try {
-    const value = await request.json();
+    const value = await boundedJson(request, 600_000);
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error();
     body = value as Record<string, unknown>;
   } catch {
@@ -256,7 +259,8 @@ export async function POST(request: Request): Promise<Response> {
   if (action === "ask_ai") {
     if (!isText(body.message, 1, 4_000)) return Response.json({ error: "Tell Negroni what you want changed." }, { status: 400 });
     const configuration = reviewConfiguration();
-    if (!configuration.url || !configuration.token) {
+    const reviewUrl = safeServiceUrl(configuration.url);
+    if (!reviewUrl || !configuration.token) {
       return Response.json({ error: "AI revisions are unavailable until the secure review runner is configured. Save the feedback as a note or edit the seed directly." }, { status: 503 });
     }
     const workspace = await loadReview(database, owner, profileId);
@@ -281,7 +285,7 @@ export async function POST(request: Request): Promise<Response> {
       change_summary: string;
     };
     try {
-      const response = await fetch(configuration.url, {
+      const response = await fetch(reviewUrl, {
         method: "POST",
         headers: {
           authorization: `Bearer ${configuration.token}`,

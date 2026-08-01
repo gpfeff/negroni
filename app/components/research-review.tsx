@@ -175,7 +175,7 @@ export function ResearchReview({ profile, runResult }: Props) {
       <section className="review-workspace review-empty" id="research-review" aria-labelledby="review-title">
         <div>
           <p className="kicker">Research seed editor</p>
-          <h2 id="review-title">Choose a saved research set.</h2>
+          <h2 id="review-title">Choose an offer research package.</h2>
           <p>Open any client, customer, and competitor combination to edit its seed, leave feedback, and approve the exact revision Phase 2 should use.</p>
         </div>
       </section>

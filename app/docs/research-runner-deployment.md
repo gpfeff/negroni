@@ -1,14 +1,19 @@
 # Research runner deployment boundary
 
-Updated: 2026-07-30
+Updated: 2026-07-31
 
 ## Capability state
 
-The owner-scoped HTTP boundary is locally verified and not deployed. The
-default dependency set remains blocked unless separately configured. The
-Gemini research-engine adapter is locally verified against a fake broker, but
-there is no paid production proof, live prompt-source provider, Google Drive,
-official Meta, or scheduler capability.
+The owner-only Site interface is privately deployed. Its private runner and
+credential-broker bindings are not deployed, so hosted research correctly
+remains blocked. The owner-scoped private-service contract is implemented and
+locally verified: `npm run check:private` validates its ports and stable secrets,
+and `npm run serve:private` starts only the loopback broker and runner. Neither
+command installs a persistent service or creates an external route. The local
+launcher enables the reviewed embedded prompt bundle. The Gemini research
+adapter is verified against a fake upstream, and Google Drive filing has a live
+no-paid-model proof. There is no paid Gemini production proof, hosted broker,
+official Meta collection, or scheduler capability.
 
 ## Deployment target
 
@@ -23,45 +28,62 @@ Mount these roots separately:
   `/Users/greg-mac-mini/Documents/tools-negroni` or an equivalent durable
   review volume.
 
-The service secret store must provide `NEGRONI_RUNNER_TOKEN`. Optional runtime
+The service environment must provide distinct, stable
+`NEGRONI_RUNNER_TOKEN` and `CREDENTIAL_BROKER_TOKEN` values, each 32–512
+non-whitespace characters. Run the fail-closed preflight before service start:
+
+```bash
+npm run check:private
+npm run serve:private
+```
+
+Optional runtime
 configuration is `NEGRONI_RUNNER_PORT`, `NEGRONI_RUNTIME_ROOT`, and
 `NEGRONI_ARTIFACT_ROOT`. Live provider implementations additionally require an
 owner-isolated prompt-source client, research provider, and credential broker;
 provider secrets must never enter the browser, site database, source tree, or
 receipts.
 
-Gemini Deep Research additionally requires `CREDENTIAL_BROKER_URL`,
-`CREDENTIAL_BROKER_TOKEN`, and the exact one-run approval value
-`NEGRONI_GEMINI_APPROVED_RUN_ID`. The key remains inside the credential broker.
-Changing that run ID is an action-time paid-run approval, not standing
-authorization. One approved Negroni run creates one standard Deep Research
-interaction covering all five required prompts.
+Gemini Deep Research additionally requires the runner's loopback
+`CREDENTIAL_BROKER_URL`. The key remains inside the credential broker. Site
+owners are converted to stable SHA-256 owner keys before broker access; pasted
+session credentials, status, disconnect, Gemini interaction proxying, and Drive
+filing are isolated by that key. Each
+approved request carries the exact owner-scoped run ID in the authenticated
+`x-negroni-approved-run-id` server-to-runner header. There is no standing run-ID
+environment authorization. One approved Negroni run creates one standard Deep
+Research interaction covering all five required prompts.
 
 The Site receives only:
 
 - `LEAD_INTELLIGENCE_RUNNER_URL` — private HTTPS runner endpoint; and
 - `LEAD_INTELLIGENCE_RUNNER_TOKEN` — server-to-server bearer token.
 
-`GET /health` must return the bounded capability receipt without a token or
-private path. `POST /v1/research-runs` requires the bearer token and the opaque
-`x-negroni-owner` identity. Requests may contain only the strict customer-profile
-and research-scope intake plus the fixed action and prompt declarations already validated by the
-app contract.
+`GET /health` must return the bounded capability receipt without a private
+path. `POST /v1/research-runs` requires the bearer token, opaque
+`x-negroni-owner` identity, and exact approved run-ID header. Requests may
+contain only the strict brand-and-offer intake plus fixed action and prompt
+declarations already validated by the app contract.
 
 ## Exact approval-gated deployment diff
 
-No part of this diff was applied during local verification.
+No DNS route, Cloudflare Access policy, persistent service, or Site runtime
+binding from this diff was applied during local verification.
 
-1. Provision one private Node.js runner service from the reviewed repository
-   revision.
-2. Configure its server-side token, private runtime root, durable artifact
-   root, and separately reviewed provider adapters.
-3. Verify `/health`, owner isolation, blocked defaults, persistence, restart,
-   and log redaction from the private network.
-4. Set `LEAD_INTELLIGENCE_RUNNER_URL` and
+1. Install the reviewed `npm run serve:private` contract as one persistent,
+   loopback-only Mac mini service without changing existing service routes.
+2. Configure its distinct server-side tokens, private runtime root, durable
+   artifact root, and separately reviewed provider adapters.
+3. Add a new authenticated HTTPS route and Cloudflare Access policy for the
+   runner and broker; do not reuse or broaden an existing route.
+4. Verify `/health`, owner isolation, blocked defaults, restart behavior, and
+   log redaction through the authenticated private route.
+5. Set `LEAD_INTELLIGENCE_RUNNER_URL` and
    `LEAD_INTELLIGENCE_RUNNER_TOKEN` on the preserved Sites project
    `appgprj_6a6bf385b41c8191808c34035484ee4c`.
-5. Deploy that saved project revision and run one approved owner-scoped
+6. Set `CREDENTIAL_BROKER_URL`, `CREDENTIAL_BROKER_TOKEN`, and the reviewed
+   proposal-only `LEAD_INTELLIGENCE_REVIEW_URL`.
+7. Deploy that saved project revision and run one approved owner-scoped
    rehearsal.
 
 This diff does not activate a scheduler, authorize Meta, create Google files,
@@ -80,12 +102,11 @@ remain separate approval boundaries.
 
 ## Current blockers
 
-- The production URL and active ChatGPT account have a current read-only
-  browser receipt, but the public response does not expose the owning project
-  binding. Reverify that binding in the hosting control plane immediately
-  before any approved Site environment change.
-- The Negroni credential broker and its final Google OAuth callback do not
-  exist as verified live services.
+- The owner-only Site interface is live, but no authenticated
+  production save/reload has verified its D1 record binding.
+- The local broker has a verified Google Drive path through Application Default
+  Credentials, but no new authenticated Cloudflare route, persistent private
+  service, Site broker binding, or final Google OAuth callback is deployed.
 - The official Meta route has no approved 2–3 advertiser Page-ID pilot,
   authorization, or bounded coverage proof; ordinary non-EU commercial
   coverage is unsupported by the reviewed endpoint. Its 10-Page-ID query limit

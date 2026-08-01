@@ -2,22 +2,23 @@
 
 ## Decision
 
-Build the narrowest useful Phase 1 product: save one reusable research set, run
-five approved Gemini Deep Research steps, create five durable Research artifacts behind two
-final representations, and optionally maintain one receipt-backed competitor-ad refresh.
+Build the narrowest useful Phase 1 product: create one permanent brand file,
+attach multiple offers, keep one current research package per offer, run five
+approved Gemini Deep Research steps, create five durable Research artifacts
+behind two final representations, and optionally create one customer competitor
+database for the current offer.
 
 ## Required flow
 
-1. Ask first for client/customer name, profession or job title, company, public website or profile URL, service or offer purchased, optional known competitors, industry/niche, and location or market served. Then collect lead offer or service and target age range as research scope. Do not request contact details, credentials, or other sensitive personal information.
-2. Let the authenticated user save, reopen, update, and delete research sets.
-3. Generate a prefilled final prompt, allow the user to accept or edit it, then run Market Awareness, Competitor Research, Psychographic Avatar Research, Master Research (4a), and Brand Tone (4b) in fixed order with Gemini Deep Research.
+1. Create a permanent brand file and ask for profession, job title, company, public website or profile URL, industry/niche, known competitors, location or market served, lead offer or service, and an optional target age range. Do not request a customer name, contact details, credentials, or other sensitive personal information. Company, website, industry, and location are shared brand fields; the remaining fields belong to the current offer.
+2. Let the authenticated user save, reopen, and update brand files and their offers without mixing offer research.
+3. Keep the primary page to Create brand, Fill in the information, one optional Create customer competitor database control, and run status. Execute Market Awareness, Competitor Research, Psychographic Avatar Research, Master Research (4a), and Brand Tone (4b) internally in fixed order with Gemini Deep Research.
 4. Mark every prompt complete or limited with an explicit receipt.
 5. Create and verify the five Research artifacts, one polished Google Doc, and one matching
    brand-scoped Markdown report. Create a restricted competitor database only when selected.
-6. Only when explicitly selected, create the competitor database and/or run the scheduler-neutral competitor refresh. Report
-   the one scheduler owner or the exact ownership blocker; do not install one.
+6. The single checkbox authorizes bounded public competitor collection and a verified database file for that run. Do not show a second monitoring choice or install a scheduler.
 7. Connect Codex, Gemini, and Google Workspace only through the server-side credential broker.
-8. Show only intake questions, the editable final prompt, separate competitor database and monitoring choices, run status, completion time, blockers, limitations, and the two final output actions.
+8. Show only the brand-and-offer intake, the one competitor-database choice, minimal run status, and the verified Google Drive link after completion. Keep prompt receipts and limitations in durable artifacts rather than cluttering the primary form.
 
 ## Excluded
 

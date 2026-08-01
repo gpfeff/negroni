@@ -1,4 +1,5 @@
 import type { ResearchPromptId } from "../intelligence/contracts.ts";
+import { safeServiceUrl } from "../safe-service-url.ts";
 import type {
   ResearchPromptOutput,
   ResearchSequenceRequest,
@@ -9,7 +10,6 @@ export const GEMINI_DEEP_RESEARCH_AGENT = "deep-research-preview-04-2026";
 type GeminiDeepResearchConfiguration = {
   broker_url: string;
   broker_token: string;
-  approved_run_id: string;
   fetch?: typeof fetch;
   poll_interval_ms?: number;
   timeout_ms?: number;
@@ -50,10 +50,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function safeBrokerUrl(value: string): URL {
-  const url = new URL(value);
-  if (url.protocol !== "https:" && !(url.protocol === "http:" && ["127.0.0.1", "localhost", "::1"].includes(url.hostname))) {
-    throw new Error("The Gemini credential broker must use HTTPS or loopback HTTP.");
-  }
+  const url = safeServiceUrl(value);
+  if (!url) throw new Error("The Gemini credential broker must use HTTPS or loopback HTTP.");
   return url;
 }
 
@@ -199,22 +197,21 @@ function parseInteraction(value: unknown): Interaction {
 export function createGeminiDeepResearchEngine(configuration: GeminiDeepResearchConfiguration) {
   const brokerUrl = safeBrokerUrl(configuration.broker_url);
   const brokerToken = configuration.broker_token.trim();
-  const approvedRunId = configuration.approved_run_id.trim();
   const request = configuration.fetch ?? fetch;
   const pollInterval = configuration.poll_interval_ms ?? 5_000;
   const timeout = configuration.timeout_ms ?? 60 * 60 * 1_000;
   const now = configuration.now ?? (() => new Date().toISOString());
   const sleep = configuration.sleep ?? ((milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds)));
   if (brokerToken.length < 16) throw new Error("A scoped Gemini credential-broker token is required.");
-  if (!/^run_[a-f0-9]{24}$/.test(approvedRunId)) throw new Error("An exact approved Gemini Deep Research run ID is required.");
 
-  async function broker(path: string, init?: RequestInit): Promise<Interaction> {
+  async function broker(path: string, ownerKey: string, init?: RequestInit): Promise<Interaction> {
     const url = new URL(path, brokerUrl);
     const response = await request(url, {
       ...init,
       headers: {
         authorization: `Bearer ${brokerToken}`,
         "content-type": "application/json",
+        "x-negroni-owner": ownerKey,
         ...init?.headers,
       },
     });
@@ -224,10 +221,10 @@ export function createGeminiDeepResearchEngine(configuration: GeminiDeepResearch
 
   return {
     async executeSequence(input: ResearchSequenceRequest): Promise<ResearchPromptOutput[]> {
-      if (input.run_id !== approvedRunId) {
-        throw new Error("This exact Gemini Deep Research run has not been spend-approved.");
+      if (!/^run_[a-f0-9]{24}$/.test(input.run_id)) {
+        throw new Error("An exact approved Gemini Deep Research run ID is required.");
       }
-      const started = await broker("/v1/providers/gemini/deep-research/interactions", {
+      const started = await broker("/v1/providers/gemini/deep-research/interactions", input.owner_key, {
         method: "POST",
         body: JSON.stringify({
           run_id: input.run_id,
@@ -243,7 +240,7 @@ export function createGeminiDeepResearchEngine(configuration: GeminiDeepResearch
       while (interaction.status === "in_progress") {
         if (Date.now() >= deadline) throw new Error("Gemini Deep Research exceeded the one-hour runner deadline.");
         await sleep(pollInterval);
-        interaction = await broker(`/v1/providers/gemini/deep-research/interactions/${encodeURIComponent(started.id)}`);
+        interaction = await broker(`/v1/providers/gemini/deep-research/interactions/${encodeURIComponent(started.id)}`, input.owner_key);
       }
       if (interaction.status !== "completed") {
         throw new Error(`Gemini Deep Research ended with status ${interaction.status ?? "unknown"}.`);
