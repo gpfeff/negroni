@@ -36,6 +36,7 @@ import {
   validateProviderNeutralCollectionReceipt,
 } from "../meta-ads/validation.ts";
 import { projectProfileId } from "../meta-ads/profile.ts";
+import { opaqueOwnerKey } from "../owner-key.ts";
 import type {
   ApprovedPromptSource,
   CompetitorBoundaryResult,
@@ -146,7 +147,7 @@ function opaqueOwner(value: string): string {
   if (owner.length < 3 || owner.length > 320 || /[\u0000-\u001f\u007f]/.test(owner)) {
     throw new RunnerInputError("A valid opaque owner identity is required.");
   }
-  return sha256(`negroni-owner:${owner}`);
+  return opaqueOwnerKey(owner);
 }
 
 function validatePromptSource(value: ApprovedPromptSource): ApprovedPromptSource {

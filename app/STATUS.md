@@ -38,14 +38,17 @@ ships a validated plugin manifest, onboarding skill, and five phase skills:
   Obsidian-compatible Markdown projections;
 - Integrations under Tools for Codex CLI, Claude Code, Gemini API key or OAuth,
   Kie.ai, Apify, and Google Drive; Settings retains appearance and Safety/YOLO;
-- owner-scoped Gemini, Kie.ai, and Apify credentials encrypted with AES-GCM in
-  D1 using a server-only runtime key; verification is non-generative and
-  plaintext credentials never return to the browser;
+- owner-scoped Gemini, Kie.ai, and Apify credentials accepted only through the
+  server-side credential broker; no API-key value is stored in D1 or returned
+  to the browser;
 - an optional developer `@negroni/local` package with the `negroni start` and
   `negroni doctor` commands; and
-- a loopback-only credential bridge that keeps pasted API keys in process
-  memory only, supports scoped 1Password environment injection, and checks
-  native CLI authentication without copying OAuth tokens.
+- a loopback-only, owner-isolated credential bridge that keeps pasted API keys
+  in process memory only, supports scoped 1Password environment injection,
+  enforces explicit save/replace/disconnect confirmations, and checks native
+  CLI authentication without copying OAuth tokens; and
+- fail-closed `check:private` and `serve:private` commands that validate distinct
+  stable secrets and start only the authenticated loopback broker and runner.
 
 The visual system uses compact Inter typography, a flat dark navy workspace,
 fixed left navigation, two-column tool cards, and one state-derived next-action
@@ -126,7 +129,7 @@ brand folder to Drive trash. No paid model was called.
 
 These checks prove the local execution and Drive boundaries, not a paid Gemini
 run or hosted research execution. The owner-only Site interface was privately
-published as version 12 on 2026-07-31, and production bundle readback verified
+published as version 13 on 2026-07-31, and production bundle readback verified
 the lean Create Brand flow, single competitor-database control, Integrations,
 Drive completion link, and current social preview. Hosted research remains
 correctly **blocked** until the Sites runtime has the private runner and
@@ -174,7 +177,7 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - TypeScript and scoped ESLint: passed
 - Plugin contract tests: 4/4 passed
 - Public capture-boundary tests: 6/6 passed
-- Application contract/security tests: 145/145 passed
+- Application contract/security tests: 159/159 passed
 - Vinext production build: passed
 - Separate web application production build: passed
 - Install smoke test: global package, local app, and seven-provider Integrations API passed
@@ -182,7 +185,7 @@ browser and continues to report unavailable hosted capabilities as blocked.
   Settings passed at desktop and mobile sizes, 151/151 checks
 - Accessibility: zero serious or critical Axe violations across all tested states
 - Browser runtime: no unexpected console errors or horizontal overflow
-- Private Sites deployment: version 12 succeeded with one allowed owner, no
+- Private Sites deployment: version 13 succeeded with one allowed owner, no
   groups, and production bundle readback of the current Research UI and social
   preview
 
@@ -198,10 +201,11 @@ Configure these server-side values with their real services:
 
 The hosted runner must invoke the implemented Meta Ads Intelligence adapter,
 expose access-controlled report URLs, and provide an authorized collection
-route. The hosted broker must implement the seven-provider contract, including
-Apify, an encrypted Gemini `SecretStore`, the non-generative verifier, and the
-final owner-scoped Google OAuth/Drive boundary. The local bridge already has a
-verified Google Drive path through Application Default Credentials.
+route. The reviewed local broker implements the seven-provider status and
+owner-scoped session-credential contract, Gemini proxy, disconnect boundary,
+and verified Google Drive filing through Application Default Credentials. It is
+not installed as a persistent service or exposed through an authenticated
+external route; the final hosted Google OAuth callback also remains absent.
 
 ## Remaining risks
 

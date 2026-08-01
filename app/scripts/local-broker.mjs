@@ -19,11 +19,12 @@ const googleDriveBaseUrl = new URL(process.env.NEGRONI_GOOGLE_DRIVE_BASE_URL
 const googleDriveUploadBaseUrl = new URL(process.env.NEGRONI_GOOGLE_DRIVE_UPLOAD_BASE_URL
   || "https://www.googleapis.com/upload/drive/v3/");
 const brokerStartedAt = new Date().toISOString();
-const sessionCredentials = {
+const injectedCredentials = {
   ...(process.env.NEGRONI_GEMINI_API_KEY ? { gemini_api: { api_key: process.env.NEGRONI_GEMINI_API_KEY } } : {}),
   ...(process.env.NEGRONI_KIE_API_KEY ? { kie_ai: { api_key: process.env.NEGRONI_KIE_API_KEY } } : {}),
   ...(process.env.NEGRONI_APIFY_API_TOKEN ? { apify: { api_key: process.env.NEGRONI_APIFY_API_TOKEN } } : {}),
 };
+const sessionCredentialsByOwner = new Map();
 
 if (!brokerToken) throw new Error("CREDENTIAL_BROKER_TOKEN is required.");
 
@@ -53,12 +54,28 @@ async function commandStatus(command, args, isConnected, connectedDetail) {
   }
 }
 
-async function readCredentials() {
-  return sessionCredentials;
+function ownerIdentity(request) {
+  const owner = request.headers.get("x-negroni-owner")?.trim() ?? "";
+  return owner.length >= 3 && owner.length <= 320 && !/[\u0000-\u001f\u007f]/.test(owner) ? owner : null;
 }
 
-async function storeCredential(provider, apiKey) {
-  sessionCredentials[provider] = { api_key: apiKey };
+async function readCredentials(owner) {
+  return { ...injectedCredentials, ...(sessionCredentialsByOwner.get(owner) ?? {}) };
+}
+
+async function storeCredential(owner, provider, apiKey) {
+  const credentials = { ...(sessionCredentialsByOwner.get(owner) ?? {}), [provider]: { api_key: apiKey } };
+  sessionCredentialsByOwner.set(owner, credentials);
+}
+
+function deleteCredential(owner, provider) {
+  const credentials = sessionCredentialsByOwner.get(owner);
+  if (!credentials?.[provider]) return false;
+  const next = { ...credentials };
+  delete next[provider];
+  if (Object.keys(next).length) sessionCredentialsByOwner.set(owner, next);
+  else sessionCredentialsByOwner.delete(owner);
+  return true;
 }
 
 function credentialMetadata(apiKey) {
@@ -166,9 +183,6 @@ async function ensureDriveFolder(name, parent, appProperties = {}) {
   let folder = hasIdentity
     ? await findDriveFile({ parent, mimeType: GOOGLE_FOLDER_MIME, appProperties })
     : await findDriveFile({ name, parent, mimeType: GOOGLE_FOLDER_MIME });
-  if (!folder && hasIdentity) {
-    folder = await findDriveFile({ name, parent, mimeType: GOOGLE_FOLDER_MIME });
-  }
   if (!folder) return createDriveFolder(name, parent, appProperties);
   const identityChanged = Object.entries(appProperties)
     .some(([key, value]) => folder.appProperties?.[key] !== value);
@@ -452,8 +466,8 @@ async function fileResearchInDrive(unknownInput) {
   };
 }
 
-async function providerStatuses() {
-  const credentials = await readCredentials();
+async function providerStatuses(owner) {
+  const credentials = await readCredentials(owner);
   const [codex, claude, geminiOAuth, drive] = await Promise.all([
     commandStatus("codex", ["login", "status"], (output) => /logged in/i.test(output), "Native Codex login is available."),
     commandStatus("claude", ["auth", "status"], (output) => /"loggedIn"\s*:\s*true/.test(output), "Native Claude Code login is available."),
@@ -494,11 +508,11 @@ function allowedGeminiBaseUrl(url) {
     || (url.protocol === "http:" && ["127.0.0.1", "localhost", "::1"].includes(url.hostname));
 }
 
-async function proxyGeminiInteraction(path, init) {
+async function proxyGeminiInteraction(owner, path, init) {
   if (!allowedGeminiBaseUrl(geminiInteractionsBaseUrl)) {
     throw new Error("The Gemini Interactions API endpoint is not allowed.");
   }
-  const credentials = await readCredentials();
+  const credentials = await readCredentials(owner);
   const apiKey = credentials.gemini_api?.api_key;
   if (typeof apiKey !== "string" || apiKey.length < 20) {
     return json({ error: "Gemini API is not connected." }, 409);
@@ -535,13 +549,13 @@ async function handle(request) {
     return json({ error: "Unauthorized" }, 401);
   }
   const url = new URL(request.url);
+  const owner = ownerIdentity(request);
+  if (!owner) return json({ error: "Owner identity required." }, 401);
   if (request.method === "GET" && url.pathname === "/v1/providers/status") {
-    return json({ available: true, providers: await providerStatuses(), blocker: null });
+    return json({ available: true, providers: await providerStatuses(owner), blocker: null });
   }
   if (url.pathname === "/v1/secrets/gemini") {
-    const owner = request.headers.get("x-negroni-owner")?.trim() ?? "";
-    if (owner.length < 3 || owner.length > 320) return json({ error: "Owner identity required." }, 401);
-    const existing = sessionCredentials.gemini_api?.api_key;
+    const existing = (await readCredentials(owner)).gemini_api?.api_key;
     if (request.method === "GET") {
       return json({ metadata: existing ? credentialMetadata(existing) : null });
     }
@@ -553,13 +567,14 @@ async function handle(request) {
       if ((request.method === "POST" && existing) || (request.method === "PUT" && !existing)) {
         return json({ changed: false });
       }
-      await storeCredential("gemini_api", apiKey);
+      await storeCredential(owner, "gemini_api", apiKey);
       return json({ changed: true, metadata: credentialMetadata(apiKey) });
     }
     if (request.method === "DELETE") {
-      const changed = Boolean(existing);
-      delete sessionCredentials.gemini_api;
-      return json({ changed });
+      if (injectedCredentials.gemini_api?.api_key) {
+        return json({ changed: false, error: "Gemini is managed by the private service environment." }, 409);
+      }
+      return json({ changed: deleteCredential(owner, "gemini_api") });
     }
   }
   if (request.method === "POST" && url.pathname === "/v1/providers/connect") {
@@ -569,7 +584,15 @@ async function handle(request) {
       if (typeof body.api_key !== "string" || body.api_key.trim().length < 20 || body.api_key.trim().length > 512) {
         return json({ error: "A valid API key is required." }, 400);
       }
-      await storeCredential(body.provider, body.api_key.trim());
+      if (injectedCredentials[body.provider]?.api_key) {
+        return json({ error: "This credential is managed by the private service environment." }, 409);
+      }
+      const existing = (await readCredentials(owner))[body.provider]?.api_key;
+      const expected = existing ? "replace" : "save";
+      if (body.confirmation !== expected) {
+        return json({ error: `Explicit ${expected} confirmation is required.` }, 400);
+      }
+      await storeCredential(owner, body.provider, body.api_key.trim());
       return json({ connected: true, message: "API key connected for this local session. Use a 1Password Developer Environment for persistent injection." });
     }
     if (body.provider === "google_drive" && googleDriveEnabled) {
@@ -577,7 +600,7 @@ async function handle(request) {
       const status = await googleDriveStatus();
       return json({ connected: status.status === "connected", message: status.detail });
     }
-    const statuses = await providerStatuses();
+    const statuses = await providerStatuses(owner);
     const provider = statuses.find((item) => item.provider === body.provider);
     if (provider?.status === "connected") return json({ connected: true, message: "Connection verified." });
     const loginCommands = {
@@ -588,8 +611,21 @@ async function handle(request) {
     };
     return json({ connected: false, message: loginCommands[body.provider] || provider?.blocker || "Connection is not ready." });
   }
+  if (request.method === "DELETE" && url.pathname === "/v1/providers/connect") {
+    const body = await request.json();
+    if (!["gemini_api", "kie_ai", "apify"].includes(body.provider)) {
+      return json({ error: "Unsupported provider" }, 400);
+    }
+    if (injectedCredentials[body.provider]?.api_key) {
+      return json({ error: "This credential is managed by the private service environment." }, 409);
+    }
+    deleteCredential(owner, body.provider);
+    return json({ connected: false, message: "API credential disconnected from this local session." });
+  }
   if (request.method === "POST" && url.pathname === "/v1/providers/google-drive/file-research") {
-    return json(await fileResearchInDrive(await request.json()));
+    const body = await request.json();
+    if (body?.owner_key !== owner) return json({ error: "Owner identity does not match the filing request." }, 403);
+    return json(await fileResearchInDrive(body));
   }
   if (request.method === "POST" && url.pathname === "/v1/providers/gemini/deep-research/interactions") {
     const body = await request.json();
@@ -601,7 +637,7 @@ async function handle(request) {
       || Buffer.byteLength(body.input, "utf8") > 512 * 1024) {
       return json({ error: "Invalid Gemini Deep Research request." }, 400);
     }
-    return proxyGeminiInteraction("", {
+    return proxyGeminiInteraction(owner, "", {
       method: "POST",
       body: JSON.stringify({
         input: body.input,
@@ -620,7 +656,7 @@ async function handle(request) {
   }
   const interactionMatch = url.pathname.match(/^\/v1\/providers\/gemini\/deep-research\/interactions\/(v1_[A-Za-z0-9_-]{10,512})$/);
   if (request.method === "GET" && interactionMatch) {
-    return proxyGeminiInteraction(encodeURIComponent(interactionMatch[1]), { method: "GET" });
+    return proxyGeminiInteraction(owner, encodeURIComponent(interactionMatch[1]), { method: "GET" });
   }
   return json({ error: "Not found" }, 404);
 }

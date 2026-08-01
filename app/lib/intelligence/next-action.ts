@@ -40,7 +40,7 @@ export function deriveHomeNextAction(input: {
       tone: "ready",
       eyebrow: "Research ready",
       title: "Start Research",
-      description: "Create a research set with the four campaign inputs, then build its evidence-backed draft.",
+      description: "Create the permanent brand file, add its current offer, and then build the evidence-backed research package.",
       action: { label: "Start Research", destination: "research" },
     };
   }

@@ -6,6 +6,7 @@ import {
   type CompetitorMonitoringReceipt,
 } from "../intelligence/contracts.ts";
 import { projectProfileId } from "../meta-ads/profile.ts";
+import { safeServiceUrl } from "../safe-service-url.ts";
 import type {
   CompetitorAdsIntelligence,
   ProviderNeutralCollectionReceipt,
@@ -44,19 +45,6 @@ const EMBEDDED_PROMPT_SOURCE: ApprovedPromptSource = {
     },
   ],
 };
-
-function safeBrokerUrl(value: string): URL | null {
-  try {
-    const url = new URL(value);
-    if (url.protocol === "https:"
-      || (url.protocol === "http:" && ["127.0.0.1", "localhost", "::1"].includes(url.hostname))) {
-      return url;
-    }
-  } catch {
-    // Invalid broker configuration remains blocked below.
-  }
-  return null;
-}
 
 function blockedGoogleFiling(markdown: string, blocker: string) {
   return {
@@ -130,7 +118,7 @@ function blockedCompetitorResult(projectId: string): CompetitorBoundaryResult {
 export function createDefaultResearchRunnerDependencies(): ResearchRunnerDependencies {
   const brokerUrl = process.env.CREDENTIAL_BROKER_URL?.trim() ?? "";
   const brokerToken = process.env.CREDENTIAL_BROKER_TOKEN?.trim() ?? "";
-  const brokerBase = safeBrokerUrl(brokerUrl);
+  const brokerBase = safeServiceUrl(brokerUrl);
   const brokerConfigured = Boolean(brokerBase && brokerToken.length >= 16);
   const geminiConfigured = brokerConfigured;
   const embeddedPromptSource = process.env.NEGRONI_PROMPT_SOURCE_MODE?.trim() === "embedded";
@@ -186,6 +174,7 @@ export function createDefaultResearchRunnerDependencies(): ResearchRunnerDepende
             headers: {
               authorization: `Bearer ${brokerToken}`,
               "content-type": "application/json",
+              "x-negroni-owner": input.owner_key,
             },
             body: JSON.stringify(input),
             signal: AbortSignal.timeout(2 * 60 * 1000),

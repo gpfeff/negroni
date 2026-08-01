@@ -1,6 +1,6 @@
 import { createGeminiConnectionService, InMemorySecretStore, type SecretStore } from "./gemini.ts";
-import { EncryptedD1SecretStore } from "./encrypted-d1.ts";
-import { getDatabase } from "@/lib/database";
+import { opaqueOwnerKey } from "@/lib/owner-key";
+import { safeServiceUrl } from "@/lib/safe-service-url";
 
 export const GEMINI_BROKER_BLOCKER = "Secure hosted API-key storage is not configured.";
 
@@ -13,11 +13,13 @@ class HostedGeminiSecretStore implements SecretStore {
   async request(owner: string, method: string, body?: unknown) {
     const response = await fetch(new URL("/v1/secrets/gemini", this.url), {
       method,
-      headers: { authorization: `Bearer ${this.token}`, "content-type": "application/json", "x-negroni-owner": owner },
+      headers: { authorization: `Bearer ${this.token}`, "content-type": "application/json", "x-negroni-owner": opaqueOwnerKey(owner) },
       body: body === undefined ? undefined : JSON.stringify(body),
       signal: AbortSignal.timeout(15_000),
     });
-    if (response.status === 404 || response.status === 409) return { changed: false, metadata: null, api_key: null };
+    if (response.status === 404 || (response.status === 409 && method !== "DELETE")) {
+      return { changed: false, metadata: null, api_key: null };
+    }
     if (!response.ok) throw new Error("Credential broker request failed.");
     return await response.json() as { changed?: boolean; metadata?: { last_verified_at: string; fingerprint: string; last_four: string } | null; api_key?: string | null };
   }
@@ -33,11 +35,10 @@ let localFakeStore: InMemorySecretStore | null = null;
 export async function getGeminiSecretStore(): Promise<SecretStore | null> {
   const fakeEnabled = process.env.NEGRONI_LOCAL_FAKE_SECRET_BROKER === "1" && process.env.NODE_ENV !== "production";
   if (fakeEnabled) return localFakeStore ??= new InMemorySecretStore();
-  const encryptionKey = process.env.NEGRONI_SECRET_ENCRYPTION_KEY?.trim() ?? "";
-  const database = await getDatabase();
-  if (database && encryptionKey) return new EncryptedD1SecretStore(database, encryptionKey);
   const config = brokerConfig();
-  return config.url && config.token ? new HostedGeminiSecretStore(config.url, config.token) : null;
+  const safeBrokerUrl = safeServiceUrl(config.url);
+  if (safeBrokerUrl && config.token) return new HostedGeminiSecretStore(safeBrokerUrl.toString(), config.token);
+  return null;
 }
 
 export async function getGeminiConnectionService() {

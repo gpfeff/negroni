@@ -1,10 +1,10 @@
 # Negroni Sites workspace
 
 This directory is the Site source workspace used by the Negroni plugin. It is
-not a separate product users are expected to install or operate. The behaviors
-described below are implemented and verified in the local checkout; they are
-not a claim that the current hosted revision has been redeployed. The Site
-opens on a branded campaign workspace with persistent
+not a separate product users are expected to install or operate. The owner-only
+interface is deployed as Sites version 13; private runner and credential-broker
+bindings remain unconfigured, so hosted execution stays visibly blocked. The
+Site opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
 Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
 and Review & Approve. A factual guidance rail shows research readiness, the
@@ -142,7 +142,7 @@ local injection uses a scoped 1Password Developer Environment; Negroni never
 writes local keys to plaintext files. The hosted Site uses
 `/api/connections/gemini` for owner-scoped connection metadata and deliberate
 save, replace, and disconnect requests. Production fails closed until that
-route is backed by an encrypted hosted secret store; the repository's in-memory
+route is backed by the owner-scoped credential broker; the repository's in-memory
 adapter is limited to tests and explicit non-production local previews. Negroni
 does not persist secret values in the browser, site database, repository, logs,
 or research payload.
@@ -161,9 +161,11 @@ owner-scoped approved run ID. The browser first records that exact ID at
 `/api/research/runs/:runId/start`. Direct browser POSTs to `/api/run` fail
 closed.
 
-Google OAuth uses the web-server authorization-code flow with offline access.
-The broker verifies OAuth state, stores refresh tokens securely, and creates or
-reuses one app-owned `Negroni` folder. Each run files its Doc, Sheet, Markdown,
+The production Google OAuth broker must use the web-server authorization-code
+flow with offline access, verify OAuth state, and keep refresh tokens outside
+D1. The local developer broker uses pre-authorized Application Default
+Credentials and does not implement the production callback. Either broker
+creates or reuses one app-owned `Negroni` folder. Each run files its Doc, Sheet, Markdown,
 and later assets under `Negroni / <Brand> / <Offer>`. A successful filing
 receipt includes the verified offer folder name and HTTPS Drive URL; Run Status,
 Brands, and Library show that link only after verification. The app
@@ -232,6 +234,8 @@ The exact runner and competitor-archive requirements are in
 ```bash
 npm install
 npm run dev
+npm run check:private
+npm run serve:private
 npm run validate
 npm run qa:visual
 ```
@@ -245,6 +249,10 @@ For contributor development and the optional self-hosted fallback, see
 From a checkout, `npm run dev:local` starts the same loopback app-and-bridge
 pair as the installed launcher. Use it when developing the complete local
 experience; `npm run dev` remains the UI-only contributor server.
+`npm run check:private` validates distinct stable broker and runner secrets plus
+available loopback ports without starting a service. `npm run serve:private`
+starts only the authenticated broker and runner; it does not install a service,
+change DNS, add a tunnel route, or expose either listener beyond loopback.
 
 ## Optional local developer package
 

@@ -28,3 +28,14 @@ test("research review mutations use the bounded request parser", async () => {
   assert.match(source, /boundedJson\(request/);
   assert.doesNotMatch(source, /request\.json\(\)/);
 });
+
+test("provider credentials have no D1 storage path", async () => {
+  const [settingsRoute, connectionRuntime, databaseSchema] = await Promise.all([
+    readFile(resolve(process.cwd(), "app/api/settings/route.ts"), "utf8"),
+    readFile(resolve(process.cwd(), "lib/connections/runtime.ts"), "utf8"),
+    readFile(resolve(process.cwd(), "db/schema.ts"), "utf8"),
+  ]);
+  assert.doesNotMatch(settingsRoute, /EncryptedD1SecretStore|provider_secrets|NEGRONI_SECRET_ENCRYPTION_KEY/);
+  assert.doesNotMatch(connectionRuntime, /EncryptedD1SecretStore|provider_secrets|NEGRONI_SECRET_ENCRYPTION_KEY/);
+  assert.doesNotMatch(databaseSchema, /CREATE_PROVIDER_SECRETS|provider_secrets/);
+});

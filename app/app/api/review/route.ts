@@ -14,6 +14,7 @@ import {
   researchSeedSha256,
 } from "@/lib/research-seed";
 import { boundedJson, mutationAllowed } from "@/lib/request-security";
+import { safeServiceUrl } from "@/lib/safe-service-url";
 
 const STORAGE_BLOCKER = "Research review is unavailable until the site database is configured.";
 
@@ -59,7 +60,7 @@ async function loadReview(database: Database, owner: string, profileId: string):
   const configuration = reviewConfiguration();
   return {
     available: true,
-    ai_available: Boolean(configuration.url && configuration.token),
+    ai_available: Boolean(safeServiceUrl(configuration.url) && configuration.token),
     workspace: workspaceResult.results?.[0] ?? null,
     revisions: revisions.results ?? [],
     messages: messages.results ?? [],
@@ -258,7 +259,8 @@ export async function POST(request: Request): Promise<Response> {
   if (action === "ask_ai") {
     if (!isText(body.message, 1, 4_000)) return Response.json({ error: "Tell Negroni what you want changed." }, { status: 400 });
     const configuration = reviewConfiguration();
-    if (!configuration.url || !configuration.token) {
+    const reviewUrl = safeServiceUrl(configuration.url);
+    if (!reviewUrl || !configuration.token) {
       return Response.json({ error: "AI revisions are unavailable until the secure review runner is configured. Save the feedback as a note or edit the seed directly." }, { status: 503 });
     }
     const workspace = await loadReview(database, owner, profileId);
@@ -283,7 +285,7 @@ export async function POST(request: Request): Promise<Response> {
       change_summary: string;
     };
     try {
-      const response = await fetch(configuration.url, {
+      const response = await fetch(reviewUrl, {
         method: "POST",
         headers: {
           authorization: `Bearer ${configuration.token}`,

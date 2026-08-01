@@ -9,6 +9,7 @@ import test from "node:test";
 const appRoot = resolve(import.meta.dirname, "..");
 const brokerPath = join(appRoot, "scripts", "local-broker.mjs");
 const accessToken = "fake-google-drive-access-token";
+const ownerKey = "opaque-owner";
 
 async function unusedPort() {
   const server = createServer();
@@ -23,7 +24,7 @@ async function waitForBroker(port: number, token: string) {
   for (let attempt = 0; attempt < 50; attempt += 1) {
     try {
       const response = await fetch(`http://127.0.0.1:${port}/v1/providers/status`, {
-        headers: { authorization: `Bearer ${token}` },
+        headers: { authorization: `Bearer ${token}`, "x-negroni-owner": ownerKey },
       });
       if (response.ok) return response;
     } catch {
@@ -210,7 +211,7 @@ test("local Drive filing creates and verifies Negroni / Brand / Offer deliverabl
 
     const markdown = "# Master Research\n\nEvidence-backed research content [SRC1].\n";
     const filingInput = {
-      owner_key: "opaque-owner",
+      owner_key: ownerKey,
       run_id: "run_0123456789abcdef01234567",
       brand_id: "brand-123",
       offer_id: "offer-456",
@@ -224,9 +225,16 @@ test("local Drive filing creates and verifies Negroni / Brand / Offer deliverabl
       competitor_collection: { status: "complete" },
       create_competitor_database: true,
     };
+    const mismatchedOwner = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/google-drive/file-research`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json", "x-negroni-owner": "different-owner" },
+      body: JSON.stringify(filingInput),
+    });
+    assert.equal(mismatchedOwner.status, 403);
+
     const response = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/google-drive/file-research`, {
       method: "POST",
-      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json", "x-negroni-owner": ownerKey },
       body: JSON.stringify(filingInput),
     });
     assert.equal(response.status, 200, await response.clone().text());
@@ -246,7 +254,7 @@ test("local Drive filing creates and verifies Negroni / Brand / Offer deliverabl
     const fileCount = drive.files.size;
     const replayResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/google-drive/file-research`, {
       method: "POST",
-      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json", "x-negroni-owner": ownerKey },
       body: JSON.stringify(filingInput),
     });
     assert.equal(replayResponse.status, 200, await replayResponse.clone().text());
@@ -254,6 +262,22 @@ test("local Drive filing creates and verifies Negroni / Brand / Offer deliverabl
     assert.equal(replay.status, "verified");
     assert.equal(drive.files.size, fileCount);
     assert.deepEqual(replay.external_actions, []);
+
+    const otherOwnerInput = {
+      ...filingInput,
+      owner_key: "different-owner",
+      run_id: "run_111111111111111111111111",
+      brand_id: "brand-other",
+      offer_id: "offer-other",
+    };
+    const otherOwnerResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/google-drive/file-research`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json", "x-negroni-owner": otherOwnerInput.owner_key },
+      body: JSON.stringify(otherOwnerInput),
+    });
+    assert.equal(otherOwnerResponse.status, 200, await otherOwnerResponse.clone().text());
+    const otherOwnerReceipt = await otherOwnerResponse.json() as DriveFilingReceipt;
+    assert.notEqual(otherOwnerReceipt.folder_url, receipt.folder_url);
 
     const renamedInput = {
       ...filingInput,
@@ -266,14 +290,14 @@ test("local Drive filing creates and verifies Negroni / Brand / Offer deliverabl
     };
     const renamedResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/google-drive/file-research`, {
       method: "POST",
-      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${brokerToken}`, "content-type": "application/json", "x-negroni-owner": ownerKey },
       body: JSON.stringify(renamedInput),
     });
     assert.equal(renamedResponse.status, 200, await renamedResponse.clone().text());
     const renamed = await renamedResponse.json() as DriveFilingReceipt;
     assert.equal(renamed.folder_name, "Negroni / O'Brien Home Services / Same-day HVAC Leads");
     assert.equal(renamed.folder_url, receipt.folder_url);
-    assert.equal([...drive.files.values()].filter((file) => file.mimeType === "application/vnd.google-apps.folder").length, 3);
+    assert.equal([...drive.files.values()].filter((file) => file.mimeType === "application/vnd.google-apps.folder").length, 5);
   } finally {
     broker.kill("SIGTERM");
     await new Promise<void>((resolvePromise) => broker.once("exit", () => resolvePromise()));

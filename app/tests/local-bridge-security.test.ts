@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
-import { tmpdir } from "node:os";
+import { homedir, tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
@@ -14,6 +14,8 @@ const brokerPath = join(appRoot, "scripts", "local-broker.mjs");
 const launcherPath = join(appRoot, "bin", "negroni.mjs");
 const packagePath = join(appRoot, "package.json");
 const canary = "local-bridge-test-access-token";
+const OWNER_A = "owner-a-opaque-key";
+const OWNER_B = "owner-b-opaque-key";
 
 async function createCommandStubs() {
   const directory = await mkdtemp(join(tmpdir(), "negroni-local-bridge-"));
@@ -35,11 +37,11 @@ async function unusedPort() {
   return port;
 }
 
-async function waitForStatus(port: number, token: string) {
+async function waitForStatus(port: number, token: string, owner = OWNER_A) {
   for (let attempt = 0; attempt < 30; attempt += 1) {
     try {
       const response = await fetch(`http://127.0.0.1:${port}/v1/providers/status`, {
-        headers: { authorization: `Bearer ${token}` },
+        headers: { authorization: `Bearer ${token}`, "x-negroni-owner": owner },
       });
       if (response.ok) return response;
     } catch {
@@ -48,6 +50,42 @@ async function waitForStatus(port: number, token: string) {
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 50));
   }
   throw new Error("The local credential bridge did not become ready.");
+}
+
+async function waitForRunnerHealth(port: number, token: string) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/health`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "x-negroni-owner": "private-service-test",
+        },
+      });
+      if (response.ok) return response;
+    } catch {
+      // The private runner may not have bound the loopback port yet.
+    }
+    await new Promise<void>((resolvePromise) => setTimeout(resolvePromise, 50));
+  }
+  throw new Error("The private runner did not become ready.");
+}
+
+async function waitForBrokerBoundary(port: number, token: string) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/v1/secrets/gemini`, {
+        headers: {
+          authorization: `Bearer ${token}`,
+          "x-negroni-owner": "private-service-test",
+        },
+      });
+      if (response.ok) return response;
+    } catch {
+      // The private broker may not have bound the loopback port yet.
+    }
+    await new Promise<void>((resolvePromise) => setTimeout(resolvePromise, 50));
+  }
+  throw new Error("The private credential broker did not become ready.");
 }
 
 test("local doctor reports readiness without echoing command output", async () => {
@@ -80,6 +118,117 @@ test("local launcher starts the secure runner with embedded prompts and Drive fi
   assert.match(launcher, /LEAD_INTELLIGENCE_RUNNER_URL/);
   assert.match(launcher, /NEGRONI_PROMPT_SOURCE_MODE:\s*"embedded"/);
   assert.match(launcher, /NEGRONI_GOOGLE_DRIVE_ENABLED:\s*"1"/);
+});
+
+test("private service hosting fails closed without stable server tokens", async () => {
+  await assert.rejects(
+    execFileAsync(process.execPath, [launcherPath, "serve-private"], {
+      env: {
+        ...process.env,
+        CREDENTIAL_BROKER_TOKEN: "",
+        NEGRONI_RUNNER_TOKEN: "",
+      },
+      timeout: 5_000,
+    }),
+    (error: NodeJS.ErrnoException & { stderr?: string }) => {
+      assert.match(error.stderr ?? "", /CREDENTIAL_BROKER_TOKEN/);
+      assert.doesNotMatch(error.stderr ?? "", /Bearer /);
+      return true;
+    },
+  );
+});
+
+test("private service preflight validates ports and separate secrets without exposing them", async () => {
+  const brokerPort = await unusedPort();
+  let runnerPort = await unusedPort();
+  while (runnerPort === brokerPort) runnerPort = await unusedPort();
+  const brokerToken = "private-broker-preflight-token-0123456789abcdef";
+  const runnerToken = "private-runner-preflight-token-0123456789abcdef";
+  const environment = {
+    ...process.env,
+    CREDENTIAL_BROKER_TOKEN: brokerToken,
+    NEGRONI_RUNNER_TOKEN: runnerToken,
+    NEGRONI_BROKER_PORT: String(brokerPort),
+    NEGRONI_RUNNER_PORT: String(runnerPort),
+  };
+  const { stdout, stderr } = await execFileAsync(process.execPath, [launcherPath, "check-private"], { env: environment });
+  assert.match(stdout, /Private service configuration is valid/);
+  assert.equal(`${stdout}${stderr}`.includes(brokerToken), false);
+  assert.equal(`${stdout}${stderr}`.includes(runnerToken), false);
+
+  await assert.rejects(
+    execFileAsync(process.execPath, [launcherPath, "check-private"], {
+      env: { ...environment, NEGRONI_RUNNER_TOKEN: brokerToken },
+    }),
+    (error: NodeJS.ErrnoException & { stderr?: string }) => {
+      assert.match(error.stderr ?? "", /different server secrets/);
+      assert.equal((error.stderr ?? "").includes(brokerToken), false);
+      return true;
+    },
+  );
+});
+
+test("private service hosting starts only the authenticated loopback broker and runner", async () => {
+  const runtimeParent = join(homedir(), ".local", "share", "negroni");
+  const artifactParent = join(homedir(), "Documents", "tools-negroni");
+  await Promise.all([mkdir(runtimeParent, { recursive: true }), mkdir(artifactParent, { recursive: true })]);
+  const runtimeRoot = await mkdtemp(join(runtimeParent, "test-private-services-"));
+  const artifactRoot = await mkdtemp(join(artifactParent, "test-private-services-"));
+  const brokerPort = await unusedPort();
+  let runnerPort = await unusedPort();
+  while (runnerPort === brokerPort) runnerPort = await unusedPort();
+  const brokerToken = "private-broker-test-token-0123456789abcdef";
+  const runnerToken = "private-runner-test-token-0123456789abcdef";
+  const output: string[] = [];
+  const service = spawn(process.execPath, [launcherPath, "serve-private"], {
+    env: {
+      ...process.env,
+      CREDENTIAL_BROKER_TOKEN: brokerToken,
+      NEGRONI_RUNNER_TOKEN: runnerToken,
+      NEGRONI_BROKER_PORT: String(brokerPort),
+      NEGRONI_RUNNER_PORT: String(runnerPort),
+      NEGRONI_RUNTIME_ROOT: runtimeRoot,
+      NEGRONI_ARTIFACT_ROOT: artifactRoot,
+    },
+    stdio: ["ignore", "pipe", "pipe"],
+  });
+  service.stdout?.on("data", (chunk) => output.push(String(chunk)));
+  service.stderr?.on("data", (chunk) => output.push(String(chunk)));
+  try {
+    const [broker, runner] = await Promise.all([
+      waitForBrokerBoundary(brokerPort, brokerToken),
+      waitForRunnerHealth(runnerPort, runnerToken),
+    ]);
+    assert.equal(broker.status, 200);
+    const capability = await runner.json() as { capabilities?: Record<string, string> };
+    assert.equal(capability.capabilities?.prompt_source, "configured");
+    assert.equal(capability.capabilities?.research_engine, "configured");
+    assert.equal(capability.capabilities?.google_drive, "configured");
+
+    const wrongBrokerToken = await fetch(`http://127.0.0.1:${brokerPort}/v1/secrets/gemini`, {
+      headers: { authorization: "Bearer wrong-token", "x-negroni-owner": "private-service-test" },
+    });
+    const wrongRunnerToken = await fetch(`http://127.0.0.1:${runnerPort}/health`, {
+      headers: { authorization: "Bearer wrong-token", "x-negroni-owner": "private-service-test" },
+    });
+    assert.equal(wrongBrokerToken.status, 401);
+    assert.equal(wrongRunnerToken.status, 401);
+    assert.equal(output.join("").includes(brokerToken), false);
+    assert.equal(output.join("").includes(runnerToken), false);
+  } finally {
+    const exited = service.exitCode === null
+      ? new Promise<void>((resolvePromise) => service.once("exit", () => resolvePromise()))
+      : Promise.resolve();
+    service.kill("SIGTERM");
+    await Promise.race([
+      exited,
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Private services did not stop.")), 5_000)),
+    ]);
+    await Promise.all([
+      rm(runtimeRoot, { recursive: true, force: true }),
+      rm(artifactRoot, { recursive: true, force: true }),
+    ]);
+  }
 });
 
 test("local broker never returns command output in provider status", async () => {
@@ -124,17 +273,37 @@ test("local broker keeps an entered Apify token in process memory without plaint
   });
   try {
     await waitForStatus(port, token);
+    const unconfirmed = await fetch(`http://127.0.0.1:${port}/v1/providers/connect`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
+      body: JSON.stringify({ provider: "apify", api_key: apiKey }),
+    });
+    assert.equal(unconfirmed.status, 400);
+
     const save = await fetch(`http://127.0.0.1:${port}/v1/providers/connect`, {
       method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: JSON.stringify({ provider: "apify", api_key: apiKey }),
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
+      body: JSON.stringify({ provider: "apify", api_key: apiKey, confirmation: "save" }),
     });
     assert.equal(save.status, 200);
     assert.equal((await save.text()).includes(apiKey), false);
-    const status = await waitForStatus(port, token);
+    const status = await waitForStatus(port, token, OWNER_A);
     const body = await status.text();
     assert.equal(body.includes(apiKey), false);
     assert.match(body, /"provider":"apify","status":"connected"/);
+
+    const otherOwnerStatus = await waitForStatus(port, token, OWNER_B);
+    assert.match(await otherOwnerStatus.text(), /"provider":"apify","status":"not_connected"/);
+
+    const disconnected = await fetch(`http://127.0.0.1:${port}/v1/providers/connect`, {
+      method: "DELETE",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
+      body: JSON.stringify({ provider: "apify" }),
+    });
+    assert.equal(disconnected.status, 200, await disconnected.clone().text());
+    assert.equal((await disconnected.json() as { connected?: boolean }).connected, false);
+    const disconnectedStatus = await waitForStatus(port, token, OWNER_A);
+    assert.match(await disconnectedStatus.text(), /"provider":"apify","status":"not_connected"/);
     await assert.rejects(stat(credentialsPath), (error: NodeJS.ErrnoException) => error.code === "ENOENT");
   } finally {
     broker.kill("SIGTERM");
@@ -171,15 +340,40 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
       NEGRONI_BROKER_PORT: String(brokerPort),
       CREDENTIAL_BROKER_TOKEN: token,
       NEGRONI_CREDENTIALS_PATH: credentialsPath,
-      NEGRONI_GEMINI_API_KEY: apiKey,
+      NEGRONI_GEMINI_API_KEY: "",
       NEGRONI_GEMINI_INTERACTIONS_BASE_URL: `http://127.0.0.1:${googleAddress.port}/v1beta/interactions`,
     },
   });
   try {
-    await waitForStatus(brokerPort, token);
+    await waitForStatus(brokerPort, token, OWNER_A);
+    const save = await fetch(`http://127.0.0.1:${brokerPort}/v1/secrets/gemini`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
+      body: JSON.stringify({ api_key: apiKey }),
+    });
+    assert.equal(save.status, 200, await save.clone().text());
+    assert.equal((await save.text()).includes(apiKey), false);
+
+    const otherOwnerMetadata = await fetch(`http://127.0.0.1:${brokerPort}/v1/secrets/gemini`, {
+      headers: { authorization: `Bearer ${token}`, "x-negroni-owner": OWNER_B },
+    });
+    assert.equal(otherOwnerMetadata.status, 200);
+    assert.equal((await otherOwnerMetadata.json() as { metadata: unknown }).metadata, null);
+
+    const otherOwnerResearch = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_B },
+      body: JSON.stringify({
+        run_id: "run_0123456789abcdef01234567",
+        agent: "deep-research-preview-04-2026",
+        input: "This owner must not inherit another owner's credential.",
+      }),
+    });
+    assert.equal(otherOwnerResearch.status, 409);
+
     const response = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
       method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
       body: JSON.stringify({
         run_id: "run_0123456789abcdef01234567",
         agent: "deep-research-preview-04-2026",
@@ -196,7 +390,7 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
 
     const maxResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
       method: "POST",
-      headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
       body: JSON.stringify({
         run_id: "run_0123456789abcdef01234567",
         agent: "deep-research-max-preview-04-2026",
@@ -207,7 +401,7 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
     assert.equal((await maxResponse.text()).includes(apiKey), false);
 
     const metadataResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/secrets/gemini`, {
-      headers: { authorization: `Bearer ${token}`, "x-negroni-owner": "local-preview" },
+      headers: { authorization: `Bearer ${token}`, "x-negroni-owner": OWNER_A },
     });
     assert.equal(metadataResponse.status, 200);
     const metadataBody = await metadataResponse.text();

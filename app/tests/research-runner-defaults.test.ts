@@ -32,12 +32,12 @@ test("the local runner exposes one embedded five-step prompt source without brow
 
 test("the default runner files research through the authenticated local Drive broker", async () => {
   const brokerToken = "default-runner-broker-token";
-  let received: { authorization?: string; path?: string; body?: GoogleFilingInput } = {};
+  let received: { authorization?: string; owner?: string; path?: string; body?: GoogleFilingInput } = {};
   const broker = createServer(async (request, response) => {
     const chunks: Buffer[] = [];
     for await (const chunk of request) chunks.push(Buffer.from(chunk));
     const body = JSON.parse(Buffer.concat(chunks).toString("utf8")) as GoogleFilingInput;
-    received = { authorization: request.headers.authorization, path: request.url, body };
+    received = { authorization: request.headers.authorization, owner: String(request.headers["x-negroni-owner"] ?? ""), path: request.url, body };
     response.writeHead(200, { "content-type": "application/json" });
     response.end(JSON.stringify({
       status: "verified",
@@ -94,6 +94,7 @@ test("the default runner files research through the authenticated local Drive br
     const result = await dependencies.google_filing.fileResearch(input);
     assert.equal(result.status, "verified");
     assert.equal(received.authorization, `Bearer ${brokerToken}`);
+    assert.equal(received.owner, input.owner_key);
     assert.equal(received.path, "/v1/providers/google-drive/file-research");
     assert.equal(received.body?.create_competitor_database, false);
   } finally {

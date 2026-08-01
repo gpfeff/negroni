@@ -80,6 +80,8 @@ test("Gemini Deep Research runs one brokered interaction and returns five cited 
   const outputs = await engine.executeSequence(sequenceRequest());
   assert.equal(calls.length, 2);
   assert.equal(calls[0]?.url, "http://127.0.0.1:47831/v1/providers/gemini/deep-research/interactions");
+  assert.equal(new Headers(calls[0]?.init?.headers).get("x-negroni-owner"), "opaque-owner-key");
+  assert.equal(new Headers(calls[1]?.init?.headers).get("x-negroni-owner"), "opaque-owner-key");
   const started = JSON.parse(String(calls[0]?.init?.body));
   assert.equal(started.agent, GEMINI_DEEP_RESEARCH_AGENT);
   assert.equal(started.run_id, RUN_ID);
@@ -89,6 +91,7 @@ test("Gemini Deep Research runs one brokered interaction and returns five cited 
   assert.ok(outputs.every((output) => output.sources.length === 1 && /\[DR\d+\]/.test(output.markdown)));
   assert.equal(JSON.stringify(outputs).includes(BROKER_TOKEN), false);
   assert.equal(String(calls[0]?.init?.body).includes(BROKER_TOKEN), false);
+  assert.equal(String(calls[0]?.init?.body).includes("opaque-owner-key"), false);
 });
 
 test("Gemini Deep Research rejects a malformed approved run ID before network access", async () => {

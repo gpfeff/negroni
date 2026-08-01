@@ -86,3 +86,31 @@ test("run readiness reflects an authenticated live runner health check", async (
     else process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN = priorToken;
   }
 });
+
+test("approved research rejects a remote plaintext runner before sending private intake", async () => {
+  const priorUrl = process.env.LEAD_INTELLIGENCE_RUNNER_URL;
+  const priorToken = process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN;
+  const priorFetch = globalThis.fetch;
+  process.env.LEAD_INTELLIGENCE_RUNNER_URL = "http://runner.example.test/v1/research-runs";
+  process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN = "runner-service-token-for-tests";
+  let calls = 0;
+  globalThis.fetch = async () => {
+    calls += 1;
+    return Response.json({});
+  };
+  try {
+    const response = await executeApprovedResearch("owner@example.test", APPROVED_RUN_ID, validIntake(), {
+      brand_id: "brand-123",
+      offer_id: "offer-456",
+    });
+    assert.equal(response.status, 502);
+    assert.equal(calls, 0);
+    assert.match((await response.json() as { error?: string }).error ?? "", /HTTPS or loopback/i);
+  } finally {
+    globalThis.fetch = priorFetch;
+    if (priorUrl === undefined) delete process.env.LEAD_INTELLIGENCE_RUNNER_URL;
+    else process.env.LEAD_INTELLIGENCE_RUNNER_URL = priorUrl;
+    if (priorToken === undefined) delete process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN;
+    else process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN = priorToken;
+  }
+});

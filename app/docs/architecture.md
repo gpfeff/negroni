@@ -95,9 +95,10 @@ persists and reads back the folder, Doc, optional Sheet, Markdown identity, and
 current/stale basis state so Research, Brands, and Library survive a reload.
 Stable brand and offer IDs preserve the Drive folder relationship when a
 display name changes. Provider secrets
-stay in the credential broker and are never written to D1. The broker owns the Google
-authorization-code callback, OAuth state verification, encrypted refresh-token
-storage, refresh, and revocation handling. The app accepts only sanitized
+stay in the credential broker and are never written to D1. The production
+broker owns the Google authorization-code callback, OAuth state verification,
+encrypted refresh-token storage, refresh, and revocation handling; the local
+developer broker uses pre-authorized Application Default Credentials only. The app accepts only sanitized
 connection metadata and an HTTPS authorization URL.
 
 The direct `/api/run` POST endpoint is not a browser execution shortcut. It

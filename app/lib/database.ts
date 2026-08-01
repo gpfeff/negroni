@@ -8,7 +8,6 @@ import {
   CREATE_RESEARCH_REVISIONS_PROFILE_INDEX,
   CREATE_RESEARCH_WORKSPACES,
   CREATE_RESEARCH_WORKSPACES_OWNER_INDEX,
-  CREATE_PROVIDER_SECRETS,
 } from "@/db/schema";
 
 type D1RunResult = { success: boolean; meta?: { changes?: number } };
@@ -74,7 +73,6 @@ async function ensureResearchSchemaOnce(database: Database): Promise<void> {
     database.prepare(CREATE_RESEARCH_WORKSPACES_OWNER_INDEX),
     database.prepare(CREATE_RESEARCH_REVISIONS_PROFILE_INDEX),
     database.prepare(CREATE_RESEARCH_MESSAGES_PROFILE_INDEX),
-    database.prepare(CREATE_PROVIDER_SECRETS),
   ]);
   const columns = await database.prepare("PRAGMA table_info(research_profiles)").all<{ name: string }>();
   const existing = new Set((columns.results ?? []).map(({ name }) => name));

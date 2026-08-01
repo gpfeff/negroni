@@ -391,9 +391,10 @@ export function IntelligenceClient() {
     setResult(null);
     setRunError(null);
     setRunRecoveryUrl(null);
-    if (validationErrors.length || !capability.available || !geminiApiReady) {
+    if (validationErrors.length || !capability.available || !geminiApiReady || !googleDriveReady) {
       if (!capability.available) setRunError(capability.blocker ?? RUNNER_BLOCKER);
       else if (!geminiApiReady) setRunError("Connect Gemini before starting Standard Deep Research.");
+      else if (!googleDriveReady) setRunError("Connect Google Drive before starting research.");
       document.getElementById("run-status")?.scrollIntoView({ behavior: "smooth" });
       return;
     }
@@ -546,6 +547,12 @@ export function IntelligenceClient() {
   const kieStatus = providerStatus("kie_ai");
   const apifyStatus = providerStatus("apify");
   const googleStatus = providerStatus("google_drive");
+  const googleDriveReady = googleStatus.status === "connected" && googleStatus.auto_store === true;
+  const researchDependencyBlocker = !geminiApiReady
+    ? "Connect Gemini before starting Standard Deep Research."
+    : !googleDriveReady
+      ? "Connect Google Drive before starting research."
+      : null;
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
   const displayedRun = result ? {
     run_id: result.run_id,
@@ -826,24 +833,12 @@ export function IntelligenceClient() {
                 <p id="profile-privacy">Use business information or a public profile. Do not enter private contact details or credentials.</p>
               </div>
               <div className="input-group">
-                <label htmlFor="profession">Profession <strong>Required</strong></label>
-                <input id="profession" value={intake.profession} onChange={(event) => updateIntake("profession", event.target.value)} placeholder="HVAC contractor" autoComplete="organization-title" aria-describedby="profile-privacy" required />
-              </div>
-              <div className="input-group">
-                <label htmlFor="job-title">Job title <strong>Required</strong></label>
-                <input id="job-title" value={intake.job_title} onChange={(event) => updateIntake("job_title", event.target.value)} placeholder="Operations director" autoComplete="organization-title" required />
-              </div>
-              <div className="input-group">
                 <label htmlFor="company-name">Company name <strong>Required</strong></label>
-                <input id="company-name" value={intake.company_name} onChange={(event) => updateIntake("company_name", event.target.value)} placeholder="Regional Repair Co." autoComplete="organization" required />
+                <input id="company-name" value={intake.company_name} onChange={(event) => updateIntake("company_name", event.target.value)} placeholder="Regional Repair Co." autoComplete="organization" aria-describedby="profile-privacy" required />
               </div>
               <div className="input-group">
                 <label htmlFor="public-profile-url">Website or public profile URL <strong>Required</strong></label>
                 <input id="public-profile-url" type="url" value={intake.website_or_public_profile_url} onChange={(event) => updateIntake("website_or_public_profile_url", event.target.value)} placeholder="https://example.com" autoComplete="url" required />
-              </div>
-              <div className="input-group">
-                <label htmlFor="competitor-used">Known competitors <span>Optional</span></label>
-                <input id="competitor-used" value={intake.competitor_used} onChange={(event) => updateIntake("competitor_used", event.target.value)} placeholder="Names or URLs, if known" autoComplete="off" />
               </div>
               <div className="input-group">
                 <label htmlFor="industry">Industry / niche <strong>Required</strong></label>
@@ -855,6 +850,18 @@ export function IntelligenceClient() {
               </div>
               <div className="intake-group-title input-wide">
                 <h3>Offer information</h3>
+              </div>
+              <div className="input-group">
+                <label htmlFor="profession">Profession <strong>Required</strong></label>
+                <input id="profession" value={intake.profession} onChange={(event) => updateIntake("profession", event.target.value)} placeholder="HVAC contractor" autoComplete="organization-title" required />
+              </div>
+              <div className="input-group">
+                <label htmlFor="job-title">Job title <strong>Required</strong></label>
+                <input id="job-title" value={intake.job_title} onChange={(event) => updateIntake("job_title", event.target.value)} placeholder="Operations director" autoComplete="organization-title" required />
+              </div>
+              <div className="input-group input-wide">
+                <label htmlFor="competitor-used">Known competitors <span>Optional</span></label>
+                <input id="competitor-used" value={intake.competitor_used} onChange={(event) => updateIntake("competitor_used", event.target.value)} placeholder="Names or URLs, if known" autoComplete="off" />
               </div>
               <div className="input-group input-wide">
                 <label htmlFor="offer-type">Lead offer or service <strong>Required</strong></label>
@@ -878,18 +885,18 @@ export function IntelligenceClient() {
             <div className="run-row">
               {proposedRunId ? <div className="run-approval"><strong>Paid-action approval</strong><small>Run ID: {proposedRunId}</small><small>Model: deep-research-preview-04-2026</small><small>Scope: five Research prompts</small><small>Estimated cost: provider pricing applies; exact cost unavailable locally</small></div> : null}
               <button className="run-button" type="button" onClick={() => void saveProfile()} disabled={!profiles.available}>{selectedProfileId ? "Save changes" : draftBrandId ? "Create offer" : "Create brand"}</button>
-              {selectedProfileId ? <button type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available || !geminiApiReady}>{running ? "Running research…" : checking ? "Checking access…" : proposedRunId ? "Approve and start" : "Run research"}</button> : null}
+              {selectedProfileId ? <button type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available || Boolean(researchDependencyBlocker)}>{running ? "Running research…" : checking ? "Checking access…" : proposedRunId ? "Approve and start" : "Run research"}</button> : null}
             </div>
           </section>
 
           <section className="section-card" id="run-status" aria-labelledby="status-title">
             <div className="section-heading"><span>2</span><div><h2 id="status-title">Run status</h2></div></div>
-            <div className={`status-panel ${runError || (!checking && !capability.available && !displayedRun) ? "status-blocked" : displayedRun && !displayedRun.is_current ? "status-partial" : displayedRun?.status === "complete" ? "status-complete" : displayedRun?.status === "partial" ? "status-partial" : ""}`} aria-live="polite">
-              <div><span className="status-dot" /><strong>{running ? "Researching" : runError ? "Blocked" : displayedRun && !displayedRun.is_current ? "Needs attention" : displayedRun?.status === "complete" ? "Complete" : displayedRun?.status === "partial" ? "Complete with limitations" : !checking && !capability.available ? "Blocked" : "Not started"}</strong></div>
-              <p>{running ? "Research is running." : runError ?? (displayedRun ? !displayedRun.is_current ? "This package used earlier brand or offer information. Run Research again to make it current." : `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(displayedRun.completed_at))}` : capability.blocker ?? "Create the brand when you are ready.")}</p>
+            <div className={`status-panel ${runError || (!checking && (!capability.available || researchDependencyBlocker) && !displayedRun) ? "status-blocked" : displayedRun && !displayedRun.is_current ? "status-partial" : displayedRun?.status === "complete" ? "status-complete" : displayedRun?.status === "partial" ? "status-partial" : ""}`} aria-live="polite">
+              <div><span className="status-dot" /><strong>{running ? "Researching" : runError ? "Blocked" : displayedRun && !displayedRun.is_current ? "Needs attention" : displayedRun?.status === "complete" ? "Complete" : displayedRun?.status === "partial" ? "Complete with limitations" : !checking && (!capability.available || researchDependencyBlocker) ? "Blocked" : "Not started"}</strong></div>
+              <p>{running ? "Research is running." : runError ?? (displayedRun ? !displayedRun.is_current ? "This package used earlier brand or offer information. Run Research again to make it current." : `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(displayedRun.completed_at))}` : capability.blocker ?? researchDependencyBlocker ?? "Create the brand when you are ready.")}</p>
               {displayedRun ? <a className="drive-link" href={displayedRun.folder_url} target="_blank" rel="noreferrer">Open brand folder in Google Drive <span aria-hidden="true">↗</span></a> : null}
               {!result && runRecoveryUrl ? <a className="drive-link" href={runRecoveryUrl} target="_blank" rel="noreferrer">Open completed run in Google Drive <span aria-hidden="true">↗</span></a> : null}
-              {!result && !running && (runError || (!checking && !capability.available)) ? <button className="status-action" type="button" onClick={() => navigate("integrations")}>Open Integrations</button> : null}
+              {!result && !running && (runError || (!checking && (!capability.available || researchDependencyBlocker))) ? <button className="status-action" type="button" onClick={() => navigate("integrations")}>Open Integrations</button> : null}
             </div>
           </section>
 

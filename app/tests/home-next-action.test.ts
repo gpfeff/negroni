@@ -15,7 +15,9 @@ test("Home next action follows the honest state priority without fabricating rea
   });
   assert.equal(deriveHomeNextAction({ checking: false, capability: blocked, hasProfile: false, resultStatus: null }).title, "Finish Research setup");
   assert.equal(deriveHomeNextAction({ checking: false, capability: blocked, hasProfile: false, resultStatus: null }).action?.destination, "integrations");
-  assert.equal(deriveHomeNextAction({ checking: false, capability: ready, hasProfile: false, resultStatus: null }).title, "Start Research");
+  const firstResearchAction = deriveHomeNextAction({ checking: false, capability: ready, hasProfile: false, resultStatus: null });
+  assert.equal(firstResearchAction.title, "Start Research");
+  assert.equal(firstResearchAction.description, "Create the permanent brand file, add its current offer, and then build the evidence-backed research package.");
   assert.equal(deriveHomeNextAction({ checking: false, capability: ready, hasProfile: true, resultStatus: null }).title, "Run Research");
   assert.equal(deriveHomeNextAction({ checking: false, capability: ready, hasProfile: true, resultStatus: "partial" }).title, "Review limitations");
   assert.equal(deriveHomeNextAction({ checking: false, capability: ready, hasProfile: true, resultStatus: "complete" }).title, "Review & Approve");

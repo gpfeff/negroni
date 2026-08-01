@@ -2,6 +2,7 @@ import { assertNoSecretMaterial } from "@/lib/contracts/secrets-core.mjs";
 import { authenticatedOwner } from "@/lib/authenticated-user";
 import type { IntelligenceIntake, RunCapability, RunError } from "@/lib/intelligence/contracts";
 import type { ResearchFilingScope } from "@/lib/research-runner/contracts";
+import { safeServiceUrl } from "@/lib/safe-service-url";
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
 
 function configuration() {
@@ -17,11 +18,8 @@ export async function GET(request: Request): Promise<Response> {
   const owner = authenticatedOwner(request);
   if (config.url && config.token && owner) {
     try {
-      const runnerUrl = new URL(config.url);
-      if (runnerUrl.protocol !== "https:"
-        && !(runnerUrl.protocol === "http:" && ["127.0.0.1", "localhost", "::1"].includes(runnerUrl.hostname))) {
-        throw new Error("Unsafe runner URL.");
-      }
+      const runnerUrl = safeServiceUrl(config.url);
+      if (!runnerUrl) throw new Error("Unsafe runner URL.");
       runnerUrl.pathname = "/health";
       runnerUrl.search = "";
       const response = await fetch(runnerUrl, {
@@ -69,11 +67,13 @@ export async function executeApprovedResearch(
       return Response.json({ status: "failed", error: errors.join(" ") } satisfies RunError, { status: 400 });
     }
     assertNoSecretMaterial(intake, "Research intake");
+    const runnerUrl = safeServiceUrl(config.url);
+    if (!runnerUrl) throw new Error("The secure research runner must use HTTPS or loopback HTTP.");
 
     let runnerResponse: Response;
     let payload: unknown;
     try {
-      runnerResponse = await fetch(config.url, {
+      runnerResponse = await fetch(runnerUrl, {
         method: "POST",
         headers: {
           authorization: `Bearer ${config.token}`,
