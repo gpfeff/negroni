@@ -21,6 +21,12 @@ const localBindingConfig = {
     ...(process.env.CREDENTIAL_BROKER_TOKEN
       ? { CREDENTIAL_BROKER_TOKEN: process.env.CREDENTIAL_BROKER_TOKEN }
       : {}),
+    ...(process.env.LEAD_INTELLIGENCE_RUNNER_URL
+      ? { LEAD_INTELLIGENCE_RUNNER_URL: process.env.LEAD_INTELLIGENCE_RUNNER_URL }
+      : {}),
+    ...(process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN
+      ? { LEAD_INTELLIGENCE_RUNNER_TOKEN: process.env.LEAD_INTELLIGENCE_RUNNER_TOKEN }
+      : {}),
   },
   d1_databases: d1
     ? [

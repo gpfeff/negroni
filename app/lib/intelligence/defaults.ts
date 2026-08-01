@@ -1,4 +1,4 @@
-import { PROMPT_SOURCE_DOCUMENT_ID, RESEARCH_PROMPTS, type IntelligenceIntake } from "./contracts";
+import { PROMPT_SOURCE_DOCUMENT_ID, RESEARCH_PROMPTS, type IntelligenceIntake } from "./contracts.ts";
 
 export const DEFAULT_RESEARCH_PROMPT = `Run this lead-generation Research workflow with Gemini Deep Research.
 
@@ -12,11 +12,10 @@ export function createEmptyIntake(timezone = "UTC"): IntelligenceIntake {
   return {
     contract: "lead-generation-intelligence-intake",
     contract_version: "5.0",
-    client_customer_name: "",
-    profession_job_title: "",
+    profession: "",
+    job_title: "",
     company_name: "",
     website_or_public_profile_url: "",
-    service_or_offer_purchased: "",
     competitor_used: "",
     offer_or_lead_type: "",
     industry: "",
@@ -24,7 +23,7 @@ export function createEmptyIntake(timezone = "UTC"): IntelligenceIntake {
     target_age_range: "",
     approved_prompt: DEFAULT_RESEARCH_PROMPT,
     create_competitor_database: false,
-    allowed_actions: ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"],
+    allowed_actions: ["public_research", "create_google_doc", "create_google_sheet"],
     research_engine: "lead-generation-ads-discovery-intelligence",
     prompt_source: {
       document_id: PROMPT_SOURCE_DOCUMENT_ID,

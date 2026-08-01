@@ -4,8 +4,8 @@
 Authenticated browser
   |
   +-- Research tab
-  |     +-- required customer profile + research scope
-  |     +-- owner-scoped saved sets -> D1
+  |     +-- permanent brand foundation + current offer intake
+  |     +-- owner-scoped brands and offer packages -> D1
   |     +-- versioned Markdown seed review -> D1
   |     |     +-- direct edits and permanent notes
   |     |     +-- POST /api/review -> secure review runner
@@ -20,9 +20,10 @@ Authenticated browser
   |           +-- fixed five-prompt research sequence
   |           +-- public research tools
   |           +-- five durable Research artifacts
-  |           +-- Doc and Markdown -> Negroni Research folder
-  |           +-- optional restricted competitor Sheet
-  |           +-- Meta Ads Intelligence server adapter
+  |           +-- Doc and Markdown -> Negroni / Brand / Offer
+  |           +-- verified Drive folder receipt -> Run Status, Brands, Library
+  |           +-- optional requested competitor database -> restricted Sheet
+  |           +-- optional Meta Ads Intelligence server adapter
   |                 +-- project-derived isolated profile
   |                 +-- SQLite-owned lifecycle/media/ratings
   |                 +-- scheduler-neutral daily refresh
@@ -35,13 +36,17 @@ Authenticated browser
   |                 +-- optional projection contract
   |           +-- strict result receipt
   |
-  +-- Settings tab
+  +-- Tools / Integrations
         +-- Codex OAuth --------+
         +-- Gemini API key -----+-> /api/connections/gemini
         |                              +-- same-origin mutations
         |                              +-- metadata-only status
         |                              +-- encrypted hosted SecretStore required
         +-- Google OAuth -------+
+  |
+  +-- Settings
+        +-- appearance
+        +-- local approval preferences
 ```
 
 ```text
@@ -75,15 +80,22 @@ Draper (control plane)
 
 The local Learning Core is plugin runtime, not hosted Site storage. It remains
 owner-, workspace-, and brand-scoped and creates an immutable version for each
-learning transition. The Site exposes Library and Brands under Tools; Draper
+learning transition. The Site exposes Library, Brands, and Integrations under Tools; Draper
 remains plugin-only and receives no browser route, SQLite handle, private vault
 path, generic SQL boundary, or machine-local data.
 See [`draper-learning-core.md`](draper-learning-core.md).
 
-The browser receives no runner or provider token. Research sets contain the
-four intake values, owner/timestamp metadata, versioned Markdown seeds, review
-messages, and approval fingerprints. Provider secrets stay in the credential
-broker and are never written to D1. The broker owns the Google
+The browser receives no runner or provider token. Brand and offer records
+contain the complete non-secret intake, owner/timestamp metadata, versioned
+Markdown seeds, review messages, approval fingerprints, and the latest compact
+verified Drive receipt plus immutable intake basis for that exact offer. The
+start route rejects a profile
+and intake mismatch before consuming run approval; after a validated run it
+persists and reads back the folder, Doc, optional Sheet, Markdown identity, and
+current/stale basis state so Research, Brands, and Library survive a reload.
+Stable brand and offer IDs preserve the Drive folder relationship when a
+display name changes. Provider secrets
+stay in the credential broker and are never written to D1. The broker owns the Google
 authorization-code callback, OAuth state verification, encrypted refresh-token
 storage, refresh, and revocation handling. The app accepts only sanitized
 connection metadata and an HTTPS authorization URL.
@@ -95,8 +107,8 @@ closed until an encrypted hosted `SecretStore` and non-generative verifier are
 wired; only tests and explicit non-production local previews may use the
 in-memory adapter. See [`gemini-credential-broker.md`](gemini-credential-broker.md).
 
-The app rejects noncanonical engines, a changed prompt source or order, extra
-or missing outward actions, missing five-artifact receipts, unverified native
+The app rejects noncanonical engines, a changed prompt source or order,
+unauthorized outward actions, missing five-artifact receipts, unverified native
 files, insecure competitor-report links, filename drift, failed
 parity/evidence checks, unresolved citations, secret-like material, and
 structural-example leakage.
@@ -106,12 +118,13 @@ seed changes workspace status to `draft_changes` but leaves the Phase 2 pointer
 on the prior approved revision. AI proposals are stored separately and can be
 applied only while their parent is still the current revision.
 
-Meta Ads Intelligence remains runner-side behind a stable CLI contract. The
-adapter validates profile identity on every read, adds only verified Page-ID
-watches, and never installs a scheduler. Missing normalized input produces a
-durable `skipped` run; unavailable official API credentials produce `blocked`.
-Google publishing is optional and does not change local collection, storage,
-analysis, or report availability.
+Meta Ads Intelligence remains runner-side behind a stable CLI contract and is
+invoked only when the competitor database is requested. The adapter validates
+profile identity on every read, adds only verified Page-ID watches, and never
+installs a scheduler. A declined database is `not_requested`; missing normalized
+input for a requested database produces a durable `skipped` run; unavailable
+official API credentials produce `blocked`. Google Sheet publishing is part of
+the requested database receipt and never becomes an invented success.
 
 ## Competitor-research runtime boundary
 

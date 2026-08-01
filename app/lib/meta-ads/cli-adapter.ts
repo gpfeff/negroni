@@ -1,9 +1,9 @@
 import { execFile } from "node:child_process";
 import { resolve } from "node:path";
 import { promisify } from "node:util";
-import type { MetaAdsProjectSnapshot, ProviderNeutralCollectionReceipt } from "./contracts";
-import { projectProfileId, runtimeHome } from "./profile";
-import { parseMetaAdsSnapshot } from "./validation";
+import type { MetaAdsProjectSnapshot, ProviderNeutralCollectionReceipt } from "./contracts.ts";
+import { projectProfileId, runtimeHome } from "./profile.ts";
+import { parseMetaAdsSnapshot } from "./validation.ts";
 
 const execFileAsync = promisify(execFile);
 

@@ -1,23 +1,23 @@
-import { scanForExampleLeaks } from "@/lib/contracts/example-leak-scan.mjs";
-import { assertNoSecretMaterial } from "@/lib/contracts/secrets-core.mjs";
+import { scanForExampleLeaks } from "../contracts/example-leak-scan.mjs";
+import { assertNoSecretMaterial } from "../contracts/secrets-core.mjs";
 import {
   RESEARCH_ARTIFACT_FILENAMES,
   type ResearchArtifactKey,
-} from "@/lib/meta-ads/contracts";
-import { validateCompetitorAdsIntelligence, validateProviderNeutralCollectionReceipt } from "@/lib/meta-ads/validation";
+} from "../meta-ads/contracts.ts";
+import { validateCompetitorAdsIntelligence, validateProviderNeutralCollectionReceipt } from "../meta-ads/validation.ts";
 import {
   PROMPT_SOURCE_DOCUMENT_ID,
   RESEARCH_PROMPTS,
   type IntelligenceIntake,
   type RunResult,
-} from "./contracts";
+} from "./contracts.ts";
 
 export const RUNNER_BLOCKER = "No secure five-prompt research runner and verified Google Workspace connector are configured for this environment.";
-const ALLOWED_ACTIONS = ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"] as const;
+const ALLOWED_ACTIONS = ["public_research", "create_google_doc", "create_google_sheet"] as const;
 const INTAKE_KEYS = [
   "allowed_actions",
   "approved_prompt",
-  "client_customer_name",
+  "profession",
   "company_name",
   "create_competitor_database",
   "competitor_monitoring",
@@ -28,9 +28,8 @@ const INTAKE_KEYS = [
   "industry",
   "offer_or_lead_type",
   "prompt_source",
-  "profession_job_title",
+  "job_title",
   "research_engine",
-  "service_or_offer_purchased",
   "target_age_range",
   "website_or_public_profile_url",
 ] as const;
@@ -86,6 +85,18 @@ function isGoogleUrl(value: unknown, path: string): boolean {
   }
 }
 
+function isGoogleDriveFolderUrl(value: unknown): boolean {
+  if (typeof value !== "string") return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:"
+      && url.hostname === "drive.google.com"
+      && url.pathname.startsWith("/drive/folders/");
+  } catch {
+    return false;
+  }
+}
+
 function hasExactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
   return Object.keys(value).sort().join(",") === [...keys].sort().join(",");
 }
@@ -121,20 +132,17 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
     || ALLOWED_ACTIONS.some((action, index) => intake.allowed_actions[index] !== action)) {
     errors.push("The intake contains unsupported external actions.");
   }
-  if (typeof intake.client_customer_name !== "string" || intake.client_customer_name.trim().length < 2 || intake.client_customer_name.length > 160) {
-    errors.push("Enter the client or customer name.");
+  if (typeof intake.profession !== "string" || intake.profession.trim().length < 2 || intake.profession.length > 160) {
+    errors.push("Enter the profession.");
   }
-  if (typeof intake.profession_job_title !== "string" || intake.profession_job_title.trim().length < 2 || intake.profession_job_title.length > 160) {
-    errors.push("Enter the profession or job title.");
+  if (typeof intake.job_title !== "string" || intake.job_title.trim().length < 2 || intake.job_title.length > 160) {
+    errors.push("Enter the job title.");
   }
   if (typeof intake.company_name !== "string" || intake.company_name.trim().length < 2 || intake.company_name.length > 160) {
     errors.push("Enter the company name.");
   }
   if (typeof intake.website_or_public_profile_url !== "string" || intake.website_or_public_profile_url.length > 2048 || !isHttpsUrl(intake.website_or_public_profile_url)) {
     errors.push("Enter an HTTPS website or public profile URL.");
-  }
-  if (typeof intake.service_or_offer_purchased !== "string" || intake.service_or_offer_purchased.trim().length < 3 || intake.service_or_offer_purchased.length > 240) {
-    errors.push("Describe the service or offer purchased.");
   }
   if (typeof intake.competitor_used !== "string" || intake.competitor_used.length > 500) {
     errors.push("Known competitors must be 500 characters or fewer.");
@@ -148,8 +156,9 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
   if (typeof intake.country_region !== "string" || intake.country_region.trim().length < 2 || intake.country_region.length > 160) {
     errors.push("Enter the location or market served.");
   }
-  if (!validAgeRange(intake.target_age_range)) {
-    errors.push("Enter a target age range such as 30–60.");
+  if (typeof intake.target_age_range !== "string"
+    || (intake.target_age_range.trim().length > 0 && !validAgeRange(intake.target_age_range))) {
+    errors.push("If provided, enter a target age range such as 30–60.");
   }
   if (typeof intake.approved_prompt !== "string" || intake.approved_prompt.trim().length < 200 || intake.approved_prompt.length > 20_000) {
     errors.push("Review the final Gemini Deep Research prompt before running.");
@@ -174,6 +183,8 @@ export function validateIntake(intake: IntelligenceIntake): string[] {
     || monitoring.local_time !== "02:17"
     || !isValidTimezone(monitoring.timezone)) {
     errors.push("The nightly competitor monitoring request is invalid.");
+  } else if (monitoring.enabled) {
+    errors.push("Continuous monitoring is not available from this Research flow.");
   }
   try {
     assertNoSecretMaterial(intake, "Research intake");
@@ -194,6 +205,17 @@ export function parseRunResult(value: unknown, researchName: string): RunResult 
   }
   if (typeof result.run_id !== "string" || !result.run_id.trim() || !isTimestamp(result.completed_at)) {
     throw new Error("The runner receipt identity or completion time is invalid.");
+  }
+
+  const brandLibrary = result.brand_library;
+  if (!isRecord(brandLibrary)
+    || !hasExactKeys(brandLibrary, ["folder_name", "folder_url", "status", "verified"])
+    || brandLibrary.status !== "stored"
+    || typeof brandLibrary.folder_name !== "string"
+    || !brandLibrary.folder_name.trim()
+    || !isGoogleDriveFolderUrl(brandLibrary.folder_url)
+    || brandLibrary.verified !== true) {
+    throw new Error("The verified Google Drive brand folder receipt is invalid.");
   }
 
   const outputs = result.outputs;
@@ -314,6 +336,14 @@ export function parseRunResult(value: unknown, researchName: string): RunResult 
       || !monitoring.blocker.trim()) {
       throw new Error("The runner returned an invalid competitor monitoring blocker.");
     }
+  } else if (monitoring.status === "not_requested") {
+    if (monitoring.schedule_id !== null
+      || monitoring.watch_count !== 0
+      || monitoring.last_run_at !== null
+      || monitoring.next_run_at !== null
+      || monitoring.blocker !== null) {
+      throw new Error("The unrequested competitor monitoring receipt is inconsistent.");
+    }
   } else {
     throw new Error("The nightly competitor monitoring receipt has an unsupported status.");
   }
@@ -345,7 +375,9 @@ export function parseRunResult(value: unknown, researchName: string): RunResult 
     }
   }
 
-  const shouldBePartial = hasLimitedPrompt || monitoring.status === "blocked";
+  const competitorCollectionLimited = result.competitor_collection !== undefined
+    && !["complete", "complete_zero", "skipped"].includes(result.competitor_collection.status);
+  const shouldBePartial = hasLimitedPrompt || monitoring.status === "blocked" || competitorCollectionLimited;
   if ((shouldBePartial && result.status !== "partial") || (!shouldBePartial && result.status !== "complete")) {
     throw new Error("The run status does not match its prompt and monitoring receipts.");
   }

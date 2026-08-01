@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { homedir } from "node:os";
 import { resolve, sep } from "node:path";
-import { validateProfileId } from "./profile-id";
+import { validateProfileId } from "./profile-id.ts";
 
-export { validateProfileId } from "./profile-id";
+export { validateProfileId } from "./profile-id.ts";
 
 export function projectProfileId(projectId: string): string {
   const normalized = projectId.normalize("NFKD").toLowerCase()

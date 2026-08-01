@@ -13,6 +13,7 @@ import {
 import { buildResearchName, parseRunResult } from "@/lib/intelligence/validation";
 import type {
   CompetitorBoundaryResult,
+  GoogleFilingInput,
   GoogleFilingResult,
   PromptExecutionRequest,
   ResearchSequenceRequest,
@@ -27,6 +28,7 @@ import {
 
 const NOW = "2026-07-30T17:00:00.000Z";
 const SERVICE_TOKEN = "runner-service-token-for-tests";
+const APPROVED_RUN_ID = "run_0123456789abcdef01234567";
 
 type RunnerSuccessPayload = RunResult & { runner_receipt: SecureRunnerReceipt };
 type RunnerFailurePayload = Pick<RunnerOutcome, "status" | "run_id" | "runner_receipt" | "error">;
@@ -37,11 +39,10 @@ function sha256(value: string | Buffer): string {
 
 function validIntake(): IntelligenceIntake {
   const intake = createEmptyIntake("America/Los_Angeles");
-  intake.client_customer_name = "Jordan Lee";
-  intake.profession_job_title = "Operations director";
+  intake.profession = "HVAC contractor";
+  intake.job_title = "Operations director";
   intake.company_name = "Phoenix Repair Co.";
   intake.website_or_public_profile_url = "https://phoenix-repair.example";
-  intake.service_or_offer_purchased = "Emergency repair membership";
   intake.competitor_used = "Local repair marketplace";
   intake.offer_or_lead_type = "Phoenix emergency HVAC leads";
   intake.industry = "Home services";
@@ -120,6 +121,7 @@ function verifiedGoogle(input: {
   sheet_title: string;
   markdown: string;
   markdown_filename: string;
+  create_competitor_database: boolean;
 }): GoogleFilingResult {
   return {
     status: "verified",
@@ -129,12 +131,20 @@ function verifiedGoogle(input: {
       url: "https://docs.google.com/document/d/fake-doc-id/edit",
       verified: true,
     },
-    google_sheet: {
-      title: input.sheet_title,
-      status: "published",
-      url: "https://docs.google.com/spreadsheets/d/fake-sheet-id/edit",
-      verified: true,
-    },
+    google_sheet: input.create_competitor_database ? {
+        title: input.sheet_title,
+        status: "published",
+        url: "https://docs.google.com/spreadsheets/d/fake-sheet-id/edit",
+        verified: true,
+      } : {
+        title: input.sheet_title,
+        status: "not_configured",
+        url: null,
+        verified: false,
+        message: "Google publishing not configured.",
+      },
+    folder_name: "Negroni / Regional Repair Co. / Regional repair leads",
+    folder_url: "https://drive.google.com/drive/folders/brand-folder-123",
     markdown_sha256: sha256(input.markdown),
     document_readback_sha256: sha256(input.markdown),
     sole_parent_verified: true,
@@ -148,10 +158,13 @@ function fakeDependencies(options: {
   activeMonitor?: boolean;
   blockGoogle?: boolean;
   failPromptCallOnce?: number;
+  invalidGoogleTitle?: boolean;
   sequence?: boolean;
 } = {}) {
   const promptCalls: PromptExecutionRequest[] = [];
   const sequenceCalls: ResearchSequenceRequest[] = [];
+  const filingCalls: GoogleFilingInput[] = [];
+  const competitorCalls: Array<{ owner_key: string; project_id: string; deadline_seconds: number }> = [];
   let failedOnce = false;
   function sequenceOutputs(request: ResearchSequenceRequest) {
     return request.prompts.map(({ id }, index) => ({
@@ -221,6 +234,7 @@ function fakeDependencies(options: {
     },
     competitor_boundary: {
       async run(input) {
+        competitorCalls.push(input);
         const result = competitorResult(options.activeMonitor === true);
         result.collection.project_id = input.project_id;
         result.intelligence.collection_receipt = result.collection;
@@ -229,12 +243,15 @@ function fakeDependencies(options: {
     },
     google_filing: {
       async fileResearch(input) {
+        filingCalls.push(input);
         if (options.blockGoogle) {
           return {
             status: "blocked",
             kind: "not_configured",
             google_doc: null,
             google_sheet: null,
+            folder_name: null,
+            folder_url: null,
             markdown_sha256: sha256(input.markdown),
             document_readback_sha256: null,
             sole_parent_verified: false,
@@ -243,11 +260,15 @@ function fakeDependencies(options: {
             external_actions: [],
           };
         }
-        return verifiedGoogle(input);
+        const receipt = verifiedGoogle(input);
+        if (options.invalidGoogleTitle && receipt.google_doc) {
+          receipt.google_doc.title = "Wrong title";
+        }
+        return receipt;
       },
     },
   };
-  return { dependencies, promptCalls, sequenceCalls, sequenceOutputs };
+  return { dependencies, promptCalls, sequenceCalls, filingCalls, competitorCalls, sequenceOutputs };
 }
 
 async function harness(label: string, dependencies: ResearchRunnerDependencies) {
@@ -273,11 +294,25 @@ async function harness(label: string, dependencies: ResearchRunnerDependencies) 
 
 function request(
   path: string,
-  options: { method?: string; token?: string; owner?: string; body?: unknown } = {},
+  options: {
+    method?: string;
+    token?: string;
+    owner?: string;
+    approvedRunId?: string | null;
+    filingScope?: { brand_id: string; offer_id: string } | null;
+    body?: unknown;
+  } = {},
 ) {
   const headers = new Headers();
   if (options.token) headers.set("authorization", `Bearer ${options.token}`);
   if (options.owner) headers.set("x-negroni-owner", options.owner);
+  if ((options.method ?? "GET") === "POST" && options.approvedRunId !== null) {
+    headers.set("x-negroni-approved-run-id", options.approvedRunId ?? APPROVED_RUN_ID);
+    if (options.filingScope !== null) {
+      headers.set("x-negroni-brand-id", options.filingScope?.brand_id ?? "brand-123");
+      headers.set("x-negroni-offer-id", options.filingScope?.offer_id ?? "offer-456");
+    }
+  }
   if (options.body !== undefined) headers.set("content-type", "application/json");
   return new Request(`http://runner.test${path}`, {
     method: options.method ?? "GET",
@@ -325,6 +360,53 @@ test("browser input cannot substitute prompts, paths, credentials, or tools", as
   }
 });
 
+test("execution requires the exact server-approved run ID outside the browser body", async () => {
+  const fake = fakeDependencies();
+  const app = await harness("exact-approval", fake.dependencies);
+  try {
+    const missing = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      approvedRunId: null,
+      body: validIntake(),
+    }));
+    assert.equal(missing.status, 400);
+
+    const missingScope = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      filingScope: null,
+      body: validIntake(),
+    }));
+    assert.equal(missingScope.status, 400);
+
+    const malformed = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      approvedRunId: "run_from_browser",
+      body: { ...validIntake(), run_id: APPROVED_RUN_ID },
+    }));
+    assert.equal(malformed.status, 400);
+    assert.equal(fake.promptCalls.length, 0);
+
+    const approved = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      body: validIntake(),
+    }));
+    assert.equal(approved.status, 200, await approved.clone().text());
+    const result = await approved.json() as RunnerSuccessPayload;
+    assert.equal(result.run_id, APPROVED_RUN_ID);
+    assert.ok(fake.promptCalls.every((call) => call.run_id === APPROVED_RUN_ID));
+  } finally {
+    await rm(app.base, { recursive: true, force: true });
+  }
+});
+
 test("one owner gets an idempotent five-prompt result and exactly five immutable artifacts", async () => {
   const fake = fakeDependencies();
   const app = await harness("complete-artifacts", fake.dependencies);
@@ -341,20 +423,29 @@ test("one owner gets an idempotent five-prompt result and exactly five immutable
       validIntake().offer_or_lead_type,
       validIntake().country_region,
     ));
-    assert.equal(parsed.status, "partial");
+    assert.equal(parsed.brand_library.folder_url, "https://drive.google.com/drive/folders/brand-folder-123");
+    assert.equal(payload.runner_receipt.google.folder_url, parsed.brand_library.folder_url);
+    assert.equal(fake.filingCalls[0]?.brand_name, "Phoenix Repair Co.");
+    assert.equal(fake.filingCalls[0]?.offer_name, "Phoenix emergency HVAC leads");
+    assert.equal(fake.filingCalls[0]?.brand_id, "brand-123");
+    assert.equal(fake.filingCalls[0]?.offer_id, "offer-456");
+    assert.equal(parsed.status, "complete");
+    assert.equal(parsed.outputs.google_sheet.status, "not_configured");
+    assert.equal(fake.competitorCalls.length, 0);
+    assert.equal(fake.filingCalls[0]?.create_competitor_database, false);
     assert.deepEqual(fake.promptCalls.map(({ prompt_id }) => prompt_id), [...RESEARCH_PROMPTS]);
     assert.ok(fake.promptCalls.every((call) => call.trust === "untrusted" && call.allowed_tools.length === 0));
     assert.deepEqual(fake.promptCalls[0]?.intake, {
-      client_customer_name: "Jordan Lee",
-      profession_job_title: "Operations director",
+      profession: "HVAC contractor",
+      job_title: "Operations director",
       company_name: "Phoenix Repair Co.",
       website_or_public_profile_url: "https://phoenix-repair.example",
-      service_or_offer_purchased: "Emergency repair membership",
       competitor_used: "Local repair marketplace",
       offer_or_lead_type: "Phoenix emergency HVAC leads",
       industry: "Home services",
       country_region: "Phoenix, Arizona",
       target_age_range: "30–65",
+      approved_prompt: validIntake().approved_prompt,
     });
     assert.deepEqual(payload.runner_receipt.external_actions, []);
 
@@ -385,6 +476,28 @@ test("one owner gets an idempotent five-prompt result and exactly five immutable
     }));
     assert.deepEqual(await replay.json(), payload);
     assert.equal(fake.promptCalls.length, 5);
+  } finally {
+    await rm(app.base, { recursive: true, force: true });
+  }
+});
+
+test("the one competitor-database option controls collection and Sheet creation", async () => {
+  const fake = fakeDependencies();
+  const app = await harness("competitor-database-requested", fake.dependencies);
+  try {
+    const intake = validIntake();
+    intake.create_competitor_database = true;
+    const response = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      body: intake,
+    }));
+    assert.equal(response.status, 200, await response.clone().text());
+    const result = await response.json() as RunnerSuccessPayload;
+    assert.equal(result.outputs.google_sheet.status, "published");
+    assert.equal(fake.competitorCalls.length, 1);
+    assert.equal(fake.filingCalls[0]?.create_competitor_database, true);
   } finally {
     await rm(app.base, { recursive: true, force: true });
   }
@@ -529,6 +642,35 @@ test("blocked Google identity preserves local artifacts and an immutable blocked
     assert.deepEqual(payload.runner_receipt.external_actions, []);
     assert.equal(JSON.stringify(payload).includes("docs.google.com"), false);
     assert.equal(JSON.stringify(payload).includes(app.base), false);
+  } finally {
+    await rm(app.base, { recursive: true, force: true });
+  }
+});
+
+test("a late result-contract failure persists one failed receipt without colliding with an unverified success", async () => {
+  const fake = fakeDependencies({ invalidGoogleTitle: true });
+  const app = await harness("late-result-contract-failure", fake.dependencies);
+  try {
+    const response = await app.handler(request("/v1/research-runs", {
+      method: "POST",
+      token: SERVICE_TOKEN,
+      owner: "owner-a",
+      body: validIntake(),
+    }));
+    assert.equal(response.status, 500, await response.clone().text());
+    const payload = await response.json() as RunnerFailurePayload;
+    assert.equal(payload.status, "failed");
+    assert.equal(payload.runner_receipt.status, "failed");
+    assert.match(payload.runner_receipt.receipt_sha256, /^[a-f0-9]{64}$/);
+    const receipts = await readdir(resolve(app.artifactRoot, "research/runner-receipts", APPROVED_RUN_ID));
+    assert.deepEqual(receipts, ["attempt-001.json"]);
+    const persisted = JSON.parse(await readFile(resolve(
+      app.artifactRoot,
+      "research/runner-receipts",
+      APPROVED_RUN_ID,
+      "attempt-001.json",
+    ), "utf8")) as SecureRunnerReceipt;
+    assert.equal(persisted.status, "failed");
   } finally {
     await rm(app.base, { recursive: true, force: true });
   }

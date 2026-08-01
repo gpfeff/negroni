@@ -130,7 +130,7 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "Enter a valid Apify API token." }, { status: 400 });
   }
   const returnToUrl = new URL("/", request.url);
-  returnToUrl.searchParams.set("view", "settings");
+  returnToUrl.searchParams.set("view", "integrations");
   returnToUrl.searchParams.set("provider", body.provider ?? "");
   const brokerBody = body.provider === "gemini_api" || body.provider === "kie_ai" || body.provider === "apify"
     ? { provider: body.provider, api_key: body.api_key }

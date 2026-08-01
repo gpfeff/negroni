@@ -18,16 +18,16 @@ function sequenceRequest(): ResearchSequenceRequest {
     allowed_tools: [],
     fixed_rules: ["Do not mutate external systems."],
     intake: {
-      client_customer_name: "Jordan Lee",
-      profession_job_title: "Operations director",
+      profession: "HVAC contractor",
+      job_title: "Operations director",
       company_name: "Phoenix Repair Co.",
       website_or_public_profile_url: "https://phoenix-repair.example",
-      service_or_offer_purchased: "Emergency repair membership",
       competitor_used: "Local repair marketplace",
       offer_or_lead_type: "Phoenix emergency HVAC leads",
       industry: "Home services",
       country_region: "Phoenix, Arizona",
       target_age_range: "30–65",
+      approved_prompt: "Use the exact approved lead-generation research workflow and preserve evidence boundaries.",
     },
     prompts: RESEARCH_PROMPTS.map((id) => ({ id, content: `Approved ${id} prompt.` })),
     completed_prompt_ids: [],
@@ -68,7 +68,6 @@ test("Gemini Deep Research runs one brokered interaction and returns five cited 
   const engine = createGeminiDeepResearchEngine({
     broker_url: "http://127.0.0.1:47831",
     broker_token: BROKER_TOKEN,
-    approved_run_id: RUN_ID,
     fetch: async (input, init) => {
       calls.push({ url: String(input), init });
       return Response.json(responses.shift());
@@ -92,20 +91,19 @@ test("Gemini Deep Research runs one brokered interaction and returns five cited 
   assert.equal(String(calls[0]?.init?.body).includes(BROKER_TOKEN), false);
 });
 
-test("Gemini Deep Research fails before network access unless the exact run is approved", async () => {
+test("Gemini Deep Research rejects a malformed approved run ID before network access", async () => {
   let networkCalls = 0;
   const engine = createGeminiDeepResearchEngine({
     broker_url: "http://127.0.0.1:47831",
     broker_token: BROKER_TOKEN,
-    approved_run_id: RUN_ID,
     fetch: async () => {
       networkCalls += 1;
       return Response.json({});
     },
   });
   const request = sequenceRequest();
-  request.run_id = "run_aaaaaaaaaaaaaaaaaaaaaaaa";
-  await assert.rejects(engine.executeSequence(request), /spend-approved/);
+  request.run_id = "run_from_browser";
+  await assert.rejects(engine.executeSequence(request), /approved .*run ID/);
   assert.equal(networkCalls, 0);
 });
 
@@ -115,7 +113,6 @@ test("Gemini Deep Research fails closed when any required section lacks a URL ci
   const engine = createGeminiDeepResearchEngine({
     broker_url: "http://127.0.0.1:47831",
     broker_token: BROKER_TOKEN,
-    approved_run_id: RUN_ID,
     fetch: async () => Response.json(interaction),
   });
   await assert.rejects(engine.executeSequence(sequenceRequest()), /no URL citations/);

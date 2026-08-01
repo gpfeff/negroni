@@ -1,5 +1,10 @@
 # Meta Ads Intelligence integration build prompt
 
+> Historical implementation prompt. It documents the broader archive engine,
+> not the current Research UI contract. The current page exposes one optional
+> customer-competitor-database control, no monitoring control, and installs no
+> scheduler.
+
 Copy this prompt into the Negroni **PHASE 1: RESEARCH** implementation task.
 The nearest `AGENTS.md` and current project contracts remain authoritative.
 

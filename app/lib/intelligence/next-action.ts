@@ -7,7 +7,7 @@ export type HomeNextAction = {
   description: string;
   action: null | {
     label: string;
-    destination: "settings" | "research" | "run" | "status" | "review";
+    destination: "integrations" | "research" | "run" | "status" | "review";
   };
 };
 
@@ -32,7 +32,7 @@ export function deriveHomeNextAction(input: {
       eyebrow: "Research blocked",
       title: "Finish Research setup",
       description: input.capability.blocker ?? "Research access is unavailable until its configured prerequisite is verified.",
-      action: { label: "Open Settings", destination: "settings" },
+      action: { label: "Open Integrations", destination: "integrations" },
     };
   }
   if (!input.hasProfile) {

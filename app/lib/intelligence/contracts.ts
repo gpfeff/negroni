@@ -2,7 +2,7 @@ import type {
   CompetitorAdsIntelligence,
   ProviderNeutralCollectionReceipt,
   ResearchArtifactReceipts,
-} from "@/lib/meta-ads/contracts";
+} from "../meta-ads/contracts.ts";
 
 export const PROMPT_SOURCE_DOCUMENT_ID = "1lbwCUUeJnqung5JZJwJGVq-20u3UOgMqaaqMYUcrb9o";
 
@@ -26,11 +26,10 @@ export type CompetitorMonitoringRequest = {
 export type IntelligenceIntake = {
   contract: "lead-generation-intelligence-intake";
   contract_version: "5.0";
-  client_customer_name: string;
-  profession_job_title: string;
+  profession: string;
+  job_title: string;
   company_name: string;
   website_or_public_profile_url: string;
-  service_or_offer_purchased: string;
   competitor_used: string;
   offer_or_lead_type: string;
   industry: string;
@@ -38,7 +37,7 @@ export type IntelligenceIntake = {
   target_age_range: string;
   approved_prompt: string;
   create_competitor_database: boolean;
-  allowed_actions: ["public_research", "create_google_doc", "create_google_sheet", "configure_nightly_competitor_monitor"];
+  allowed_actions: ["public_research", "create_google_doc", "create_google_sheet"];
   research_engine: "lead-generation-ads-discovery-intelligence";
   prompt_source: {
     document_id: typeof PROMPT_SOURCE_DOCUMENT_ID;
@@ -67,7 +66,7 @@ export type CompetitorMonitoringReceipt = {
   cadence: "nightly";
   local_time: "02:17";
   timezone: string;
-  status: "active" | "blocked";
+  status: "active" | "blocked" | "not_requested";
   schedule_id: string | null;
   watch_count: number;
   last_run_at: string | null;
@@ -91,6 +90,12 @@ export type RunResult = {
   status: "complete" | "partial";
   research_engine: "lead-generation-ads-discovery-intelligence";
   completed_at: string;
+  brand_library: {
+    status: "stored";
+    folder_name: string;
+    folder_url: string;
+    verified: true;
+  };
   outputs: {
     google_doc: GoogleOutput;
     google_sheet: GoogleSheetOutput;
@@ -119,15 +124,27 @@ export type RunResult = {
   };
 };
 
-export type RunError = { status: "blocked" | "failed"; error: string };
+export type RunError = { status: "blocked" | "failed"; error: string; recovery_url?: string };
+
+export type ResearchRunSummary = {
+  run_id: string;
+  status: "complete" | "partial";
+  completed_at: string;
+  folder_name: string;
+  folder_url: string;
+  google_doc_url: string;
+  google_sheet_url: string | null;
+  markdown_filename: string;
+  is_current: boolean;
+};
 
 export type ResearchProfile = {
   id: string;
-  client_customer_name: string;
-  profession_job_title: string;
+  brand_id: string;
+  profession: string;
+  job_title: string;
   company_name: string;
   website_or_public_profile_url: string;
-  service_or_offer_purchased: string;
   competitor_used: string;
   offer_or_lead_type: string;
   industry: string;
@@ -135,6 +152,7 @@ export type ResearchProfile = {
   target_age_range: string;
   created_at: string;
   updated_at: string;
+  latest_run: ResearchRunSummary | null;
 };
 
 export type ProfilesResponse = {
@@ -148,7 +166,6 @@ export type ProviderStatus = {
   status: "connected" | "not_connected" | "blocked";
   blocker: string | null;
   detail?: string | null;
-  account_email?: string | null;
   folder_id?: string | null;
   folder_name?: string | null;
   auto_store?: boolean;

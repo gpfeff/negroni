@@ -32,16 +32,16 @@ export type PromptExecutionRequest = {
   fixed_rules: readonly string[];
   intake: Pick<
     IntelligenceIntake,
-    | "client_customer_name"
-    | "profession_job_title"
+    | "profession"
+    | "job_title"
     | "company_name"
     | "website_or_public_profile_url"
-    | "service_or_offer_purchased"
     | "competitor_used"
     | "offer_or_lead_type"
     | "industry"
     | "country_region"
     | "target_age_range"
+    | "approved_prompt"
   >;
   completed_prompt_ids: ResearchPromptId[];
 };
@@ -77,12 +77,17 @@ export type CompetitorBoundaryResult = {
 export type GoogleFilingInput = {
   owner_key: string;
   run_id: string;
+  brand_id: string;
+  offer_id: string;
+  brand_name: string;
+  offer_name: string;
   document_title: string;
   sheet_title: string;
   markdown_filename: string;
   markdown: string;
   sources: ResearchPromptOutput["sources"];
   competitor_collection: ProviderNeutralCollectionReceipt;
+  create_competitor_database: boolean;
 };
 
 export type GoogleFilingResult = {
@@ -90,12 +95,19 @@ export type GoogleFilingResult = {
   kind: "live" | "fake" | "not_configured";
   google_doc: RunResult["outputs"]["google_doc"] | null;
   google_sheet: RunResult["outputs"]["google_sheet"] | null;
+  folder_name: string | null;
+  folder_url: string | null;
   markdown_sha256: string;
   document_readback_sha256: string | null;
   sole_parent_verified: boolean;
   private_access_verified: boolean;
   blocker: string | null;
   external_actions: Array<"google_files_created">;
+};
+
+export type ResearchFilingScope = {
+  brand_id: string;
+  offer_id: string;
 };
 
 export type ResearchRunnerDependencies = {
@@ -143,6 +155,8 @@ export type SecureRunnerReceipt = {
     status: "verified" | "blocked" | "not_started";
     kind: GoogleFilingResult["kind"] | null;
     readback_verified: boolean;
+    folder_name: string | null;
+    folder_url: string | null;
     blocker: string | null;
   };
   competitor: {
@@ -180,5 +194,5 @@ export type RunnerCapabilityReceipt = {
 
 export type ResearchRunner = {
   capability(): RunnerCapabilityReceipt;
-  run(owner: string, intake: unknown): Promise<RunnerOutcome>;
+  run(owner: string, approvedRunId: string, intake: unknown, filingScope: ResearchFilingScope): Promise<RunnerOutcome>;
 };

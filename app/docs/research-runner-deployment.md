@@ -1,14 +1,16 @@
 # Research runner deployment boundary
 
-Updated: 2026-07-30
+Updated: 2026-07-31
 
 ## Capability state
 
 The owner-scoped HTTP boundary is locally verified and not deployed. The
-default dependency set remains blocked unless separately configured. The
-Gemini research-engine adapter is locally verified against a fake broker, but
-there is no paid production proof, live prompt-source provider, Google Drive,
-official Meta, or scheduler capability.
+default dependency set remains blocked unless separately configured. The local
+launcher deliberately enables the reviewed embedded prompt bundle. The Gemini
+research-engine adapter is locally verified against a fake upstream, and the
+Google Drive filing boundary has a live no-paid-model proof. There is no paid
+Gemini production proof, hosted broker, official Meta collection, or scheduler
+capability.
 
 ## Deployment target
 
@@ -30,23 +32,23 @@ owner-isolated prompt-source client, research provider, and credential broker;
 provider secrets must never enter the browser, site database, source tree, or
 receipts.
 
-Gemini Deep Research additionally requires `CREDENTIAL_BROKER_URL`,
-`CREDENTIAL_BROKER_TOKEN`, and the exact one-run approval value
-`NEGRONI_GEMINI_APPROVED_RUN_ID`. The key remains inside the credential broker.
-Changing that run ID is an action-time paid-run approval, not standing
-authorization. One approved Negroni run creates one standard Deep Research
-interaction covering all five required prompts.
+Gemini Deep Research additionally requires `CREDENTIAL_BROKER_URL` and
+`CREDENTIAL_BROKER_TOKEN`. The key remains inside the credential broker. Each
+approved request carries the exact owner-scoped run ID in the authenticated
+`x-negroni-approved-run-id` server-to-runner header. There is no standing run-ID
+environment authorization. One approved Negroni run creates one standard Deep
+Research interaction covering all five required prompts.
 
 The Site receives only:
 
 - `LEAD_INTELLIGENCE_RUNNER_URL` — private HTTPS runner endpoint; and
 - `LEAD_INTELLIGENCE_RUNNER_TOKEN` — server-to-server bearer token.
 
-`GET /health` must return the bounded capability receipt without a token or
-private path. `POST /v1/research-runs` requires the bearer token and the opaque
-`x-negroni-owner` identity. Requests may contain only the strict customer-profile
-and research-scope intake plus the fixed action and prompt declarations already validated by the
-app contract.
+`GET /health` must return the bounded capability receipt without a private
+path. `POST /v1/research-runs` requires the bearer token, opaque
+`x-negroni-owner` identity, and exact approved run-ID header. Requests may
+contain only the strict brand-and-offer intake plus fixed action and prompt
+declarations already validated by the app contract.
 
 ## Exact approval-gated deployment diff
 
@@ -84,8 +86,9 @@ remain separate approval boundaries.
   browser receipt, but the public response does not expose the owning project
   binding. Reverify that binding in the hosting control plane immediately
   before any approved Site environment change.
-- The Negroni credential broker and its final Google OAuth callback do not
-  exist as verified live services.
+- The local broker has a verified Google Drive path through Application Default
+  Credentials, but the hosted owner-scoped credential broker and its final
+  Google OAuth callback are not deployed.
 - The official Meta route has no approved 2–3 advertiser Page-ID pilot,
   authorization, or bounded coverage proof; ordinary non-EU commercial
   coverage is unsupported by the reviewed endpoint. Its 10-Page-ID query limit

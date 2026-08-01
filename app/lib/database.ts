@@ -2,6 +2,7 @@ import {
   CREATE_RESEARCH_MESSAGES,
   CREATE_RESEARCH_MESSAGES_PROFILE_INDEX,
   CREATE_RESEARCH_PROFILES,
+  CREATE_RESEARCH_PROFILES_BRAND_INDEX,
   CREATE_RESEARCH_PROFILES_OWNER_INDEX,
   CREATE_RESEARCH_REVISIONS,
   CREATE_RESEARCH_REVISIONS_PROFILE_INDEX,
@@ -24,12 +25,21 @@ export type Database = {
 const schemaPromises = new WeakMap<Database, Promise<void>>();
 
 const RESEARCH_PROFILE_CONTEXT_COLUMNS = [
-  ["client_customer_name", "TEXT NOT NULL DEFAULT ''"],
-  ["profession_job_title", "TEXT NOT NULL DEFAULT ''"],
+  ["brand_id", "TEXT NOT NULL DEFAULT ''"],
+  ["profession", "TEXT NOT NULL DEFAULT ''"],
+  ["job_title", "TEXT NOT NULL DEFAULT ''"],
   ["company_name", "TEXT NOT NULL DEFAULT ''"],
   ["website_or_public_profile_url", "TEXT NOT NULL DEFAULT ''"],
-  ["service_or_offer_purchased", "TEXT NOT NULL DEFAULT ''"],
   ["competitor_used", "TEXT NOT NULL DEFAULT ''"],
+  ["latest_run_id", "TEXT NOT NULL DEFAULT ''"],
+  ["latest_run_status", "TEXT NOT NULL DEFAULT ''"],
+  ["latest_run_completed_at", "TEXT NOT NULL DEFAULT ''"],
+  ["drive_folder_name", "TEXT NOT NULL DEFAULT ''"],
+  ["drive_folder_url", "TEXT NOT NULL DEFAULT ''"],
+  ["google_doc_url", "TEXT NOT NULL DEFAULT ''"],
+  ["google_sheet_url", "TEXT NOT NULL DEFAULT ''"],
+  ["markdown_filename", "TEXT NOT NULL DEFAULT ''"],
+  ["latest_run_basis_json", "TEXT NOT NULL DEFAULT ''"],
 ] as const;
 
 export async function getDatabase(): Promise<Database | null> {
@@ -72,4 +82,12 @@ async function ensureResearchSchemaOnce(database: Database): Promise<void> {
     .filter(([name]) => !existing.has(name))
     .map(([name, definition]) => database.prepare(`ALTER TABLE research_profiles ADD COLUMN ${name} ${definition}`));
   if (additions.length) await database.batch(additions);
+  await database.prepare("UPDATE research_profiles SET brand_id = id WHERE brand_id = ''").run();
+  if (existing.has("profession_job_title")) {
+    await database.batch([
+      database.prepare("UPDATE research_profiles SET profession = profession_job_title WHERE profession = ''"),
+      database.prepare("UPDATE research_profiles SET job_title = profession_job_title WHERE job_title = ''"),
+    ]);
+  }
+  await database.prepare(CREATE_RESEARCH_PROFILES_BRAND_INDEX).run();
 }

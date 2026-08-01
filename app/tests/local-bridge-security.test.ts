@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -74,6 +74,14 @@ test("repository local development uses the same loopback launcher", async () =>
   assert.equal(packageJson.scripts["dev:local"], "node bin/negroni.mjs start");
 });
 
+test("local launcher starts the secure runner with embedded prompts and Drive filing", async () => {
+  const launcher = await readFile(launcherPath, "utf8");
+  assert.match(launcher, /bin\/research-runner\.ts/);
+  assert.match(launcher, /LEAD_INTELLIGENCE_RUNNER_URL/);
+  assert.match(launcher, /NEGRONI_PROMPT_SOURCE_MODE:\s*"embedded"/);
+  assert.match(launcher, /NEGRONI_GOOGLE_DRIVE_ENABLED:\s*"1"/);
+});
+
 test("local broker never returns command output in provider status", async () => {
   const stubs = await createCommandStubs();
   const port = await unusedPort();
@@ -105,7 +113,7 @@ test("local broker never returns command output in provider status", async () =>
   }
 });
 
-test("local broker stores an Apify token without returning it to the browser", async () => {
+test("local broker keeps an entered Apify token in process memory without plaintext persistence", async () => {
   const directory = await mkdtemp(join(tmpdir(), "negroni-apify-broker-"));
   const port = await unusedPort();
   const token = "local-bridge-test-token";
@@ -127,6 +135,7 @@ test("local broker stores an Apify token without returning it to the browser", a
     const body = await status.text();
     assert.equal(body.includes(apiKey), false);
     assert.match(body, /"provider":"apify","status":"connected"/);
+    await assert.rejects(stat(credentialsPath), (error: NodeJS.ErrnoException) => error.code === "ENOENT");
   } finally {
     broker.kill("SIGTERM");
     await new Promise<void>((resolvePromise) => broker.once("exit", () => resolvePromise()));
@@ -140,7 +149,6 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
   const token = "local-bridge-test-token";
   const apiKey = "test-gemini-key-never-returned";
   const credentialsPath = join(directory, "credentials.json");
-  await writeFile(credentialsPath, JSON.stringify({ gemini_api: { api_key: apiKey } }), { mode: 0o600 });
 
   let receivedHeader = "";
   let receivedBody = "";
@@ -163,6 +171,7 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
       NEGRONI_BROKER_PORT: String(brokerPort),
       CREDENTIAL_BROKER_TOKEN: token,
       NEGRONI_CREDENTIALS_PATH: credentialsPath,
+      NEGRONI_GEMINI_API_KEY: apiKey,
       NEGRONI_GEMINI_INTERACTIONS_BASE_URL: `http://127.0.0.1:${googleAddress.port}/v1beta/interactions`,
     },
   });
@@ -196,6 +205,16 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
     });
     assert.equal(maxResponse.status, 400);
     assert.equal((await maxResponse.text()).includes(apiKey), false);
+
+    const metadataResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/secrets/gemini`, {
+      headers: { authorization: `Bearer ${token}`, "x-negroni-owner": "local-preview" },
+    });
+    assert.equal(metadataResponse.status, 200);
+    const metadataBody = await metadataResponse.text();
+    assert.equal(metadataBody.includes(apiKey), false);
+    const metadata = JSON.parse(metadataBody).metadata;
+    assert.equal(metadata.last_four, apiKey.slice(-4));
+    assert.match(metadata.fingerprint, /^[a-f0-9]{12}$/);
   } finally {
     broker.kill("SIGTERM");
     await new Promise<void>((resolvePromise) => broker.once("exit", () => resolvePromise()));

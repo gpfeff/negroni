@@ -20,5 +20,5 @@ for (const [label, command, args, success] of checks) {
   }
 }
 
-console.log("\nAPI keys are added inside Negroni Settings and stored in ~/.negroni with owner-only permissions.");
+console.log("\nAPI keys are added under Tools → Integrations. Pasted keys are session-only; use a scoped 1Password Developer Environment for persistent injection.");
 process.exitCode = blocked ? 1 : 0;

@@ -49,7 +49,7 @@ test("connected Google Workspace requires safe automatic filing metadata", () =>
   assert.throws(() => parseSettingsResponse(missingFolder), /incomplete Google Workspace/);
 
   assert.equal(GOOGLE_DRIVE_SCOPE, "https://www.googleapis.com/auth/drive.file");
-  assert.equal(GOOGLE_DRIVE_FOLDER_NAME, "Negroni Research");
+  assert.equal(GOOGLE_DRIVE_FOLDER_NAME, "Negroni");
 });
 
 test("blocked settings and providers require explicit blockers", () => {
@@ -85,4 +85,5 @@ test("sanitized provider status never forwards broker credential fields", () => 
   settings.providers[6].refresh_token = "must-not-cross-the-boundary";
   const parsed = parseSettingsResponse(settings);
   assert.equal("refresh_token" in parsed.providers[6], false);
+  assert.equal("account_email" in parsed.providers[6], false);
 });

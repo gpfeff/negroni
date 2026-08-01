@@ -8,7 +8,7 @@ import {
   type ResearchArtifactBundle,
   type ResearchArtifactKey,
   type ResearchArtifactReceipts,
-} from "./contracts";
+} from "./contracts.ts";
 
 function metaEvidenceId(libraryId: string): string {
   return `META-AD-${libraryId}`;

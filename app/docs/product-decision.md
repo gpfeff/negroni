@@ -12,31 +12,48 @@ rather than fork campaign behavior.
 
 The Site uses one route with compact workspace views.
 
-Research first asks for client/customer name, profession or job title, company,
-public website or profile URL, service or offer purchased, competitor used,
-industry/niche, and location or market served. It then asks for the lead offer
-or service and target age range needed to scope the research. The authenticated user can save each combination as a
-durable research set. The secure runner executes the approved five-prompt
-sequence and creates five durable Research artifacts. The page retains exactly
-three outward actions: one Google Doc, one matching Markdown report, and one
-competitor archive action. The archive opens a restricted Google Sheet when
-configured, otherwise an access-controlled local report.
+Research first creates a permanent brand file from the complete initial
+intake. One brand can hold multiple offers, and each offer has one current
+versioned research package. Target age is optional. The primary page shows the
+brand and offer information, one optional customer competitor database choice,
+and run status; the internal research-stage and prompt details do not clutter
+the form. The secure runner still executes the approved five-prompt
+sequence and creates five durable Research artifacts. A completed run exposes
+the verified Drive folder and Google Doc; the matching Markdown remains a
+durable representation. If the competitor database was selected, its verified
+restricted Google Sheet also appears. Declining it does not create an archive
+or block Research.
 
-Each saved set also opens an interactive, versioned Markdown seed. The owner
+Each offer package also opens an interactive, versioned Markdown seed. The owner
 can edit it, record disagreements and context, discuss changes with a
 configured review runner, and explicitly apply or reject proposals. One
 revision is approved for Phase 2 with a content fingerprint. Later edits do not
 silently change that pointer or any ads already derived from it.
 
-Settings reflects Codex/ChatGPT, Gemini, media-provider, and Google Workspace
-readiness through a server-side credential broker. Secret values never enter
+Tools → Integrations reflects Codex/ChatGPT, Gemini, media-provider, and Google
+Workspace readiness through a server-side credential broker. Settings is
+limited to appearance and approval preferences. Secret values never enter
 browser storage or the research-record database. Google uses the minimum
-`drive.file` scope and a dedicated Negroni Research folder.
+`drive.file` scope and a dedicated `Negroni / <Brand> / <Offer>` hierarchy.
+A completed run exposes its Drive link only from a verified filing receipt.
+The latest compact receipt and exact intake basis are stored owner-scoped
+against the offer and read back on reload; another offer cannot inherit or
+display it. If shared brand or offer information changes, the old package is
+preserved and marked as needing refresh. Stable IDs keep the Drive brand and
+offer folders attached to the same records across display-name changes.
 
-The same research run sends its verified Page-ID watchlist to the runner-side
-Meta Ads Intelligence adapter. Its scheduler-neutral daily operation refreshes
-the isolated SQLite archive and optional Sheet projection. Scheduler ownership
-is separate, explicit, and limited to one owner per profile.
+Brands are grouped by permanent `brand_id`, not by offer record. A Brand detail
+page shows its shared foundation, offers, and honest Research, Creative,
+Campaign, and Learning counts. Library defaults to a real brand and offer, then
+filters real Drive-backed outputs by offer, asset type, platform, status, and
+date. Each result shows its offer and research-run provenance. Unknown history
+remains zero rather than becoming a synthetic count.
+
+When the competitor database is selected, the research run sends its verified
+Page-ID evidence to the runner-side Meta Ads Intelligence adapter and creates a
+verified Sheet projection for the current offer. This is the only optional
+Research control. Continuous monitoring remains a separate future/internal
+capability and this flow does not create or claim a scheduler.
 
 Missing secure execution, database storage, credential-broker access, or
 authorized competitor collection becomes a visible blocker. Missing Google

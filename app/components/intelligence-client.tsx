@@ -3,7 +3,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { createEmptyIntake } from "@/lib/intelligence/defaults";
 import {
-  RESEARCH_PROMPTS,
   type IntelligenceIntake,
   type ProfilesResponse,
   type ProviderStatus,
@@ -16,8 +15,9 @@ import {
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
 import { deriveHomeNextAction } from "@/lib/intelligence/next-action";
 import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
+import { QuizFunnelEditor } from "@/components/quiz-funnel-editor";
 
-type AppView = "home" | "research" | "library" | "brands" | "settings";
+type AppView = "home" | "research" | "create" | "library" | "brands" | "integrations" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
 type Appearance = "light" | "dark" | "system";
 type GeminiConnection = { status: "checking" | "not_connected" | "connected" | "connection_error"; last_verified_at: string | null; fingerprint: string | null; last_four: string | null; error?: string };
@@ -36,7 +36,7 @@ const PHASES = [
     name: "Create",
     verb: "Make the argument",
     artifact: "creative-manifest.json",
-    state: "Planned",
+    state: "Ready",
     color: "#a83e25",
   },
   {
@@ -64,14 +64,6 @@ const PHASES = [
     color: "#5f5b55",
   },
 ] as const;
-
-const PROMPT_LABELS: Record<(typeof RESEARCH_PROMPTS)[number], string> = {
-  market_awareness: "Market awareness",
-  competitor_research: "Competitor research",
-  customer_avatar_psychographics: "Customer psychology",
-  master_marketing_intelligence: "4A · Master research",
-  brand_tone_of_voice: "4B · Brand tone",
-};
 
 const RESEARCH_TOOLS: ReadonlyArray<{
   id: ResearchSection;
@@ -132,6 +124,15 @@ const RESEARCH_TABS: ReadonlyArray<{
   { id: "competitor-ads", name: "Ad Spy" },
 ];
 
+function brandLabel(profile: ResearchProfile): string {
+  return profile.company_name.trim() || "Untitled brand";
+}
+
+function brandInitials(profile: ResearchProfile): string {
+  const initials = brandLabel(profile).split(/\s+/).map((part) => part[0]).join("").slice(0, 2);
+  return initials.toUpperCase() || "BR";
+}
+
 export function IntelligenceClient() {
   const [activeView, setActiveView] = useState<AppView>("home");
   const [intake, setIntake] = useState<IntelligenceIntake>(() => createEmptyIntake(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"));
@@ -142,8 +143,10 @@ export function IntelligenceClient() {
   const [errors, setErrors] = useState<string[]>([]);
   const [result, setResult] = useState<RunResult | null>(null);
   const [runError, setRunError] = useState<string | null>(null);
+  const [runRecoveryUrl, setRunRecoveryUrl] = useState<string | null>(null);
   const [profiles, setProfiles] = useState<ProfilesResponse>({ available: false, records: [], blocker: null });
   const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [draftBrandId, setDraftBrandId] = useState("");
   const [profileMessage, setProfileMessage] = useState<string | null>(null);
   const [settingsAvailable, setSettingsAvailable] = useState(false);
   const [providerStatuses, setProviderStatuses] = useState<ProviderStatus[]>([]);
@@ -157,6 +160,12 @@ export function IntelligenceClient() {
   const [appearance, setAppearance] = useState<Appearance>("dark");
   const [operatingMode, setOperatingMode] = useState<OperatingMode>("safety");
   const [activeResearchSection, setActiveResearchSection] = useState<ResearchSection>("run");
+  const [brandDetailId, setBrandDetailId] = useState("");
+  const [libraryAssetType, setLibraryAssetType] = useState("all");
+  const [libraryPlatform, setLibraryPlatform] = useState("all");
+  const [libraryStatus, setLibraryStatus] = useState("all");
+  const [libraryDate, setLibraryDate] = useState("all");
+  const [libraryDateCutoff, setLibraryDateCutoff] = useState<number | null>(null);
 
   async function refreshProfiles() {
     try {
@@ -197,6 +206,13 @@ export function IntelligenceClient() {
   useEffect(() => {
     let active = true;
     async function loadInitialState() {
+      const searchParams = new URLSearchParams(window.location.search);
+      const requestedView = searchParams.get("view");
+      if (requestedView === "research" || requestedView === "create" || requestedView === "library" || requestedView === "brands" || requestedView === "integrations" || requestedView === "settings") setActiveView(requestedView);
+      const requestedTool = searchParams.get("tool");
+      if (RESEARCH_TOOLS.some((tool) => tool.id === requestedTool)) {
+        setActiveResearchSection(requestedTool as ResearchSection);
+      }
       const [runResponse, profilesResponse, settingsResponse] = await Promise.allSettled([
         fetch("/api/run", { cache: "no-store" }).then(async (response) => (await response.json()) as RunCapability),
         fetch("/api/profiles", { cache: "no-store" }).then(async (response) => {
@@ -211,13 +227,6 @@ export function IntelligenceClient() {
         }),
       ]);
       if (!active) return;
-      const searchParams = new URLSearchParams(window.location.search);
-      const requestedView = searchParams.get("view");
-      if (requestedView === "research" || requestedView === "library" || requestedView === "brands" || requestedView === "settings") setActiveView(requestedView);
-      const requestedTool = searchParams.get("tool");
-      if (RESEARCH_TOOLS.some((tool) => tool.id === requestedTool)) {
-        setActiveResearchSection(requestedTool as ResearchSection);
-      }
       setCapability(runResponse.status === "fulfilled"
         ? runResponse.value
         : { available: false, status: "blocked", blocker: RUNNER_BLOCKER });
@@ -267,11 +276,10 @@ export function IntelligenceClient() {
   }, [operatingMode]);
 
   function updateIntake(field:
-    | "client_customer_name"
-    | "profession_job_title"
+    | "profession"
+    | "job_title"
     | "company_name"
     | "website_or_public_profile_url"
-    | "service_or_offer_purchased"
     | "competitor_used"
     | "offer_or_lead_type"
     | "industry"
@@ -286,13 +294,13 @@ export function IntelligenceClient() {
     setProfileMessage(null);
     const profile = profiles.records.find((record) => record.id === id);
     if (!profile) return;
+    setDraftBrandId(profile.brand_id);
     setIntake((current) => ({
       ...current,
-      client_customer_name: profile.client_customer_name,
-      profession_job_title: profile.profession_job_title,
+      profession: profile.profession,
+      job_title: profile.job_title,
       company_name: profile.company_name,
       website_or_public_profile_url: profile.website_or_public_profile_url,
-      service_or_offer_purchased: profile.service_or_offer_purchased,
       competitor_used: profile.competitor_used,
       offer_or_lead_type: profile.offer_or_lead_type,
       industry: profile.industry,
@@ -301,15 +309,38 @@ export function IntelligenceClient() {
     }));
     setResult(null);
     setRunError(null);
+    setRunRecoveryUrl(null);
     setErrors([]);
   }
 
   function newProfile() {
     setSelectedProfileId("");
+    setDraftBrandId("");
     setIntake(createEmptyIntake(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"));
     setProfileMessage(null);
     setResult(null);
     setRunError(null);
+    setRunRecoveryUrl(null);
+    setErrors([]);
+  }
+
+  function newOffer(profileId = selectedProfileId) {
+    const profile = profiles.records.find((record) => record.id === profileId);
+    if (!profile) return;
+    const next = createEmptyIntake(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+    setSelectedProfileId("");
+    setDraftBrandId(profile.brand_id);
+    setIntake({
+      ...next,
+      company_name: profile.company_name,
+      website_or_public_profile_url: profile.website_or_public_profile_url,
+      industry: profile.industry,
+      country_region: profile.country_region,
+    });
+    setProfileMessage("Add another offer to this brand.");
+    setResult(null);
+    setRunError(null);
+    setRunRecoveryUrl(null);
     setErrors([]);
   }
 
@@ -317,6 +348,22 @@ export function IntelligenceClient() {
     const validationErrors = validateIntake(intake);
     setErrors(validationErrors);
     if (validationErrors.length) return null;
+    if (selectedProfile) {
+      const sharedChanged = selectedProfile.company_name !== intake.company_name.trim()
+        || selectedProfile.website_or_public_profile_url !== intake.website_or_public_profile_url.trim()
+        || selectedProfile.industry !== intake.industry.trim()
+        || selectedProfile.country_region !== intake.country_region.trim();
+      const offerChanged = selectedProfile.profession !== intake.profession.trim()
+        || selectedProfile.job_title !== intake.job_title.trim()
+        || selectedProfile.competitor_used !== intake.competitor_used.trim()
+        || selectedProfile.offer_or_lead_type !== intake.offer_or_lead_type.trim()
+        || selectedProfile.target_age_range !== intake.target_age_range.trim();
+      if ((sharedChanged || offerChanged) && !window.confirm(
+        sharedChanged
+          ? "Update this shared brand information for every offer? Existing research packages stay preserved and will be marked as needing refresh."
+          : "Update this offer? Its existing research package stays preserved and will be marked as needing refresh.",
+      )) return null;
+    }
     if (!profiles.available) {
       setProfileMessage(profiles.blocker ?? "Saved research sets are unavailable.");
       return null;
@@ -324,35 +371,18 @@ export function IntelligenceClient() {
     const response = await fetch("/api/profiles", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id: selectedProfileId || undefined, intake }),
+      body: JSON.stringify({ id: selectedProfileId || undefined, brand_id: draftBrandId || undefined, intake }),
     });
-    const payload = await response.json() as { id?: string; error?: string };
+    const payload = await response.json() as { id?: string; brand_id?: string; error?: string };
     if (!response.ok || !payload.id) {
       setProfileMessage(payload.error ?? "The research set could not be saved.");
       return null;
     }
     setSelectedProfileId(payload.id);
-    setProfileMessage("Research set saved.");
+    setDraftBrandId(payload.brand_id ?? draftBrandId);
+    setProfileMessage(draftBrandId ? "Offer saved to the brand." : "Brand created.");
     await refreshProfiles();
     return payload.id;
-  }
-
-  async function deleteProfile() {
-    if (!selectedProfileId) return;
-    if (!window.confirm("Delete this research set, its seed revisions, feedback, and Phase 2 approval? This cannot be undone.")) return;
-    const response = await fetch("/api/profiles", {
-      method: "DELETE",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id: selectedProfileId }),
-    });
-    if (!response.ok) {
-      const payload = await response.json() as { error?: string };
-      setProfileMessage(payload.error ?? "The research set could not be deleted.");
-      return;
-    }
-    newProfile();
-    await refreshProfiles();
-    setProfileMessage("Research set deleted. It cannot be recovered.");
   }
 
   async function runResearch() {
@@ -360,6 +390,7 @@ export function IntelligenceClient() {
     setErrors(validationErrors);
     setResult(null);
     setRunError(null);
+    setRunRecoveryUrl(null);
     if (validationErrors.length || !capability.available || !geminiApiReady) {
       if (!capability.available) setRunError(capability.blocker ?? RUNNER_BLOCKER);
       else if (!geminiApiReady) setRunError("Connect Gemini before starting Standard Deep Research.");
@@ -377,7 +408,11 @@ export function IntelligenceClient() {
       setProposedRunId(payload.run_id);
       return;
     }
-    if (profiles.available) await saveProfile();
+    const profileId = profiles.available ? await saveProfile() : selectedProfileId;
+    if (!profileId) {
+      setRunError("Save the offer before starting research.");
+      return;
+    }
     setRunning(true);
     try {
       const approval = await fetch(`/api/research/runs/${proposedRunId}/approve`, {
@@ -387,13 +422,17 @@ export function IntelligenceClient() {
       const response = await fetch(`/api/research/runs/${proposedRunId}/start`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(intake),
+        body: JSON.stringify({ profile_id: profileId, intake }),
       });
       const payload = (await response.json()) as RunResult | RunError;
-      if (!response.ok || "error" in payload) throw new Error("error" in payload ? payload.error : "The research run failed.");
+      if (!response.ok || "error" in payload) {
+        if ("error" in payload && payload.recovery_url) setRunRecoveryUrl(payload.recovery_url);
+        throw new Error("error" in payload ? payload.error : "The research run failed.");
+      }
       const researchName = buildResearchName(intake.offer_or_lead_type, intake.country_region);
       setResult(parseRunResult(payload, researchName));
       setProposedRunId(null);
+      await refreshProfiles();
     } catch (error) {
       setRunError(error instanceof Error ? error.message : "The research run failed.");
     } finally {
@@ -508,12 +547,75 @@ export function IntelligenceClient() {
   const apifyStatus = providerStatus("apify");
   const googleStatus = providerStatus("google_drive");
   const selectedProfile = profiles.records.find((profile) => profile.id === selectedProfileId) ?? null;
-  const activeBrand = selectedProfile ?? profiles.records[0] ?? null;
+  const displayedRun = result ? {
+    run_id: result.run_id,
+    status: result.status,
+    completed_at: result.completed_at,
+    folder_url: result.brand_library.folder_url,
+    is_current: true,
+  } : selectedProfile?.latest_run ?? null;
+  const brandGroups = Array.from(profiles.records.reduce((groups, profile) => {
+    const offers = groups.get(profile.brand_id) ?? [];
+    offers.push(profile);
+    groups.set(profile.brand_id, offers);
+    return groups;
+  }, new Map<string, ResearchProfile[]>()).entries()).map(([brandId, offers]) => ({
+    brandId,
+    offers,
+    brand: offers[0],
+  }));
+  const activeBrandId = selectedProfile?.brand_id || draftBrandId || brandGroups[0]?.brandId || "";
+  const activeBrandGroup = brandGroups.find(({ brandId }) => brandId === activeBrandId) ?? null;
+  const activeBrand = activeBrandGroup?.brand ?? null;
+  const libraryProfile = activeBrandGroup?.offers.find(({ id }) => id === selectedProfileId)
+    ?? activeBrandGroup?.offers[0]
+    ?? null;
+  const libraryRun = libraryProfile?.latest_run ?? null;
+  const libraryAssets = libraryRun ? [
+    {
+      assetType: "research",
+      platform: "google-drive",
+      name: "Master research",
+      marker: "DOC",
+      description: "Evidence-backed research document",
+      url: libraryRun.google_doc_url,
+    },
+    {
+      assetType: "research",
+      platform: "google-drive",
+      name: "Research Markdown",
+      marker: "MD",
+      description: libraryRun.markdown_filename,
+      url: libraryRun.folder_url,
+    },
+    ...(libraryRun.google_sheet_url ? [{
+      assetType: "competitors",
+      platform: "google-drive",
+      name: "Customer competitor database",
+      marker: "SHEET",
+      description: "Evidence-backed competitor source table",
+      url: libraryRun.google_sheet_url,
+    }] : []),
+  ].filter((asset) => {
+    if (libraryAssetType !== "all" && asset.assetType !== libraryAssetType) return false;
+    if (libraryPlatform !== "all" && asset.platform !== libraryPlatform) return false;
+    const status = !libraryRun.is_current ? "outdated" : libraryRun.status;
+    if (libraryStatus !== "all" && status !== libraryStatus) return false;
+    if (libraryDateCutoff !== null) {
+      const completedAt = Date.parse(libraryRun.completed_at);
+      if (!Number.isFinite(completedAt) || completedAt < libraryDateCutoff) return false;
+    }
+    return true;
+  }) : [];
+  const brandDetail = brandGroups.find(({ brandId }) => brandId === brandDetailId) ?? null;
+  const brandDetailRun = brandDetail?.offers.find(({ id, latest_run }) => id === selectedProfileId && latest_run)?.latest_run
+    ?? brandDetail?.offers.find(({ latest_run }) => latest_run)?.latest_run
+    ?? null;
   const nextAction = deriveHomeNextAction({
     checking,
     capability,
     hasProfile: selectedProfile !== null,
-    resultStatus: result?.status ?? null,
+    resultStatus: displayedRun?.status ?? null,
   });
 
   function navigate(view: AppView) {
@@ -530,21 +632,23 @@ export function IntelligenceClient() {
     setActiveResearchSection(section);
     window.history.replaceState(null, "", `${window.location.pathname}?view=research&tool=${section}`);
     window.setTimeout(() => {
-      const targetId = section === "run"
-        ? "intake"
-        : section === "competitor-ads"
-          ? "competitor-ads"
-          : section === "review"
-            ? "research-review"
-            : `research-${section}`;
+      if (section === "run") {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        return;
+      }
+      const targetId = section === "competitor-ads"
+        ? "competitor-ads"
+        : section === "review"
+          ? "research-review"
+          : `research-${section}`;
       document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, activeView === "research" ? 0 : 50);
   }
 
   function followHomeNextAction() {
     switch (nextAction.action?.destination) {
-      case "settings":
-        navigate("settings");
+      case "integrations":
+        navigate("integrations");
         break;
       case "research":
         openResearchSection("run");
@@ -579,12 +683,12 @@ export function IntelligenceClient() {
           {PHASES.map((phase) => (
             <Fragment key={phase.number}>
               <button
-                className={phase.number === "01" && activeView === "research" ? "nav-active" : ""}
+                className={(phase.number === "01" && activeView === "research") || (phase.number === "02" && activeView === "create") ? "nav-active" : ""}
                 type="button"
-                disabled={phase.number !== "01"}
-                onClick={() => phase.number === "01" && navigate("research")}
+                disabled={phase.number !== "01" && phase.number !== "02"}
+                onClick={() => phase.number === "01" ? navigate("research") : phase.number === "02" ? navigate("create") : undefined}
               >
-                <span>{phase.number}</span>{phase.name}{phase.number !== "01" ? <small>Planned</small> : null}
+                <span>{phase.number}</span>{phase.name}{phase.number !== "01" && phase.number !== "02" ? <small>Planned</small> : null}
               </button>
               {phase.number === "01" && activeView === "research" ? (
                 <div className="research-subnav" aria-label="Research tools">
@@ -608,14 +712,22 @@ export function IntelligenceClient() {
                   ))}
                 </div>
               ) : null}
+              {phase.number === "02" && activeView === "create" ? (
+                <div className="research-subnav" aria-label="Create tools">
+                  <button className="research-subnav-active" type="button" aria-current="page" onClick={() => navigate("create")}>
+                    <span aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16M4 12h16M4 18.5h10" /><circle cx="18" cy="18.5" r="2" /></svg></span>Quiz Funnels
+                  </button>
+                </div>
+              ) : null}
             </Fragment>
           ))}
           <span className="nav-label">Tools</span>
           <button className={activeView === "library" ? "nav-active" : ""} type="button" onClick={() => navigate("library")} aria-label="Library"><span>▦</span>Library</button>
           <button className={activeView === "brands" ? "nav-active" : ""} type="button" onClick={() => navigate("brands")} aria-label="Brands"><span>◇</span>Brands</button>
+          <button className={activeView === "integrations" ? "nav-active" : ""} type="button" onClick={() => navigate("integrations")} aria-label="Integrations"><span>↔</span>Integrations</button>
         </nav>
         <div className="sidebar-footer">
-          <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")}><span>⚙</span>Settings</button>
+          <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")} aria-label="Settings"><span>⚙</span>Settings</button>
           <div className="connection-state"><i /> Plugin workspace · Negroni v0.9 beta</div>
         </div>
       </aside>
@@ -683,45 +795,43 @@ export function IntelligenceClient() {
       ) : activeView === "research" ? (
         <div className="content-column" id="top">
           <section className="intro" aria-labelledby="page-title">
-            <p className="kicker">Phase 01 · Find the signal</p>
-            <h1 id="page-title">Tell us the business. We’ll find the signal.</h1>
-            <p>Start with a required customer profile, then set the research scope. You get editable client, customer, and competitor intelligence—not a black-box answer.</p>
+            <p className="kicker">Research</p>
+            <h1 id="page-title">Create brand</h1>
+            <p>Create the permanent brand file that connects every offer, research package, and asset.</p>
           </section>
 
           <section className="section-card" id="intake" aria-labelledby="intake-title">
             <div className="section-heading">
               <span>1</span>
-              <div><h2 id="intake-title">Run Research</h2><p>Save and reuse each client, customer, and competitor research combination.</p></div>
+              <div><h2 id="intake-title">Fill in the information</h2></div>
             </div>
 
             <div className="record-bar">
-              <label htmlFor="saved-profile">Saved research sets</label>
+              <label htmlFor="saved-profile">Brand</label>
               <select id="saved-profile" value={selectedProfileId} onChange={(event) => chooseProfile(event.target.value)} disabled={!profiles.available}>
-                <option value="">{profiles.available ? "New research set" : "Saved records unavailable"}</option>
+                <option value="">{profiles.available ? "Create new brand" : "Saved brands unavailable"}</option>
                 {profiles.records.map((profile: ResearchProfile) => (
-                  <option key={profile.id} value={profile.id}>{profile.company_name} · {profile.country_region}</option>
+                  <option key={profile.id} value={profile.id}>{brandLabel(profile)} · {profile.offer_or_lead_type || "Untitled offer"}</option>
                 ))}
               </select>
-              <button type="button" onClick={newProfile}>New</button>
-              <button type="button" onClick={() => void saveProfile()} disabled={!profiles.available}>Save</button>
-              <button className="record-review" type="button" onClick={() => openResearchSection("review")} disabled={!selectedProfileId}>Review seed</button>
-              <button className="record-delete" type="button" onClick={() => void deleteProfile()} disabled={!selectedProfileId}>Delete</button>
+              {selectedProfileId ? <button type="button" onClick={newProfile}>New brand</button> : null}
+              {selectedProfileId ? <button type="button" onClick={() => newOffer()}>New offer</button> : null}
             </div>
             {profiles.blocker ? <p className="inline-blocker">{profiles.blocker}</p> : null}
             {profileMessage ? <p className="inline-message" role="status">{profileMessage}</p> : null}
 
             <div className="intake-grid">
               <div className="intake-group-title input-wide">
-                <h3>Required customer profile</h3>
-                <p id="profile-privacy">Use business context or a public profile only. Do not enter contact details, credentials, or other sensitive personal information.</p>
+                <h3>Brand information</h3>
+                <p id="profile-privacy">Use business information or a public profile. Do not enter private contact details or credentials.</p>
               </div>
               <div className="input-group">
-                <label htmlFor="client-customer-name">Client or customer name <strong>Required</strong></label>
-                <input id="client-customer-name" value={intake.client_customer_name} onChange={(event) => updateIntake("client_customer_name", event.target.value)} placeholder="Jordan Lee" autoComplete="off" aria-describedby="profile-privacy" required />
+                <label htmlFor="profession">Profession <strong>Required</strong></label>
+                <input id="profession" value={intake.profession} onChange={(event) => updateIntake("profession", event.target.value)} placeholder="HVAC contractor" autoComplete="organization-title" aria-describedby="profile-privacy" required />
               </div>
               <div className="input-group">
-                <label htmlFor="profession-job-title">Profession or job title <strong>Required</strong></label>
-                <input id="profession-job-title" value={intake.profession_job_title} onChange={(event) => updateIntake("profession_job_title", event.target.value)} placeholder="Operations director" autoComplete="organization-title" required />
+                <label htmlFor="job-title">Job title <strong>Required</strong></label>
+                <input id="job-title" value={intake.job_title} onChange={(event) => updateIntake("job_title", event.target.value)} placeholder="Operations director" autoComplete="organization-title" required />
               </div>
               <div className="input-group">
                 <label htmlFor="company-name">Company name <strong>Required</strong></label>
@@ -730,10 +840,6 @@ export function IntelligenceClient() {
               <div className="input-group">
                 <label htmlFor="public-profile-url">Website or public profile URL <strong>Required</strong></label>
                 <input id="public-profile-url" type="url" value={intake.website_or_public_profile_url} onChange={(event) => updateIntake("website_or_public_profile_url", event.target.value)} placeholder="https://example.com" autoComplete="url" required />
-              </div>
-              <div className="input-group">
-                <label htmlFor="service-purchased">Service or offer purchased <strong>Required</strong></label>
-                <input id="service-purchased" value={intake.service_or_offer_purchased} onChange={(event) => updateIntake("service_or_offer_purchased", event.target.value)} placeholder="Emergency repair membership" autoComplete="off" required />
               </div>
               <div className="input-group">
                 <label htmlFor="competitor-used">Known competitors <span>Optional</span></label>
@@ -748,8 +854,7 @@ export function IntelligenceClient() {
                 <input id="country-region" value={intake.country_region} onChange={(event) => updateIntake("country_region", event.target.value)} placeholder="United States" autoComplete="country-name" required />
               </div>
               <div className="intake-group-title input-wide">
-                <h3>Research scope</h3>
-                <p>These questions keep the customer profile grounded in the campaign and market you want to study.</p>
+                <h3>Offer information</h3>
               </div>
               <div className="input-group input-wide">
                 <label htmlFor="offer-type">Lead offer or service <strong>Required</strong></label>
@@ -757,109 +862,40 @@ export function IntelligenceClient() {
                 <small>Describe what the customer receives, or the lead product a buyer receives.</small>
               </div>
               <div className="input-group">
-                <label htmlFor="target-age">Target age range <strong>Required</strong></label>
-                <input id="target-age" value={intake.target_age_range} onChange={(event) => updateIntake("target_age_range", event.target.value)} placeholder="30–60" inputMode="numeric" required />
+                <label htmlFor="target-age">Target age range <span>Optional</span></label>
+                <input id="target-age" value={intake.target_age_range} onChange={(event) => updateIntake("target_age_range", event.target.value)} placeholder="30–60" inputMode="numeric" />
               </div>
-            </div>
-
-            <div className="prompt-sequence" aria-label="Five research prompts">
-              {RESEARCH_PROMPTS.map((prompt, index) => <span key={prompt}><b>{index < 3 ? index + 1 : index === 3 ? "4A" : "4B"}</b>{PROMPT_LABELS[prompt]}</span>)}
-            </div>
-
-            <div className={`gemini-readiness ${geminiApiReady ? "gemini-ready" : "gemini-not-ready"}`} role="status" aria-live="polite">
-              <span aria-hidden="true">{geminiApiReady ? "✓" : geminiConnection.status === "checking" ? "…" : "○"}</span>
-              <strong>{geminiApiReady ? "Gemini API ready · Connected" : geminiConnection.status === "checking" ? "Checking Gemini" : geminiConnection.status === "connection_error" ? "Gemini Connection error" : "Gemini Not connected"}</strong>
-              <small>{geminiApiReady ? `API key saved in Settings. Last verified ${geminiConnection.last_verified_at ? new Date(geminiConnection.last_verified_at).toLocaleString() : "recently"}.` : geminiConnection.error ?? "Connect Gemini before starting research."}</small>
-              {!geminiApiReady && geminiConnection.status !== "checking" ? <button type="button" onClick={() => { navigate("settings"); window.setTimeout(() => document.getElementById("gemini-key")?.focus(), 0); }}>Connect Gemini</button> : null}
             </div>
 
             <div className="input-grid research-run-options">
-              <div className="input-group input-wide">
-                <label htmlFor="approved-prompt">Final Gemini Deep Research prompt <strong>Review before running</strong></label>
-                <textarea id="approved-prompt" rows={12} value={intake.approved_prompt} onChange={(event) => updateIntake("approved_prompt", event.target.value)} required />
-                <small>Use the prefilled prompt as-is or edit it. The exact submitted version is persisted and bound to the run receipt.</small>
-              </div>
               <label className="research-choice">
                 <input type="checkbox" checked={intake.create_competitor_database} onChange={(event) => setIntake((current) => ({ ...current, create_competitor_database: event.target.checked }))} />
-                <span><strong>Create competitor database</strong><small>Save structured competitor evidence for later review.</small></span>
+                <span><strong>Create customer competitor database</strong></span>
               </label>
-              <label className="research-choice">
-                <input type="checkbox" checked={intake.competitor_monitoring.enabled} onChange={(event) => setIntake((current) => ({ ...current, competitor_monitoring: { ...current.competitor_monitoring, enabled: event.target.checked } }))} />
-                <span><strong>Enable ongoing monitoring</strong><small>Separate opt-in; no schedule is claimed until verified.</small></span>
-              </label>
-            </div>
-
-            <div className="three-c-grid" aria-label="The three research streams">
-              <article id="research-client">
-                <span>C1</span><div><strong>Client</strong><p>Offer, goals, geography, economics, proof, and operating constraints.</p></div>
-              </article>
-              <article id="research-customer">
-                <span>C2</span><div><strong>Customer</strong><p>Pains, desires, objections, awareness, triggers, and natural language.</p></div>
-              </article>
-              <article id="research-competitors">
-                <span>C3</span><div><strong>Competitors</strong><p>Positioning, offers, claims, landing pages, ads, and market openings.</p></div>
-              </article>
             </div>
 
             {errors.length ? <div className="validation-box" role="alert"><strong>Check the research setup</strong><ul>{errors.map((error) => <li key={error}>{error}</li>)}</ul></div> : null}
             <div className="run-row">
               {proposedRunId ? <div className="run-approval"><strong>Paid-action approval</strong><small>Run ID: {proposedRunId}</small><small>Model: deep-research-preview-04-2026</small><small>Scope: five Research prompts</small><small>Estimated cost: provider pricing applies; exact cost unavailable locally</small></div> : null}
-              <button className="run-button" type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available || !geminiApiReady}>{running ? "Running five research prompts…" : checking ? "Checking research access…" : proposedRunId ? "Approve and start" : "Review paid run"}</button>
-              <p>Gemini Deep Research creates a polished Google Doc and matching brand Markdown. Competitor storage and monitoring run only when selected.</p>
+              <button className="run-button" type="button" onClick={() => void saveProfile()} disabled={!profiles.available}>{selectedProfileId ? "Save changes" : draftBrandId ? "Create offer" : "Create brand"}</button>
+              {selectedProfileId ? <button type="button" onClick={() => void runResearch()} disabled={checking || running || !capability.available || !geminiApiReady}>{running ? "Running research…" : checking ? "Checking access…" : proposedRunId ? "Approve and start" : "Run research"}</button> : null}
             </div>
           </section>
 
           <section className="section-card" id="run-status" aria-labelledby="status-title">
-            <div className="section-heading"><span>2</span><div><h2 id="status-title">Run status</h2><p>All five prompt receipts, limitations, and monitoring state remain visible.</p></div></div>
-            <div className={`status-panel ${result?.status === "complete" ? "status-complete" : result?.status === "partial" ? "status-partial" : runError || (!checking && !capability.available) ? "status-blocked" : ""}`} aria-live="polite">
-              <div><span className="status-dot" /><strong>{running ? "Researching" : result?.status === "complete" ? "Complete" : result?.status === "partial" ? "Complete with limitations" : runError || (!checking && !capability.available) ? "Blocked" : "Not started"}</strong></div>
-              <p>{running ? "Running 1 → 2 → 3 → 4A → 4B and creating the two final representations." : result ? `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.completed_at))}` : runError ?? capability.blocker ?? "Complete the questions and review the final prompt when you are ready."}</p>
+            <div className="section-heading"><span>2</span><div><h2 id="status-title">Run status</h2></div></div>
+            <div className={`status-panel ${runError || (!checking && !capability.available && !displayedRun) ? "status-blocked" : displayedRun && !displayedRun.is_current ? "status-partial" : displayedRun?.status === "complete" ? "status-complete" : displayedRun?.status === "partial" ? "status-partial" : ""}`} aria-live="polite">
+              <div><span className="status-dot" /><strong>{running ? "Researching" : runError ? "Blocked" : displayedRun && !displayedRun.is_current ? "Needs attention" : displayedRun?.status === "complete" ? "Complete" : displayedRun?.status === "partial" ? "Complete with limitations" : !checking && !capability.available ? "Blocked" : "Not started"}</strong></div>
+              <p>{running ? "Research is running." : runError ?? (displayedRun ? !displayedRun.is_current ? "This package used earlier brand or offer information. Run Research again to make it current." : `Research completed ${new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(displayedRun.completed_at))}` : capability.blocker ?? "Create the brand when you are ready.")}</p>
+              {displayedRun ? <a className="drive-link" href={displayedRun.folder_url} target="_blank" rel="noreferrer">Open brand folder in Google Drive <span aria-hidden="true">↗</span></a> : null}
+              {!result && runRecoveryUrl ? <a className="drive-link" href={runRecoveryUrl} target="_blank" rel="noreferrer">Open completed run in Google Drive <span aria-hidden="true">↗</span></a> : null}
+              {!result && !running && (runError || (!checking && !capability.available)) ? <button className="status-action" type="button" onClick={() => navigate("integrations")}>Open Integrations</button> : null}
             </div>
-            <div className="monitoring-receipt">
-              <strong>Nightly competitor ads</strong>
-              {result?.competitor_monitoring.status === "active" ? (
-                <p><span className="receipt-state receipt-active">Active</span> {result.competitor_monitoring.watch_count} verified competitor {result.competitor_monitoring.watch_count === 1 ? "watch" : "watches"} · 2:17 AM {result.competitor_monitoring.timezone} · next run {new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short", timeZone: result.competitor_monitoring.timezone }).format(new Date(result.competitor_monitoring.next_run_at!))}</p>
-              ) : result?.competitor_monitoring.status === "blocked" ? (
-                <p><span className="receipt-state receipt-blocked">Blocked</span> {result.competitor_monitoring.blocker}</p>
-              ) : (
-                <p>Configured after competitor research verifies the watchlist. No schedule is claimed until the runner returns an active receipt.</p>
-              )}
-            </div>
-            <div className="competitor-intelligence" id="competitor-ads" aria-labelledby="competitor-intelligence-title">
-              <div className="competitor-intelligence-heading">
-                <div>
-                  <strong id="competitor-intelligence-title">Competitor Ads</strong>
-                  <p>Meta Ads Intelligence is one evidence source inside competitor research.</p>
-                </div>
-                <span>{result ? result.competitor_ads.refresh_status.replaceAll("_", " ") : "Not available"}</span>
-              </div>
-              {result ? (
-                <>
-                  <dl className="competitor-metrics">
-                    <div><dt>Last refresh</dt><dd>{result.competitor_ads.last_successful_refresh_at ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(result.competitor_ads.last_successful_refresh_at)) : "No successful refresh"}</dd></div>
-                    <div><dt>Watched competitors</dt><dd>{result.competitor_ads.watched_competitors}</dd></div>
-                    <div><dt>Active ads</dt><dd>{result.competitor_ads.active_ads}</dd></div>
-                    <div><dt>New today</dt><dd>{result.competitor_ads.new_ads_today}</dd></div>
-                    <div><dt>Changed ads</dt><dd>{result.competitor_ads.changed_ads}</dd></div>
-                    <div><dt>Creative families</dt><dd>{result.competitor_ads.creative_families}</dd></div>
-                  </dl>
-                  <div className="competitor-links" aria-label="Competitor ads intelligence artifacts">
-                    {result.competitor_ads.links.database ? <a href={result.competitor_ads.links.database} target="_blank" rel="noreferrer">Database receipt ↗</a> : <span>Database link unavailable</span>}
-                    {result.competitor_ads.links.report_markdown ? <a href={result.competitor_ads.links.report_markdown} target="_blank" rel="noreferrer">Markdown report ↗</a> : <span>Markdown report unavailable</span>}
-                    {result.competitor_ads.links.report_csv ? <a href={result.competitor_ads.links.report_csv} target="_blank" rel="noreferrer">CSV report ↗</a> : <span>CSV report unavailable</span>}
-                    {result.competitor_ads.links.google_sheet ? <a href={result.competitor_ads.links.google_sheet} target="_blank" rel="noreferrer">Restricted Google Sheet ↗</a> : <span>Google publishing not configured.</span>}
-                  </div>
-                  <p className="competitor-coverage"><strong>Coverage limitations:</strong> {result.competitor_ads.coverage_limitations.length ? result.competitor_ads.coverage_limitations.join(" ") : "None recorded."}</p>
-                  <p className="claims-boundary">{result.competitor_ads.claims_boundary}</p>
-                </>
-              ) : (
-                <p className="competitor-empty">A validated run will show refresh health, observed ads, daily changes, creative families, coverage limitations, and access-controlled report links here.</p>
-              )}
-            </div>
-            {result?.limitations.length ? <div className="limitations"><strong>Limitations</strong><p>{result.limitations.join(" ")}</p></div> : <div className="limitations"><strong>Limitations</strong><p>{!capability.available && !checking ? "Live research and native Google-file creation are unavailable until the five-prompt runner and Google Workspace connector are configured." : "Research limitations will appear here after the run."}</p></div>}
           </section>
 
         </div>
+      ) : activeView === "create" ? (
+        <QuizFunnelEditor />
       ) : activeView === "library" ? (
         <div className="content-column tool-page" id="top">
           <section className="intro" aria-labelledby="library-title">
@@ -868,24 +904,63 @@ export function IntelligenceClient() {
             <p>Research, competitor ads, copy, images, video, and campaign files stay attached to the brand and offer that created them.</p>
           </section>
           <section className="tool-summary-bar" aria-label="Library filters">
-            <div><span>Brand</span><strong>{activeBrand?.company_name ?? "No brand selected"}</strong></div>
-            <select aria-label="Filter library by brand" value={activeBrand?.id ?? ""} onChange={(event) => setSelectedProfileId(event.target.value)} disabled={!profiles.records.length}>
+            <div><span>Brand</span><strong>{activeBrand ? brandLabel(activeBrand) : "No brand selected"}</strong></div>
+            <select aria-label="Filter library by brand" value={activeBrandId} onChange={(event) => {
+              const firstOffer = brandGroups.find(({ brandId }) => brandId === event.target.value)?.offers[0];
+              if (firstOffer) chooseProfile(firstOffer.id);
+            }} disabled={!brandGroups.length}>
               {!profiles.records.length ? <option value="">Create a brand first</option> : null}
-              {profiles.records.map((profile) => <option key={profile.id} value={profile.id}>{profile.company_name}</option>)}
+              {brandGroups.map(({ brandId, brand }) => <option key={brandId} value={brandId}>{brandLabel(brand)}</option>)}
+            </select>
+            <select aria-label="Filter library by offer" value={libraryProfile?.id ?? ""} onChange={(event) => chooseProfile(event.target.value)} disabled={!activeBrandGroup?.offers.length}>
+              {activeBrandGroup?.offers.map((offer) => <option key={offer.id} value={offer.id}>{offer.offer_or_lead_type}</option>)}
+            </select>
+            <select aria-label="Filter library by asset type" value={libraryAssetType} onChange={(event) => setLibraryAssetType(event.target.value)}>
+              <option value="all">All asset types</option>
+              <option value="research">Research</option>
+              <option value="competitors">Competitor data</option>
+              <option value="creative">Creative</option>
+              <option value="campaigns">Campaigns</option>
+            </select>
+            <select aria-label="Filter library by platform" value={libraryPlatform} onChange={(event) => setLibraryPlatform(event.target.value)}>
+              <option value="all">All platforms</option>
+              <option value="google-drive">Google Drive</option>
+            </select>
+            <select aria-label="Filter library by status" value={libraryStatus} onChange={(event) => setLibraryStatus(event.target.value)}>
+              <option value="all">All statuses</option>
+              <option value="complete">Complete</option>
+              <option value="partial">Complete with limitations</option>
+              <option value="outdated">Needs refresh</option>
+            </select>
+            <select aria-label="Filter library by date" value={libraryDate} onChange={(event) => {
+              const value = event.target.value;
+              setLibraryDate(value);
+              setLibraryDateCutoff(value === "all" ? null : Date.now() - Number(value) * 86_400_000);
+            }}>
+              <option value="all">Any date</option>
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 90 days</option>
             </select>
           </section>
-          <section className="asset-type-grid" aria-label="Brand asset types">
-            {[
-              ["Research", "DOC", result ? "Brand research and evidence are ready in this session." : "No completed research artifacts yet.", result ? "3" : "0"],
-              ["Competitor ads", "ADS", result?.competitor_ads.active_ads ? `${result.competitor_ads.active_ads} active ads observed.` : "No competitor ads collected yet.", String(result?.competitor_ads.active_ads ?? 0)],
-              ["Static creative", "IMG", "No image assets attached yet.", "0"],
-              ["Video creative", "VID", "No video assets attached yet.", "0"],
-              ["Copy & scripts", "TXT", "No copy assets attached yet.", "0"],
-              ["Campaign files", "CMP", "No launch files attached yet.", "0"],
-            ].map(([name, marker, description, count]) => (
-              <article key={name}><span>{marker}</span><div><h2>{name}</h2><p>{description}</p></div><b>{count}</b></article>
-            ))}
-          </section>
+          {libraryAssets.length ? (
+            <section className="asset-type-grid" aria-label="Brand assets">
+              {libraryAssets.map((asset) => (
+                <article key={`${libraryRun?.run_id}-${asset.name}`}>
+                  <span>{asset.marker}</span>
+                  <div>
+                    <h2>{asset.name}</h2>
+                    <p>{asset.description}</p>
+                    <small>Offer: {libraryProfile?.offer_or_lead_type} · Research package: {libraryRun?.run_id}</small>
+                  </div>
+                  <a href={asset.url} target="_blank" rel="noreferrer">Open ↗</a>
+                </article>
+              ))}
+            </section>
+          ) : activeBrand ? (
+            <div className="tool-empty"><h2>No matching assets.</h2><p>{libraryRun ? "Change the filters to see this offer’s Drive-backed research files." : "Run Research for this offer to create its first Drive-backed assets."}</p></div>
+          ) : null}
+          {libraryRun ? <a className="drive-link" href={libraryRun.folder_url} target="_blank" rel="noreferrer">Open brand folder in Google Drive <span aria-hidden="true">↗</span></a> : null}
           {!activeBrand ? <div className="tool-empty"><h2>Your library is empty.</h2><p>Create a brand to give every future offer, ad, and asset a permanent home.</p><button type="button" onClick={() => navigate("research")}>Create Brand</button></div> : null}
         </div>
       ) : activeView === "brands" ? (
@@ -894,19 +969,55 @@ export function IntelligenceClient() {
             <div><p className="kicker">Tools · Brand system</p><h1 id="brands-title">Brands are the source of truth.</h1><p>Each central brand file connects its offers, research, competitor intelligence, ads, and creative assets.</p></div>
             <button type="button" onClick={() => navigate("research")}>+ Create Brand</button>
           </section>
-          {profiles.records.length ? (
+          {brandDetail ? (
+            <section className="brand-detail" aria-label={`${brandLabel(brandDetail.brand)} brand file`}>
+              <div className="brand-detail-heading">
+                <button type="button" onClick={() => setBrandDetailId("")}>← All brands</button>
+                <div><small>Permanent brand file</small><h2>{brandLabel(brandDetail.brand)}</h2><p>{brandDetail.brand.industry || "Industry not specified"} · {brandDetail.brand.country_region || "Market not specified"}</p></div>
+                <button type="button" onClick={() => { newOffer(brandDetail.offers[0].id); navigate("research"); }}>+ Create offer</button>
+              </div>
+              <dl className="brand-foundation">
+                <div><dt>Website</dt><dd>{brandDetail.brand.website_or_public_profile_url.trim() ? <a href={brandDetail.brand.website_or_public_profile_url} target="_blank" rel="noreferrer">{brandDetail.brand.website_or_public_profile_url}</a> : "Not specified"}</dd></div>
+                <div><dt>Industry</dt><dd>{brandDetail.brand.industry || "Not specified"}</dd></div>
+                <div><dt>Market</dt><dd>{brandDetail.brand.country_region || "Not specified"}</dd></div>
+                <div><dt>Last updated</dt><dd>{new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(new Date(brandDetail.brand.updated_at))}</dd></div>
+              </dl>
+              <div className="brand-detail-section">
+                <div><small>Offers</small><h3>Research stays separate by offer.</h3></div>
+                <div className="offer-list">
+                  {brandDetail.offers.map((offer) => (
+                    <article key={offer.id}>
+                      <div><strong>{offer.offer_or_lead_type || "Untitled offer"}</strong><span>{offer.profession || "Profession not specified"} · {offer.target_age_range || "Age not specified"}</span></div>
+                      <span>Research {offer.latest_run ? offer.latest_run.is_current ? offer.latest_run.status : "needs refresh" : "not run"}</span>
+                      <button type="button" onClick={() => { chooseProfile(offer.id); navigate("research"); }}>Open offer</button>
+                    </article>
+                  ))}
+                </div>
+              </div>
+              <div className="brand-detail-section">
+                <div><small>Brand library</small><h3>Research, creative, campaigns, and learning.</h3></div>
+                <div className="brand-lifecycle">
+                  <button type="button" onClick={() => { chooseProfile(brandDetail.offers[0].id); navigate("library"); }}><b>{brandDetail.offers.filter(({ latest_run }) => latest_run).length}</b><span>Research packages</span></button>
+                  <div><b>0</b><span>Creative assets</span></div>
+                  <div><b>0</b><span>Campaigns</span></div>
+                  <div><b>0</b><span>Learnings</span></div>
+                </div>
+                {brandDetailRun ? <a className="drive-link" href={brandDetailRun.folder_url} target="_blank" rel="noreferrer">Open brand folder in Google Drive <span aria-hidden="true">↗</span></a> : null}
+              </div>
+            </section>
+          ) : brandGroups.length ? (
             <section className="brand-file-grid" aria-label="Brand files">
-              {profiles.records.map((profile) => (
-                <article className="brand-file-card" key={profile.id}>
-                  <header><span>{profile.company_name.slice(0, 2).toUpperCase()}</span><div><small>Central brand file</small><h2>{profile.company_name}</h2></div></header>
+              {brandGroups.map(({ brandId, brand, offers }) => (
+                <article className="brand-file-card" key={brandId}>
+                  <header><span>{brandInitials(brand)}</span><div><small>Permanent brand file</small><h2>{brandLabel(brand)}</h2></div></header>
                   <dl>
-                    <div><dt>Industry</dt><dd>{profile.industry}</dd></div>
-                    <div><dt>Market</dt><dd>{profile.country_region}</dd></div>
-                    <div><dt>Primary offer</dt><dd>{profile.offer_or_lead_type}</dd></div>
-                    <div><dt>Customer service</dt><dd>{profile.service_or_offer_purchased}</dd></div>
+                    <div><dt>Industry</dt><dd>{brand.industry || "Not specified"}</dd></div>
+                    <div><dt>Market</dt><dd>{brand.country_region || "Not specified"}</dd></div>
+                    <div><dt>Primary offer</dt><dd>{brand.offer_or_lead_type || "Untitled offer"}</dd></div>
+                    <div><dt>Profession</dt><dd>{brand.profession || "Not specified"}</dd></div>
                   </dl>
-                  <div className="brand-relationships"><span><b>1</b> Offer</span><span><b>0</b> Ads</span><span><b>0</b> Creative assets</span></div>
-                  <button type="button" onClick={() => { chooseProfile(profile.id); navigate("research"); }}>Open brand file</button>
+                  <div className="brand-relationships"><span><b>{offers.length}</b> {offers.length === 1 ? "Offer" : "Offers"}</span><span><b>{offers.filter(({ latest_run }) => latest_run).length}</b> Research packages</span><span><b>0</b> Creative assets</span></div>
+                  <button type="button" onClick={() => { chooseProfile(offers[0].id); setBrandDetailId(brandId); }}>Open brand file</button>
                 </article>
               ))}
             </section>
@@ -914,14 +1025,13 @@ export function IntelligenceClient() {
             <div className="tool-empty"><h2>No brand files yet.</h2><p>Create the first central brand file, then attach offers, research, ads, and creative as the campaign grows.</p><button type="button" onClick={() => navigate("research")}>Create Brand</button></div>
           )}
         </div>
-      ) : (
+      ) : activeView === "settings" ? (
         <div className="content-column settings-column" id="top">
           <section className="intro" aria-labelledby="settings-title">
-            <p className="kicker">Your Negroni, your agents</p>
-            <h1 id="settings-title">Connect the tools behind your workspace.</h1>
-            <p>Use the Negroni plugin from ChatGPT or Codex, connect the data and media providers you authorize, and keep every live action behind an explicit approval. Secrets stay behind the workspace.</p>
+            <p className="kicker">Workspace preferences</p>
+            <h1 id="settings-title">Settings</h1>
+            <p>Control appearance and approval preferences. Provider connections live under Tools → Integrations.</p>
           </section>
-
           <section className="section-card settings-section" id="preferences">
             <div className="settings-heading">
               <span>01</span>
@@ -932,14 +1042,11 @@ export function IntelligenceClient() {
                 <legend>Appearance</legend>
                 <div className="segmented-control">
                   {(["light", "dark", "system"] as const).map((option) => (
-                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)}>
-                      {option[0].toUpperCase() + option.slice(1)}
-                    </button>
+                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)}>{option[0].toUpperCase() + option.slice(1)}</button>
                   ))}
                 </div>
                 <p>System follows this computer’s light or dark setting.</p>
               </fieldset>
-
               <fieldset className={`preference-card mode-card mode-${operatingMode}`}>
                 <legend>Commit approvals</legend>
                 <div className="segmented-control">
@@ -951,10 +1058,18 @@ export function IntelligenceClient() {
               </fieldset>
             </div>
           </section>
+        </div>
+      ) : (
+        <div className="content-column settings-column" id="top">
+          <section className="intro" aria-labelledby="integrations-title">
+            <p className="kicker">Tools</p>
+            <h1 id="integrations-title">Integrations</h1>
+            <p>Connect API keys, Google Drive, agents, and data providers. Secrets stay behind the workspace, and connecting a provider never starts a paid action.</p>
+          </section>
 
           <section className="section-card settings-section" id="operators">
             <div className="settings-heading">
-              <span>02</span>
+              <span>01</span>
               <div><h2>Agent access</h2><p>The plugin is the primary experience. Local agent checks remain available for contributor and self-hosted fallback use.</p></div>
             </div>
             <div className="settings-grid">
@@ -976,8 +1091,8 @@ export function IntelligenceClient() {
 
           <section className="section-card settings-section" id="connections">
             <div className="settings-heading">
-              <span>03</span>
-              <div><h2>API keys &amp; storage</h2><p>Paste keys here. They go straight to the server-side vault and are cleared from this form.</p></div>
+              <span>02</span>
+              <div><h2>API keys &amp; storage</h2><p>Keys go straight to the server-side credential boundary and clear from this form. Hosted keys use encrypted storage; local pasted keys are session-only.</p></div>
             </div>
             <div className="settings-grid">
               <form className="provider-card media-card" onSubmit={(event) => { event.preventDefault(); void connectProvider("kie_ai"); }}>
@@ -1006,7 +1121,7 @@ export function IntelligenceClient() {
 
               <form className="provider-card" id="gemini-connection" onSubmit={(event) => { event.preventDefault(); void saveGemini(); }}>
                 <div><span className={`provider-dot provider-${geminiApiReady ? "connected" : geminiConnection.status === "connection_error" ? "blocked" : "not_connected"}`} /><strong>Gemini</strong><span className="provider-badge">Standard Research</span></div>
-                <p>The key is sent once to an owner-scoped server credential broker, stored securely, and never included in research artifacts. Saving never starts paid research.</p>
+                <p>The key is sent once to an owner-scoped credential broker and never included in research artifacts. Hosted storage is encrypted; a local paste lasts only for the current process. Saving never starts paid research.</p>
                 <small>{geminiApiReady ? `Connected · last verified ${geminiConnection.last_verified_at ? new Date(geminiConnection.last_verified_at).toLocaleString() : "recently"}${geminiConnection.last_four ? ` · ending ${geminiConnection.last_four}` : ""}` : geminiConnection.status === "checking" ? "Checking" : geminiConnection.error ?? "Not connected"}</small>
                 <label htmlFor="gemini-key">Gemini API key</label>
                 <input id="gemini-key" type="password" value={geminiKey} onChange={(event) => setGeminiKey(event.target.value)} placeholder={geminiApiReady ? "Paste replacement key" : "Paste key"} autoComplete="off" />
@@ -1022,17 +1137,17 @@ export function IntelligenceClient() {
                   <strong>Google Drive</strong>
                   <span className="provider-badge">Auto-file</span>
                 </div>
-                <p>Negroni creates a private <b>Negroni Research</b> folder, then stores the Google Doc, Markdown copy, and optional competitor Sheet projection there.</p>
-                <div className="storage-route" aria-label="Google Doc, Google Sheet, and Markdown are stored in the Negroni Research folder">
+                <p>Negroni creates a private <b>Negroni</b> folder, then organizes every durable file under its permanent brand and current offer.</p>
+                <div className="storage-route" aria-label="Google Doc, Google Sheet, and Markdown are stored under Negroni, brand, and offer folders">
                   <span className="storage-file storage-doc">Doc</span>
                   <span className="storage-file storage-sheet">Sheet</span>
                   <span className="storage-file storage-markdown">MD</span>
                   <span className="storage-arrow" aria-hidden="true">→</span>
-                  <span className="storage-folder">Negroni Research</span>
+                  <span className="storage-folder">Negroni / Brand / Offer</span>
                 </div>
                 <small>
                   {googleStatus.status === "connected" && googleStatus.auto_store
-                    ? `${googleStatus.account_email ? `${googleStatus.account_email} · ` : ""}Auto-store on · ${googleStatus.folder_name ?? "Negroni Research"}`
+                    ? `Connected Google account · Auto-store on · ${googleStatus.folder_name ?? "Negroni"}`
                     : googleStatus.status === "connected"
                       ? "Connected, but automatic storage has not been verified."
                       : googleStatus.blocker ?? "Not connected"}
@@ -1046,7 +1161,7 @@ export function IntelligenceClient() {
 
           <section className="section-card settings-section" id="local-setup">
             <div className="settings-heading">
-              <span>04</span>
+              <span>03</span>
               <div><h2>Developer fallback</h2><p>The local launcher is optional infrastructure for contributors and self-hosted testing, not the normal Negroni experience.</p></div>
             </div>
             <div className={`local-setup-card ${settingsAvailable ? "local-setup-ready" : ""}`}>
@@ -1056,8 +1171,8 @@ export function IntelligenceClient() {
               </div>
               <ol className="setup-steps">
                 <li><span>1</span><div><strong>Use only for local development</strong><p>Run <code>negroni start</code> from a trusted checkout.</p></div></li>
-                <li><span>2</span><div><strong>Return to Settings</strong><p>Local agent status and development-only key fields become available.</p></div></li>
-                <li><span>3</span><div><strong>Keep credentials private</strong><p>Local keys stay under <code>~/.negroni</code> with owner-only permissions—not in the browser or project.</p></div></li>
+                <li><span>2</span><div><strong>Return to Integrations</strong><p>Local agent status and development-only key fields become available.</p></div></li>
+                <li><span>3</span><div><strong>Keep credentials private</strong><p>Keys pasted here last only for this local process. Use a 1Password Developer Environment for persistent injection; Negroni does not write them to the browser, project, or plaintext files.</p></div></li>
               </ol>
               {settingsBlocker ? <div className="settings-blocker"><strong>Connection setup needed</strong><p>{settingsBlocker}</p></div> : null}
             </div>

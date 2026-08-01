@@ -1,17 +1,26 @@
 export const CREATE_RESEARCH_PROFILES = `
   CREATE TABLE IF NOT EXISTS research_profiles (
     id TEXT PRIMARY KEY,
+    brand_id TEXT NOT NULL,
     owner_email TEXT NOT NULL,
-    client_customer_name TEXT NOT NULL,
-    profession_job_title TEXT NOT NULL,
+    profession TEXT NOT NULL,
+    job_title TEXT NOT NULL,
     company_name TEXT NOT NULL,
     website_or_public_profile_url TEXT NOT NULL,
-    service_or_offer_purchased TEXT NOT NULL,
     competitor_used TEXT NOT NULL,
     offer_or_lead_type TEXT NOT NULL,
     industry TEXT NOT NULL,
     country_region TEXT NOT NULL,
     target_age_range TEXT NOT NULL,
+    latest_run_id TEXT NOT NULL DEFAULT '',
+    latest_run_status TEXT NOT NULL DEFAULT '',
+    latest_run_completed_at TEXT NOT NULL DEFAULT '',
+    drive_folder_name TEXT NOT NULL DEFAULT '',
+    drive_folder_url TEXT NOT NULL DEFAULT '',
+    google_doc_url TEXT NOT NULL DEFAULT '',
+    google_sheet_url TEXT NOT NULL DEFAULT '',
+    markdown_filename TEXT NOT NULL DEFAULT '',
+    latest_run_basis_json TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   )
@@ -20,6 +29,11 @@ export const CREATE_RESEARCH_PROFILES = `
 export const CREATE_RESEARCH_PROFILES_OWNER_INDEX = `
   CREATE INDEX IF NOT EXISTS research_profiles_owner_updated_idx
   ON research_profiles (owner_email, updated_at DESC)
+`;
+
+export const CREATE_RESEARCH_PROFILES_BRAND_INDEX = `
+  CREATE INDEX IF NOT EXISTS research_profiles_brand_updated_idx
+  ON research_profiles (owner_email, brand_id, updated_at DESC)
 `;
 
 export const CREATE_RESEARCH_WORKSPACES = `
