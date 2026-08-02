@@ -61,6 +61,13 @@ An experiment is complete when the planned evidence window has closed and the
 decision, caveats, and next action are recorded. “Not enough evidence” is a
 valid result.
 
+## Application workflow contract
+
+The shared application state, visible prerequisite, and operator-facing
+handoff appear in [`app/docs/campaign-workflow.md`](../app/docs/campaign-workflow.md).
+The initial Iteration UI stays blocked until it has a preserved Launch receipt
+and exact Creative package; a missing receipt is not a failed experiment.
+
 ## Learning Core input and output
 
 Iteration reads measurements through the normalized warehouse contract and

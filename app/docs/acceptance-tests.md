@@ -60,6 +60,8 @@ Automated tests cover:
   Research-to-Creative handoff; and
 - the Home next-action priority, one-action maximum, and absence of fabricated
   Create readiness;
+- ordered five-phase campaign handoffs, durable predecessor-artifact
+  prerequisites, and truthful blocked states for Launch, Iterate, and Loop;
 - MCP initialization and seven-tool discovery, strict input schemas,
   dry-run/blocked/resume behavior, Draper validated intents and exact local
   decisions, immutable artifact hashing, and secret/path redaction;
@@ -77,12 +79,16 @@ Automated tests cover:
 - deterministic non-installed schedule planning with one owner, overlap lock,
   bounded runtime, exit receipts, resume command, exposure, and rollback.
 
-Visual QA covers Home, Research, Library, Brands, Brand detail, Integrations,
-and Settings at desktop/mobile;
+Visual QA uses a deterministic sanitized brand and approval fixture. It covers
+Home, Research intake, Ad Spy, Research Review, gated Create, Launch, Iterate,
+Loop, Library, Brands, Brand detail, Integrations, and Settings at
+desktop/mobile, plus Light and System appearance states;
 one local next-action panel; all six Research cards; no global right rail,
 synthetic goals, duplicate pipeline, Draper Site navigation, textured canvas, or
 unsupported performance language; the complete brand-and-offer intake; the
 single optional competitor-database control; minimal run status; separate
-Settings and Integrations responsibilities; disabled paid-run actions when
-blocked; desktop/mobile heading visibility and overflow; browser errors; and
-material accessibility violations.
+Settings and Integrations responsibilities; mobile access to all five phases;
+offer-and-fingerprint-scoped Create drafts; closed artifact handoffs; disabled
+paid-run actions when blocked; desktop/mobile heading visibility and overflow;
+Light/System theme resolution; browser errors; and moderate-or-higher
+accessibility violations.

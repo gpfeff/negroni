@@ -64,6 +64,14 @@ Creative is ready for Launch when every asset is approved, correctly formatted,
 traceable to a hypothesis, paired with channel copy, and free of unresolved
 validation blockers.
 
+## Application workflow contract
+
+The shared application state, visible prerequisite, and operator-facing
+handoff appear in [`app/docs/campaign-workflow.md`](../app/docs/campaign-workflow.md).
+Creative must persist an approved `creative-manifest.json` and `launch-copy.json`
+before Launch may become ready; an editable draft or preview alone is not a
+Launch handoff.
+
 ## Learning Core input and output
 
 Creative retrieves the selected brand's current learning versions and keeps

@@ -267,8 +267,10 @@ impersonating another advertiser, or inventing performance claims.
 
 Current Phase 1 implementations:
 
-- [`app/`](app/) — canonical Negroni application, with Research currently
-  executable and the later phases visibly planned.
+- [`app/`](app/) — canonical Negroni application. Research and its approval
+  handoff are executable; Create opens only for an approved offer-scoped
+  Research revision. Launch, Iterate, and Loop show their exact contracts and
+  truthfully report that durable handoff verification is not connected yet.
 - `meta-ads-intelligence/` — optional local companion checkout for intelligence
   from public Meta Ad Library observations. SQLite, media, lifecycle, human
   overrides, local reports, and optional cloud projection remain engine-owned.

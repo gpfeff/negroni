@@ -89,6 +89,14 @@ uncertainty, refreshes Research, creates a Creative proposal, prepares a Launch
 diff, evaluates a simulated Iteration result, and appends a Learning entry
 without making any live external change.
 
+## Application workflow contract
+
+The shared application state, visible prerequisite, and operator-facing
+handoff appear in [`app/docs/campaign-workflow.md`](../app/docs/campaign-workflow.md).
+The initial Loop UI stays blocked until the learning ledger and an Iteration
+result are persisted. Its default behavior is Observe, Draft, Validate, or
+Recommend; any account mutation remains separately approval-gated.
+
 ## Draper and central Learning Core
 
 Draper is the natural-language control plane over Loop state. It retrieves

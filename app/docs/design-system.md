@@ -38,13 +38,16 @@ out at 46 pixels.
 Every state includes text; meaning never depends on color alone. Red is also
 the restrained brand/action accent, not a substitute for status language.
 
-## Illustration
+## Workflow surfaces
 
-Research cards retain Negroni's original campaign-table, client, customer,
-competitor, ad-analysis, and approval scenes. Imagery stays editorial and
-original: cinematic navy shadows, warm paper grain, walnut interiors, and
-restrained red accents. No competitor product asset or recognizable character
-is copied.
+Default workflow surfaces use compact rectangular panels, restrained borders,
+and text-backed status. They do not use campaign scenes, cartoons, large hero
+illustrations, or decorative gradients. An image may appear only when it is an
+actual creative asset under review, never as task chrome.
+
+Every phase page has one page title, one current state, one primary action, and
+one concise durable-handoff list. Raw IDs, receipts, and extended safety detail
+belong behind progressive disclosure.
 
 Light mode preserves the same hierarchy on a pale neutral canvas. Dark mode is
 the default.

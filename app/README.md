@@ -7,10 +7,12 @@ bindings remain unconfigured, so hosted execution stays visibly blocked. The
 Site opens on a branded campaign workspace with persistent
 navigation for Research, Create, Launch, Iterate, and Loop. Home presents the
 Phase 1 tools as Run Research, Client, Customer, Competitors, Competitor Ads,
-and Review & Approve. A factual guidance rail shows research readiness, the
-next honest action, runner availability, and spend protection. Research and
-the Create → Quiz Funnels editor are executable; later phases remain visibly
-planned.
+and Review & Approve. One factual next-action panel shows Research readiness
+without a duplicate status rail. Research approval is the exact Phase 2 gate;
+the Create → Quiz Funnels editor stores a separate local draft for the selected
+offer and approved revision fingerprint. Launch, Iterate, and Loop expose their
+required durable handoffs but stay explicitly blocked while handoff verification
+is not connected in the Site.
 
 Tools includes Library, Brands, and Integrations. Brands is the organizing
 parent for each permanent brand file and its offers, research, ads, creative,

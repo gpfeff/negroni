@@ -1,25 +1,40 @@
 {
-  "generated_at": "2026-08-01T04:17:36.754Z",
+  "generated_at": "2026-08-02T00:01:31.706Z",
   "base_url": "http://localhost:3000",
   "viewport_states": [
-    "home: 1440x1000",
-    "home: 390x844",
-    "research: 1440x1000",
-    "research: 390x844",
-    "library: 1440x1000",
-    "library: 390x844",
-    "brands: 1440x1000",
-    "brands: 390x844",
-    "brand-detail: 1440x1000",
-    "brand-detail: 390x844",
-    "integrations: 1440x1000",
-    "integrations: 390x844",
-    "settings: 1440x1000",
-    "settings: 390x844"
+    "home-desktop: 1440x1000",
+    "home-mobile: 390x844",
+    "thin-client-desktop: 1440x1000",
+    "thin-client-mobile: 390x844",
+    "ad-spy-desktop: 1440x1000",
+    "ad-spy-mobile: 390x844",
+    "research-review-desktop: 1440x1000",
+    "research-review-mobile: 390x844",
+    "create-desktop: 1440x1000",
+    "create-mobile: 390x844",
+    "launch-desktop: 1440x1000",
+    "launch-mobile: 390x844",
+    "iterate-desktop: 1440x1000",
+    "iterate-mobile: 390x844",
+    "loop-desktop: 1440x1000",
+    "loop-mobile: 390x844",
+    "library-desktop: 1440x1000",
+    "library-mobile: 390x844",
+    "brands-desktop: 1440x1000",
+    "brands-mobile: 390x844",
+    "brand-detail-desktop: 1440x1000",
+    "brand-detail-mobile: 390x844",
+    "integrations-desktop: 1440x1000",
+    "integrations-mobile: 390x844",
+    "settings-desktop: 1440x1000",
+    "settings-light-desktop: 1440x1000",
+    "home-light-desktop: 1440x1000",
+    "settings-system-light-desktop: 1440x1000",
+    "settings-mobile: 390x844"
   ],
   "checks": [
     {
-      "name": "home visible: What should Negroni do next?",
+      "name": "home visible: Your campaign workspace",
       "passed": true
     },
     {
@@ -60,6 +75,10 @@
     },
     {
       "name": "home has exactly six Research action cards",
+      "passed": true
+    },
+    {
+      "name": "home omits decorative workflow illustrations",
       "passed": true
     },
     {
@@ -111,7 +130,7 @@
       "passed": true
     },
     {
-      "name": "home-desktop: no serious or critical accessibility violations",
+      "name": "home-desktop: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -135,11 +154,23 @@
       "passed": true
     },
     {
-      "name": "home-mobile: no serious or critical accessibility violations",
+      "name": "home-mobile: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
-      "name": "mobile navigation exposes Integrations without a hidden horizontal-scroll target",
+      "name": "mobile navigation retains all five campaign phases",
+      "passed": true
+    },
+    {
+      "name": "mobile navigation exposes one current page",
+      "passed": true
+    },
+    {
+      "name": "mobile keeps Settings as a 44px pinned target",
+      "passed": true
+    },
+    {
+      "name": "Create blocks an unscoped draft before an offer is selected",
       "passed": true
     },
     {
@@ -163,7 +194,7 @@
       "passed": true
     },
     {
-      "name": "visible: Create brand",
+      "name": "visible: Brand setup",
       "passed": true
     },
     {
@@ -171,7 +202,7 @@
       "passed": true
     },
     {
-      "name": "visible: Brand information",
+      "name": "visible: Brand",
       "passed": true
     },
     {
@@ -203,7 +234,7 @@
       "passed": true
     },
     {
-      "name": "visible: Offer information",
+      "name": "visible: Offer",
       "passed": true
     },
     {
@@ -279,7 +310,7 @@
       "passed": true
     },
     {
-      "name": "thin-client-desktop: no serious or critical accessibility violations",
+      "name": "thin-client-desktop: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -295,23 +326,255 @@
       "passed": true
     },
     {
-      "name": "thin-client-mobile: no serious or critical accessibility violations",
+      "name": "thin-client-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Client card opens a real Research destination",
+      "passed": true
+    },
+    {
+      "name": "Customer card opens a real Research destination",
+      "passed": true
+    },
+    {
+      "name": "Competitors card opens a real Research destination",
+      "passed": true
+    },
+    {
+      "name": "Ad Spy opens a truthful evidence state",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "ad-spy-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Review & Approve opens the approved revision workspace",
+      "passed": true
+    },
+    {
+      "name": "research-review-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "research-review-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "research-review-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "research-review-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "research-review-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "research-review-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "research-review-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "research-review-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Create opens only from the approved Research handoff",
+      "passed": true
+    },
+    {
+      "name": "Create stores the draft under the selected offer and approved fingerprint",
+      "passed": true
+    },
+    {
+      "name": "create-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "create-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "create-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "create-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "create-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "create-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "create-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "create-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Launch truthfully reports unavailable verification",
+      "passed": true
+    },
+    {
+      "name": "launch-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "launch-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "launch-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "launch-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Launch remains the visible current phase on mobile",
+      "passed": true
+    },
+    {
+      "name": "launch-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "launch-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "launch-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "launch-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Iterate truthfully reports unavailable verification",
+      "passed": true
+    },
+    {
+      "name": "iterate-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "iterate-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "iterate-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "iterate-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Iterate remains the visible current phase on mobile",
+      "passed": true
+    },
+    {
+      "name": "iterate-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "iterate-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "iterate-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "iterate-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Loop truthfully reports unavailable verification",
+      "passed": true
+    },
+    {
+      "name": "loop-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "loop-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "loop-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "loop-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "Loop remains the visible current phase on mobile",
+      "passed": true
+    },
+    {
+      "name": "loop-mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "loop-mobile: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "loop-mobile: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "loop-mobile: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
       "name": "Draper is removed from navigation",
-      "passed": true
-    },
-    {
-      "name": "Library visible: Everything made for every brand.",
-      "passed": true
-    },
-    {
-      "name": "Library visible: Research",
-      "passed": true
-    },
-    {
-      "name": "Library visible: Competitor ads",
       "passed": true
     },
     {
@@ -367,7 +630,7 @@
       "passed": true
     },
     {
-      "name": "library-desktop: no serious or critical accessibility violations",
+      "name": "library-desktop: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -383,11 +646,11 @@
       "passed": true
     },
     {
-      "name": "library-mobile: no serious or critical accessibility violations",
+      "name": "library-mobile: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
-      "name": "Brands explains the central brand file",
+      "name": "Brands shows the brand-file workspace",
       "passed": true
     },
     {
@@ -403,7 +666,7 @@
       "passed": true
     },
     {
-      "name": "brands-desktop: no serious or critical accessibility violations",
+      "name": "brands-desktop: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -419,7 +682,11 @@
       "passed": true
     },
     {
-      "name": "brands-mobile: no serious or critical accessibility violations",
+      "name": "brands-mobile: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "sanitized QA fixture always exposes Brand detail",
       "passed": true
     },
     {
@@ -463,7 +730,7 @@
       "passed": true
     },
     {
-      "name": "brand-detail-desktop: no serious or critical accessibility violations",
+      "name": "brand-detail-desktop: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -479,19 +746,11 @@
       "passed": true
     },
     {
-      "name": "brand-detail-mobile: no serious or critical accessibility violations",
+      "name": "brand-detail-mobile: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
       "name": "integrations visible: Integrations",
-      "passed": true
-    },
-    {
-      "name": "integrations visible: Codex",
-      "passed": true
-    },
-    {
-      "name": "integrations visible: Claude Code",
       "passed": true
     },
     {
@@ -519,11 +778,15 @@
       "passed": true
     },
     {
-      "name": "integrations visible: Developer fallback",
+      "name": "integrations visible: Advanced connections",
       "passed": true
     },
     {
-      "name": "Codex exposes one explicit connection control",
+      "name": "integrations visible: Developer setup",
+      "passed": true
+    },
+    {
+      "name": "advanced agent controls are hidden by default",
       "passed": true
     },
     {
@@ -551,7 +814,7 @@
       "passed": true
     },
     {
-      "name": "integrations-desktop: no serious or critical accessibility violations",
+      "name": "integrations-desktop: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -567,7 +830,7 @@
       "passed": true
     },
     {
-      "name": "integrations-mobile: no serious or critical accessibility violations",
+      "name": "integrations-mobile: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -587,6 +850,10 @@
       "passed": true
     },
     {
+      "name": "Settings exposes selected controls to assistive technology",
+      "passed": true
+    },
+    {
       "name": "settings-desktop: no horizontal overflow",
       "passed": true
     },
@@ -599,7 +866,63 @@
       "passed": true
     },
     {
-      "name": "settings-desktop: no serious or critical accessibility violations",
+      "name": "settings-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "settings-light-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "settings-light-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "settings-light-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "settings-light-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "home-light-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "home-light-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "home-light-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "home-light-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "System appearance follows a light operating-system preference",
+      "passed": true
+    },
+    {
+      "name": "settings-system-light-desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "settings-system-light-desktop: operational body copy is at least 12px",
+      "passed": true
+    },
+    {
+      "name": "settings-system-light-desktop: metadata is at least 10px",
+      "passed": true
+    },
+    {
+      "name": "settings-system-light-desktop: no moderate, serious, or critical accessibility violations",
+      "passed": true
+    },
+    {
+      "name": "System appearance follows a dark operating-system preference",
       "passed": true
     },
     {
@@ -615,7 +938,7 @@
       "passed": true
     },
     {
-      "name": "settings-mobile: no serious or critical accessibility violations",
+      "name": "settings-mobile: no moderate, serious, or critical accessibility violations",
       "passed": true
     },
     {
@@ -638,6 +961,54 @@
     },
     {
       "name": "thin-client-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "ad-spy-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "ad-spy-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "research-review-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "research-review-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "create-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "create-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "launch-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "launch-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "iterate-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "iterate-mobile",
+      "material_violations": []
+    },
+    {
+      "name": "loop-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "loop-mobile",
       "material_violations": []
     },
     {
@@ -674,6 +1045,18 @@
     },
     {
       "name": "settings-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "settings-light-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "home-light-desktop",
+      "material_violations": []
+    },
+    {
+      "name": "settings-system-light-desktop",
       "material_violations": []
     },
     {

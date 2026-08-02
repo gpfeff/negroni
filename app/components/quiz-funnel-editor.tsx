@@ -24,7 +24,7 @@ type LocalDraft = Partial<{
   savedAt: string;
 }>;
 
-const DRAFT_KEY = "negroni.quiz-funnel.lead-capture.v1";
+const DRAFT_KEY_PREFIX = "negroni.quiz-funnel.lead-capture.v2";
 
 const INITIAL_STEPS: FunnelStep[] = [
   { id: "intro", type: "intro", label: "Welcome", title: "Find your best next step", description: "Answer a few quick questions to see the most relevant option for you.", required: false },
@@ -47,10 +47,10 @@ function copySteps(steps: FunnelStep[]) {
   return steps.map((step) => ({ ...step, choices: step.choices ? [...step.choices] : undefined }));
 }
 
-function readLocalDraft(): LocalDraft {
+function readLocalDraft(draftKey: string): LocalDraft {
   if (typeof window === "undefined") return {};
   try {
-    const draft = window.localStorage.getItem(DRAFT_KEY);
+    const draft = window.localStorage.getItem(draftKey);
     if (!draft) return {};
     const parsed = JSON.parse(draft) as LocalDraft;
     return Array.isArray(parsed.steps) && parsed.steps.length ? parsed : { ...parsed, steps: undefined };
@@ -59,7 +59,13 @@ function readLocalDraft(): LocalDraft {
   }
 }
 
-export function QuizFunnelEditor() {
+type QuizFunnelEditorProps = {
+  draftScope: string;
+  sourceLabel: string;
+};
+
+export function QuizFunnelEditor({ draftScope, sourceLabel }: QuizFunnelEditorProps) {
+  const draftKey = `${DRAFT_KEY_PREFIX}.${draftScope}`;
   const [name, setName] = useState("Lead capture quiz");
   const [steps, setSteps] = useState<FunnelStep[]>(INITIAL_STEPS);
   const [selectedStepId, setSelectedStepId] = useState(INITIAL_STEPS[0].id);
@@ -73,7 +79,7 @@ export function QuizFunnelEditor() {
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const draft = readLocalDraft();
+      const draft = readLocalDraft(draftKey);
       if (draft.name) setName(draft.name);
       if (draft.steps) {
         const restored = copySteps(draft.steps);
@@ -86,14 +92,14 @@ export function QuizFunnelEditor() {
       if (draft.savedAt) setSavedAt(draft.savedAt);
     }, 0);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [draftKey]);
 
   const selectedStep = useMemo(() => steps.find((step) => step.id === selectedStepId) ?? steps[0], [selectedStepId, steps]);
   const selectedIndex = steps.findIndex((step) => step.id === selectedStep?.id);
 
   function saveDraft() {
     const now = new Date().toISOString();
-    window.localStorage.setItem(DRAFT_KEY, JSON.stringify({ name, steps, resumeEnabled, utmEnabled, clickIdsEnabled, savedAt: now }));
+    window.localStorage.setItem(draftKey, JSON.stringify({ name, steps, resumeEnabled, utmEnabled, clickIdsEnabled, savedAt: now }));
     setSavedAt(now);
   }
 
@@ -150,7 +156,7 @@ export function QuizFunnelEditor() {
           <p className="kicker">Create · Quiz Funnels</p>
           <label className="quiz-name-label" htmlFor="quiz-name">Funnel name</label>
           <input id="quiz-name" className="quiz-name-input" value={name} onChange={(event) => setName(event.target.value)} />
-          <p>One-question-at-a-time lead capture, built for paid traffic and reviewable before anything goes live.</p>
+          <p>One-question-at-a-time lead capture, built for paid traffic and reviewable before anything goes live. <span className="quiz-source-label">{sourceLabel}</span></p>
         </div>
         <div className="quiz-header-actions">
           <span className="quiz-save-state" aria-live="polite">{savedAt ? `Saved locally ${new Intl.DateTimeFormat("en-US", { timeStyle: "short" }).format(new Date(savedAt))}` : "Local draft"}</span>
@@ -190,7 +196,7 @@ export function QuizFunnelEditor() {
           <div className="quiz-canvas-label"><span>Live preview</span><small>{preview === "phone" ? "390 px mobile frame" : "Responsive desktop frame"}</small></div>
           <div className={`quiz-preview-frame quiz-preview-${preview}`}>
             <div className="quiz-preview-top"><span className="quiz-preview-brand"><i /> Negroni</span><span>{selectedIndex + 1} / {steps.length}</span></div>
-            <div className="quiz-progress" aria-label={`Step ${selectedIndex + 1} of ${steps.length}`}><i style={{ width: `${Math.max(8, ((selectedIndex + 1) / steps.length) * 100)}%` }} /></div>
+            <div className="quiz-progress" role="progressbar" aria-label="Quiz progress" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={selectedIndex + 1}><i style={{ width: `${Math.max(8, ((selectedIndex + 1) / steps.length) * 100)}%` }} /></div>
             <div className="quiz-preview-content">
               <span className="quiz-preview-eyebrow">{selectedStep?.type === "contact" ? "Almost there" : selectedStep?.type === "result" ? "Your result" : "Quick question"}</span>
               <h2>{selectedStep?.title}</h2>

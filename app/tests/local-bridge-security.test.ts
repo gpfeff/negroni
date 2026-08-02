@@ -321,7 +321,9 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
 
   let receivedHeader = "";
   let receivedBody = "";
+  const receivedMethods: string[] = [];
   const google = createServer((request, response) => {
+    receivedMethods.push(request.method ?? "");
     receivedHeader = String(request.headers["x-goog-api-key"] ?? "");
     request.setEncoding("utf8");
     request.on("data", (chunk) => { receivedBody += chunk; });
@@ -386,7 +388,21 @@ test("local broker keeps the Gemini key server-side and fixes the standard Deep 
     assert.equal(upstream.agent, "deep-research-preview-04-2026");
     assert.equal(upstream.agent_config.collaborative_planning, false);
     assert.equal(upstream.background, true);
+    assert.equal(upstream.store, true);
+    assert.equal("user_metadata" in upstream, false);
     assert.equal((await response.text()).includes(apiKey), false);
+
+    const retryResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, "content-type": "application/json", "x-negroni-owner": OWNER_A },
+      body: JSON.stringify({
+        run_id: "run_0123456789abcdef01234567",
+        agent: "deep-research-preview-04-2026",
+        input: "Retry the same approved run without creating a second interaction.",
+      }),
+    });
+    assert.equal(retryResponse.status, 200);
+    assert.deepEqual(receivedMethods, ["POST", "GET"]);
 
     const maxResponse = await fetch(`http://127.0.0.1:${brokerPort}/v1/providers/gemini/deep-research/interactions`, {
       method: "POST",

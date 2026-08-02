@@ -151,8 +151,8 @@ system has evidence for that exact state.
 - Forms keep their primary action disabled until minimum valid input exists.
 - A modal traps keyboard focus, closes with Escape, locks background scrolling,
   and returns focus to its opener.
-- Selected phases use `aria-pressed`; status updates use an appropriate live
-  region.
+- The current page uses `aria-current="page"`; toggle groups use
+  `aria-pressed`; status updates use an appropriate live region.
 - Unknown, blocked, partial, and inconclusive states stay visible.
 
 ## Responsive behavior

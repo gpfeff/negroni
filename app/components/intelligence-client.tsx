@@ -15,55 +15,15 @@ import {
 import { buildResearchName, parseRunResult, RUNNER_BLOCKER, validateIntake } from "@/lib/intelligence/validation";
 import { deriveHomeNextAction } from "@/lib/intelligence/next-action";
 import { operatingModeCopy, type OperatingMode } from "@/lib/operating-policy";
-import { QuizFunnelEditor } from "@/components/quiz-funnel-editor";
+import { CAMPAIGN_PHASES } from "@/lib/campaign-workflow";
+import { CreatePhasePage } from "@/components/create-phase-page";
+import { ResearchReview } from "@/components/research-review";
+import { WorkflowPhasePage } from "@/components/workflow-phase-page";
 
-type AppView = "home" | "research" | "create" | "library" | "brands" | "integrations" | "settings";
+type AppView = "home" | "research" | "create" | "launch" | "iterate" | "loop" | "library" | "brands" | "integrations" | "settings";
 type ResearchSection = "run" | "client" | "customer" | "competitors" | "competitor-ads" | "review";
 type Appearance = "light" | "dark" | "system";
 type GeminiConnection = { status: "checking" | "not_connected" | "connected" | "connection_error"; last_verified_at: string | null; fingerprint: string | null; last_four: string | null; error?: string };
-
-const PHASES = [
-  {
-    number: "01",
-    name: "Research",
-    verb: "Find the signal",
-    artifact: "research-brief.md",
-    state: "Ready",
-    color: "#70283c",
-  },
-  {
-    number: "02",
-    name: "Create",
-    verb: "Make the argument",
-    artifact: "creative-manifest.json",
-    state: "Ready",
-    color: "#a83e25",
-  },
-  {
-    number: "03",
-    name: "Launch",
-    verb: "Prepare the delivery",
-    artifact: "launch-diff.md",
-    state: "Planned",
-    color: "#315f7b",
-  },
-  {
-    number: "04",
-    name: "Iterate",
-    verb: "Isolate the lesson",
-    artifact: "experiment-result.json",
-    state: "Planned",
-    color: "#4e5d36",
-  },
-  {
-    number: "05",
-    name: "Loop",
-    verb: "Compound the learning",
-    artifact: "learning-ledger.jsonl",
-    state: "Planned",
-    color: "#5f5b55",
-  },
-] as const;
 
 const RESEARCH_TOOLS: ReadonlyArray<{
   id: ResearchSection;
@@ -74,44 +34,44 @@ const RESEARCH_TOOLS: ReadonlyArray<{
 }> = [
   {
     id: "run",
-    eyebrow: "Start here",
+    eyebrow: "01",
     name: "Run Research",
-    description: "Start with the customer profile, then define the research scope for an evidence-backed draft.",
+    description: "Create the research package.",
     marker: "GO",
   },
   {
     id: "client",
-    eyebrow: "The three Cs",
+    eyebrow: "02",
     name: "Client",
-    description: "The offer, economics, geography, goals, and boundaries the campaign must respect.",
+    description: "Offer and campaign constraints.",
     marker: "C1",
   },
   {
     id: "customer",
-    eyebrow: "The three Cs",
+    eyebrow: "03",
     name: "Customer",
-    description: "Pains, desires, objections, awareness, and the language people actually use.",
+    description: "Audience needs and language.",
     marker: "C2",
   },
   {
     id: "competitors",
-    eyebrow: "The three Cs",
+    eyebrow: "04",
     name: "Competitors",
-    description: "Offers, positioning, proof, landing pages, and open space in the market.",
+    description: "Market and positioning evidence.",
     marker: "C3",
   },
   {
     id: "competitor-ads",
-    eyebrow: "Evidence source",
+    eyebrow: "05",
     name: "Competitor Ads",
-    description: "Track public Meta ads, daily changes, creative families, and coverage limits.",
+    description: "Public-ad evidence and coverage.",
     marker: "AD",
   },
   {
     id: "review",
-    eyebrow: "Approval gate",
+    eyebrow: "06",
     name: "Review & Approve",
-    description: "Edit the research, preserve revisions, and approve one exact brief for Create.",
+    description: "Approve the brief for Create.",
     marker: "OK",
   },
 ];
@@ -208,7 +168,7 @@ export function IntelligenceClient() {
     async function loadInitialState() {
       const searchParams = new URLSearchParams(window.location.search);
       const requestedView = searchParams.get("view");
-      if (requestedView === "research" || requestedView === "create" || requestedView === "library" || requestedView === "brands" || requestedView === "integrations" || requestedView === "settings") setActiveView(requestedView);
+      if (requestedView === "research" || requestedView === "create" || requestedView === "launch" || requestedView === "iterate" || requestedView === "loop" || requestedView === "library" || requestedView === "brands" || requestedView === "integrations" || requestedView === "settings") setActiveView(requestedView);
       const requestedTool = searchParams.get("tool");
       if (RESEARCH_TOOLS.some((tool) => tool.id === requestedTool)) {
         setActiveResearchSection(requestedTool as ResearchSection);
@@ -267,13 +227,41 @@ export function IntelligenceClient() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = appearance;
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      document.documentElement.dataset.theme = appearance === "system"
+        ? colorScheme.matches ? "dark" : "light"
+        : appearance;
+    };
+    applyTheme();
     window.localStorage.setItem("negroni.appearance", appearance);
+    if (appearance === "system") colorScheme.addEventListener("change", applyTheme);
+    return () => colorScheme.removeEventListener("change", applyTheme);
   }, [appearance]);
 
   useEffect(() => {
     window.localStorage.setItem("negroni.operating-mode", operatingMode);
   }, [operatingMode]);
+
+  useEffect(() => {
+    let frame = 0;
+    const keepActiveNavigationVisible = () => {
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>(".side-nav > .nav-active")?.scrollIntoView({
+          behavior: "auto",
+          block: "nearest",
+          inline: "nearest",
+        });
+      });
+    };
+    keepActiveNavigationVisible();
+    window.addEventListener("resize", keepActiveNavigationVisible);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("resize", keepActiveNavigationVisible);
+    };
+  }, [activeView]);
 
   function updateIntake(field:
     | "profession"
@@ -643,12 +631,15 @@ export function IntelligenceClient() {
         window.scrollTo({ top: 0, behavior: "auto" });
         return;
       }
-      const targetId = section === "competitor-ads"
-        ? "competitor-ads"
-        : section === "review"
-          ? "research-review"
-          : `research-${section}`;
-      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const targetId: Record<ResearchSection, string> = {
+        run: "top",
+        client: "intake",
+        customer: "offer-type",
+        competitors: "competitor-used",
+        "competitor-ads": "competitor-ads",
+        review: "research-review",
+      };
+      document.getElementById(targetId[section])?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, activeView === "research" ? 0 : 50);
   }
 
@@ -685,17 +676,17 @@ export function IntelligenceClient() {
         </button>
         <nav className="side-nav" aria-label="Application navigation">
           <span className="nav-label">Workspace</span>
-          <button className={activeView === "home" ? "nav-active" : ""} type="button" onClick={() => navigate("home")}><span>⌂</span>Home</button>
+          <button className={activeView === "home" ? "nav-active" : ""} type="button" onClick={() => navigate("home")} aria-current={activeView === "home" ? "page" : undefined}><span>⌂</span>Home</button>
           <span className="nav-label">Campaign phases</span>
-          {PHASES.map((phase) => (
+          {CAMPAIGN_PHASES.map((phase) => (
             <Fragment key={phase.number}>
               <button
-                className={(phase.number === "01" && activeView === "research") || (phase.number === "02" && activeView === "create") ? "nav-active" : ""}
+                className={`${phase.id === activeView ? "nav-active" : ""}${phase.id === "launch" || phase.id === "iterate" || phase.id === "loop" ? " nav-requires-handoff" : ""}`}
                 type="button"
-                disabled={phase.number !== "01" && phase.number !== "02"}
-                onClick={() => phase.number === "01" ? navigate("research") : phase.number === "02" ? navigate("create") : undefined}
+                onClick={() => navigate(phase.id)}
+                aria-current={phase.id === activeView ? "page" : undefined}
               >
-                <span>{phase.number}</span>{phase.name}{phase.number !== "01" && phase.number !== "02" ? <small>Planned</small> : null}
+                <span>{phase.number}</span>{phase.name}
               </button>
               {phase.number === "01" && activeView === "research" ? (
                 <div className="research-subnav" aria-label="Research tools">
@@ -729,28 +720,22 @@ export function IntelligenceClient() {
             </Fragment>
           ))}
           <span className="nav-label">Tools</span>
-          <button className={activeView === "library" ? "nav-active" : ""} type="button" onClick={() => navigate("library")} aria-label="Library"><span>▦</span>Library</button>
-          <button className={activeView === "brands" ? "nav-active" : ""} type="button" onClick={() => navigate("brands")} aria-label="Brands"><span>◇</span>Brands</button>
-          <button className={activeView === "integrations" ? "nav-active" : ""} type="button" onClick={() => navigate("integrations")} aria-label="Integrations"><span>↔</span>Integrations</button>
+          <button className={activeView === "library" ? "nav-active" : ""} type="button" onClick={() => navigate("library")} aria-label="Library" aria-current={activeView === "library" ? "page" : undefined}><span>▦</span>Library</button>
+          <button className={activeView === "brands" ? "nav-active" : ""} type="button" onClick={() => navigate("brands")} aria-label="Brands" aria-current={activeView === "brands" ? "page" : undefined}><span>◇</span>Brands</button>
+          <button className={activeView === "integrations" ? "nav-active" : ""} type="button" onClick={() => navigate("integrations")} aria-label="Integrations" aria-current={activeView === "integrations" ? "page" : undefined}><span>↔</span>Integrations</button>
         </nav>
         <div className="sidebar-footer">
-          <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")} aria-label="Settings"><span>⚙</span>Settings</button>
-          <div className="connection-state"><i /> Plugin workspace · Negroni v0.9 beta</div>
+          <button className={`settings-nav ${activeView === "settings" ? "nav-active" : ""}`} type="button" onClick={() => navigate("settings")} aria-label="Settings" aria-current={activeView === "settings" ? "page" : undefined}><span>⚙</span>Settings</button>
+          <div className="connection-state"><i /> Private workspace</div>
         </div>
       </aside>
 
       <main className="app-main">
-        <header className="app-topbar">
-          <button className="campaign-switcher" type="button" onClick={() => navigate("research")}>
-            <span>Campaign</span><strong>New lead-generation campaign</strong><b>⌄</b>
-          </button>
-          <div className="topbar-state"><span><i /> Private Site · No live spend</span><b aria-label="User account">GP</b></div>
-        </header>
 
       {activeView === "home" ? (
         <div className="dashboard" id="top">
           <section className="dashboard-heading" aria-labelledby="home-title">
-            <div><p className="utility-label">Negroni agent workspace</p><h1 id="home-title">What should Negroni do next?</h1><p>Work with your agent or choose a phase here. Current campaign: <strong>{selectedProfile?.offer_or_lead_type ?? "your next lead campaign"}</strong>.</p></div>
+            <div><p className="utility-label">Workspace</p><h1 id="home-title">Your campaign workspace</h1><p>Start with the next action.</p></div>
           </section>
 
           <section className="research-home-layout" aria-label="Research workspace">
@@ -763,7 +748,7 @@ export function IntelligenceClient() {
             <div className="research-tool-board">
               <div className="research-board-heading">
                 <div><span>01</span><i /><h2>Research</h2></div>
-                <p>Know your customer, client, and market. Run once per campaign.</p>
+                <p>Build the campaign brief.</p>
               </div>
               <div className="research-tool-grid">
                 {RESEARCH_TOOLS.map((tool, index) => (
@@ -773,7 +758,6 @@ export function IntelligenceClient() {
                     type="button"
                     onClick={() => openResearchSection(tool.id)}
                   >
-                    <span className={`tool-visual tool-visual-${tool.id}`} aria-hidden="true" />
                     <span className="tool-marker" aria-hidden="true">{tool.marker}</span>
                     <span className="tool-copy">
                       <small>{tool.eyebrow}</small>
@@ -787,24 +771,15 @@ export function IntelligenceClient() {
             </div>
 
           </section>
-
-          <section className="dashboard-lower">
-            <article className="activity-card">
-              <div className="section-title-row"><div><p className="utility-label">Agent activity</p><h2>Recent work</h2></div><small>Live Site</small></div>
-              <div className="empty-state"><span>●</span><div><strong>No runs yet</strong><p>Start Research to create the first prompt receipts and campaign artifact.</p></div></div>
-            </article>
-            <article className="artifacts-card">
-              <div className="section-title-row"><div><p className="utility-label">Artifacts</p><h2>Campaign handoffs</h2></div><small>0 created</small></div>
-              <ul>{PHASES.slice(0, 3).map((phase) => <li key={phase.number}><code>{phase.artifact}</code><span>Waiting</span></li>)}</ul>
-            </article>
-          </section>
         </div>
       ) : activeView === "research" ? (
         <div className="content-column" id="top">
+          {activeResearchSection !== "competitor-ads" && activeResearchSection !== "review" ? (
+          <>
           <section className="intro" aria-labelledby="page-title">
             <p className="kicker">Research</p>
-            <h1 id="page-title">Create brand</h1>
-            <p>Create the permanent brand file that connects every offer, research package, and asset.</p>
+            <h1 id="page-title">Brand setup</h1>
+            <p>Create the brand and offer for this campaign.</p>
           </section>
 
           <section className="section-card" id="intake" aria-labelledby="intake-title">
@@ -828,10 +803,7 @@ export function IntelligenceClient() {
             {profileMessage ? <p className="inline-message" role="status">{profileMessage}</p> : null}
 
             <div className="intake-grid">
-              <div className="intake-group-title input-wide">
-                <h3>Brand information</h3>
-                <p id="profile-privacy">Use business information or a public profile. Do not enter private contact details or credentials.</p>
-              </div>
+              <div className="intake-group-title input-wide"><h3>Brand</h3><p id="profile-privacy">Use business information or a public profile.</p></div>
               <div className="input-group">
                 <label htmlFor="company-name">Company name <strong>Required</strong></label>
                 <input id="company-name" value={intake.company_name} onChange={(event) => updateIntake("company_name", event.target.value)} placeholder="Regional Repair Co." autoComplete="organization" aria-describedby="profile-privacy" required />
@@ -849,7 +821,7 @@ export function IntelligenceClient() {
                 <input id="country-region" value={intake.country_region} onChange={(event) => updateIntake("country_region", event.target.value)} placeholder="United States" autoComplete="country-name" required />
               </div>
               <div className="intake-group-title input-wide">
-                <h3>Offer information</h3>
+                <h3>Offer</h3>
               </div>
               <div className="input-group">
                 <label htmlFor="profession">Profession <strong>Required</strong></label>
@@ -866,7 +838,7 @@ export function IntelligenceClient() {
               <div className="input-group input-wide">
                 <label htmlFor="offer-type">Lead offer or service <strong>Required</strong></label>
                 <textarea id="offer-type" rows={3} value={intake.offer_or_lead_type} onChange={(event) => updateIntake("offer_or_lead_type", event.target.value)} placeholder="Example: Business loans for small businesses—or business-loan leads for lenders" required />
-                <small>Describe what the customer receives, or the lead product a buyer receives.</small>
+                <small>Describe the service or lead product.</small>
               </div>
               <div className="input-group">
                 <label htmlFor="target-age">Target age range <span>Optional</span></label>
@@ -899,16 +871,43 @@ export function IntelligenceClient() {
               {!result && !running && (runError || (!checking && (!capability.available || researchDependencyBlocker))) ? <button className="status-action" type="button" onClick={() => navigate("integrations")}>Open Integrations</button> : null}
             </div>
           </section>
+          </>
+          ) : null}
+
+          {activeResearchSection === "competitor-ads" ? (
+            <section className="section-card" id="competitor-ads" aria-labelledby="competitor-ads-title">
+              <div className="section-heading"><span>AD</span><div><h2 id="competitor-ads-title">Ad Spy</h2><p>Public-ad evidence for the selected offer.</p></div></div>
+              {result ? (
+                <div className="ad-spy-summary">
+                  <dl>
+                    <div><dt>Competitors watched</dt><dd>{result.competitor_ads.watched_competitors}</dd></div>
+                    <div><dt>Active ads</dt><dd>{result.competitor_ads.active_ads}</dd></div>
+                    <div><dt>New ads</dt><dd>{result.competitor_ads.new_ads_today}</dd></div>
+                    <div><dt>Creative families</dt><dd>{result.competitor_ads.creative_families}</dd></div>
+                  </dl>
+                  <p>{result.competitor_ads.claims_boundary}</p>
+                </div>
+              ) : selectedProfile?.latest_run?.google_sheet_url ? (
+                <div className="tool-empty"><h2>Saved competitor evidence is available.</h2><p>Open the evidence-backed sheet from this offer’s latest Research package.</p><a className="drive-link" href={selectedProfile.latest_run.google_sheet_url} target="_blank" rel="noreferrer">Open competitor evidence <span aria-hidden="true">↗</span></a></div>
+              ) : (
+                <div className="tool-empty"><h2>No competitor-ad evidence yet.</h2><p>Run Research for this offer to create the first verified competitor-ad snapshot.</p></div>
+              )}
+            </section>
+          ) : null}
+
+          {activeResearchSection === "review" ? <ResearchReview profile={selectedProfile} runResult={result} /> : null}
 
         </div>
+      ) : activeView === "launch" || activeView === "iterate" || activeView === "loop" ? (
+        <WorkflowPhasePage phaseId={activeView} onNavigate={navigate} />
       ) : activeView === "create" ? (
-        <QuizFunnelEditor />
+        <CreatePhasePage key={selectedProfile?.id ?? "no-offer"} profile={selectedProfile} onOpenResearchReview={() => openResearchSection("review")} />
       ) : activeView === "library" ? (
         <div className="content-column tool-page" id="top">
           <section className="intro" aria-labelledby="library-title">
-            <p className="kicker">Tools · Asset library</p>
-            <h1 id="library-title">Everything made for every brand.</h1>
-            <p>Research, competitor ads, copy, images, video, and campaign files stay attached to the brand and offer that created them.</p>
+            <p className="kicker">Library</p>
+            <h1 id="library-title">Campaign files</h1>
+            <p>Everything created for the selected brand and offer.</p>
           </section>
           <section className="tool-summary-bar" aria-label="Library filters">
             <div><span>Brand</span><strong>{activeBrand ? brandLabel(activeBrand) : "No brand selected"}</strong></div>
@@ -973,7 +972,7 @@ export function IntelligenceClient() {
       ) : activeView === "brands" ? (
         <div className="content-column tool-page" id="top">
           <section className="intro tool-page-heading" aria-labelledby="brands-title">
-            <div><p className="kicker">Tools · Brand system</p><h1 id="brands-title">Brands are the source of truth.</h1><p>Each central brand file connects its offers, research, competitor intelligence, ads, and creative assets.</p></div>
+            <div><p className="kicker">Brands</p><h1 id="brands-title">Brand files</h1><p>One source for each brand and its offers.</p></div>
             <button type="button" onClick={() => navigate("research")}>+ Create Brand</button>
           </section>
           {brandDetail ? (
@@ -1037,19 +1036,19 @@ export function IntelligenceClient() {
           <section className="intro" aria-labelledby="settings-title">
             <p className="kicker">Workspace preferences</p>
             <h1 id="settings-title">Settings</h1>
-            <p>Control appearance and approval preferences. Provider connections live under Tools → Integrations.</p>
+            <p>Appearance and approval preferences.</p>
           </section>
           <section className="section-card settings-section" id="preferences">
             <div className="settings-heading">
               <span>01</span>
-              <div><h2>Appearance &amp; approvals</h2><p>Personal preferences stay on this device. Campaign safety remains visible and explicit.</p></div>
+              <div><h2>Appearance &amp; approvals</h2><p>Personal preferences for this workspace.</p></div>
             </div>
             <div className="preference-grid">
               <fieldset className="preference-card">
                 <legend>Appearance</legend>
                 <div className="segmented-control">
                   {(["light", "dark", "system"] as const).map((option) => (
-                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)}>{option[0].toUpperCase() + option.slice(1)}</button>
+                    <button className={appearance === option ? "selected" : ""} type="button" key={option} onClick={() => setAppearance(option)} aria-pressed={appearance === option}>{option[0].toUpperCase() + option.slice(1)}</button>
                   ))}
                 </div>
                 <p>System follows this computer’s light or dark setting.</p>
@@ -1057,8 +1056,8 @@ export function IntelligenceClient() {
               <fieldset className={`preference-card mode-card mode-${operatingMode}`}>
                 <legend>Commit approvals</legend>
                 <div className="segmented-control">
-                  <button className={operatingMode === "safety" ? "selected" : ""} type="button" onClick={() => setOperatingMode("safety")}>Safety</button>
-                  <button className={operatingMode === "yolo" ? "selected" : ""} type="button" onClick={() => setOperatingMode("yolo")}>YOLO</button>
+                  <button className={operatingMode === "safety" ? "selected" : ""} type="button" onClick={() => setOperatingMode("safety")} aria-pressed={operatingMode === "safety"}>Safety</button>
+                  <button className={operatingMode === "yolo" ? "selected" : ""} type="button" onClick={() => setOperatingMode("yolo")} aria-pressed={operatingMode === "yolo"}>YOLO</button>
                 </div>
                 <p>{operatingModeCopy(operatingMode)}</p>
                 <strong>Spending, publishing, forms, budgets, and live traffic always stop for explicit approval.</strong>
@@ -1069,15 +1068,17 @@ export function IntelligenceClient() {
       ) : (
         <div className="content-column settings-column" id="top">
           <section className="intro" aria-labelledby="integrations-title">
-            <p className="kicker">Tools</p>
+            <p className="kicker">Integrations</p>
             <h1 id="integrations-title">Integrations</h1>
-            <p>Connect API keys, Google Drive, agents, and data providers. Secrets stay behind the workspace, and connecting a provider never starts a paid action.</p>
+            <p>Connect the services this workspace needs. Saving a key never starts paid work.</p>
           </section>
 
-          <section className="section-card settings-section" id="operators">
+          <details className="advanced-details" id="operators">
+            <summary>Advanced connections <small>Optional local agents and contributor setup</small></summary>
+          <section className="section-card settings-section">
             <div className="settings-heading">
               <span>01</span>
-              <div><h2>Agent access</h2><p>The plugin is the primary experience. Local agent checks remain available for contributor and self-hosted fallback use.</p></div>
+              <div><h2>Agent access</h2><p>Optional connections for local and self-hosted work.</p></div>
             </div>
             <div className="settings-grid">
               <article className="provider-card agent-card">
@@ -1095,6 +1096,7 @@ export function IntelligenceClient() {
               </article>
             </div>
           </section>
+          </details>
 
           <section className="section-card settings-section" id="connections">
             <div className="settings-heading">
@@ -1166,10 +1168,12 @@ export function IntelligenceClient() {
             </div>
           </section>
 
-          <section className="section-card settings-section" id="local-setup">
+          <details className="advanced-details" id="local-setup">
+            <summary>Developer setup <small>Local-only contributor tools</small></summary>
+          <section className="section-card settings-section">
             <div className="settings-heading">
               <span>03</span>
-              <div><h2>Developer fallback</h2><p>The local launcher is optional infrastructure for contributors and self-hosted testing, not the normal Negroni experience.</p></div>
+              <div><h2>Developer fallback</h2><p>Local-only setup for contributors.</p></div>
             </div>
             <div className={`local-setup-card ${settingsAvailable ? "local-setup-ready" : ""}`}>
               <div className="local-setup-state">
@@ -1184,6 +1188,7 @@ export function IntelligenceClient() {
               {settingsBlocker ? <div className="settings-blocker"><strong>Connection setup needed</strong><p>{settingsBlocker}</p></div> : null}
             </div>
           </section>
+          </details>
 
           <section className="settings-feedback" aria-live="polite">
             {settingsMessage ? <p className="inline-message" role="status">{settingsMessage}</p> : null}

@@ -177,13 +177,15 @@ browser and continues to report unavailable hosted capabilities as blocked.
 - TypeScript and scoped ESLint: passed
 - Plugin contract tests: 4/4 passed
 - Public capture-boundary tests: 6/6 passed
-- Application contract/security tests: 159/159 passed
+- Application contract/security tests: 163/163 passed
 - Vinext production build: passed
 - Separate web application production build: passed
 - Install smoke test: global package, local app, and seven-provider Integrations API passed
-- Visual QA: Home, Research, Library, Brands, Brand detail, Integrations, and
-  Settings passed at desktop and mobile sizes, 151/151 checks
-- Accessibility: zero serious or critical Axe violations across all tested states
+- Visual QA: Home, Research intake, Ad Spy, Research Review, Create, Launch,
+  Iterate, Loop, Library, Brands, Brand detail, Integrations, and Settings
+  passed across 29 desktop, mobile, Light, and System states, 228/228 checks
+- Accessibility: zero moderate, serious, or critical Axe violations across all
+  29 tested states
 - Browser runtime: no unexpected console errors or horizontal overflow
 - Private Sites deployment: succeeded with one allowed owner, no
   groups, and production bundle readback of the current Research UI and social

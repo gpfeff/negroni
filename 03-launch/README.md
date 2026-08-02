@@ -53,6 +53,14 @@ Launch is complete only when desired state, approved state, and platform
 readback agree—or when a partial or failed state is preserved with exact
 recovery instructions. Platform acceptance never implies campaign performance.
 
+## Application workflow contract
+
+The shared application state, visible prerequisite, and operator-facing
+handoff appear in [`app/docs/campaign-workflow.md`](../app/docs/campaign-workflow.md).
+The initial Launch UI is intentionally blocked until a persisted, approved
+Creative package exists; it must not imply that a provider is connected or a
+campaign can be published.
+
 ## Learning Core input and output
 
 Launch consumes evidence-backed hypotheses and reviewable proposals, then

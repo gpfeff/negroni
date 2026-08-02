@@ -25,6 +25,7 @@ const injectedCredentials = {
   ...(process.env.NEGRONI_APIFY_API_TOKEN ? { apify: { api_key: process.env.NEGRONI_APIFY_API_TOKEN } } : {}),
 };
 const sessionCredentialsByOwner = new Map();
+const geminiInteractionByOwnerRun = new Map();
 
 if (!brokerToken) throw new Error("CREDENTIAL_BROKER_TOKEN is required.");
 
@@ -529,6 +530,7 @@ async function proxyGeminiInteraction(owner, path, init) {
   });
   const body = await response.text();
   if (!response.ok) {
+    process.stderr.write(`Gemini Interactions API rejected the request with status ${response.status}.\n`);
     return json({ error: "Gemini Interactions API request failed.", status: response.status }, 502);
   }
   return new Response(body, {
@@ -637,7 +639,12 @@ async function handle(request) {
       || Buffer.byteLength(body.input, "utf8") > 512 * 1024) {
       return json({ error: "Invalid Gemini Deep Research request." }, 400);
     }
-    return proxyGeminiInteraction(owner, "", {
+    const interactionKey = `${owner}:${body.run_id}`;
+    const existingInteractionId = geminiInteractionByOwnerRun.get(interactionKey);
+    if (existingInteractionId) {
+      return proxyGeminiInteraction(owner, encodeURIComponent(existingInteractionId), { method: "GET" });
+    }
+    const response = await proxyGeminiInteraction(owner, "", {
       method: "POST",
       body: JSON.stringify({
         input: body.input,
@@ -650,9 +657,15 @@ async function handle(request) {
         },
         background: true,
         store: true,
-        user_metadata: { negroni_run_id: body.run_id },
       }),
     });
+    if (response.ok) {
+      const interaction = await response.clone().json();
+      if (typeof interaction.id === "string" && /^v1_[A-Za-z0-9_-]{10,512}$/.test(interaction.id)) {
+        geminiInteractionByOwnerRun.set(interactionKey, interaction.id);
+      }
+    }
+    return response;
   }
   const interactionMatch = url.pathname.match(/^\/v1\/providers\/gemini\/deep-research\/interactions\/(v1_[A-Za-z0-9_-]{10,512})$/);
   if (request.method === "GET" && interactionMatch) {

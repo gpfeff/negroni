@@ -5,8 +5,8 @@ import test from "node:test";
 
 test("the Research UI presents a lean permanent-brand flow", async () => {
   const source = await readFile(resolve(process.cwd(), "components/intelligence-client.tsx"), "utf8");
-  const profileStart = source.indexOf("<h3>Brand information</h3>");
-  const scopeStart = source.indexOf("<h3>Offer information</h3>", profileStart);
+  const profileStart = source.indexOf("<h3>Brand</h3>");
+  const scopeStart = source.indexOf("<h3>Offer</h3>", profileStart);
   const brandLabels = [
     "Company name",
     "Website or public profile URL",
@@ -15,8 +15,8 @@ test("the Research UI presents a lean permanent-brand flow", async () => {
   ];
   const offerLabels = ["Profession", "Job title", "Lead offer or service"];
 
-  assert.ok(profileStart >= 0, "missing the brand-information section");
-  assert.ok(scopeStart > profileStart, "offer information must follow the brand foundation");
+  assert.ok(profileStart >= 0, "missing the brand section");
+  assert.ok(scopeStart > profileStart, "the offer section must follow the brand foundation");
   const profileSection = source.slice(profileStart, scopeStart);
   const offerSection = source.slice(scopeStart, source.indexOf("research-run-options", scopeStart));
   for (const label of brandLabels) {
@@ -42,7 +42,7 @@ test("the Research UI presents a lean permanent-brand flow", async () => {
   assert.match(source, /googleDriveReady/);
   assert.match(source, /Connect Google Drive before starting research/);
   assert.match(source, /Tools[\s\S]*aria-label="Integrations"/);
-  assert.match(source, /Provider connections live under Tools → Integrations/);
+  assert.match(source, /Saving a key never starts paid work/);
   assert.match(source, /Research stays separate by offer/);
   assert.match(source, /Filter library by offer/);
   assert.match(source, /Filter library by asset type/);

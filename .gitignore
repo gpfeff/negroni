@@ -54,8 +54,6 @@ temp/
 qa/
 !/app/qa/
 !/app/qa/screenshots/
-!/app/qa/screenshots/draper-desktop.jpg
-!/app/qa/screenshots/draper-mobile.jpg
 conflicts/
 app/.node_modules-incomplete-*/
 app/.vinext-pre-move-*/
